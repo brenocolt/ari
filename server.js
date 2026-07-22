@@ -93,7 +93,11 @@ app.post("/api/pop-pptx", async (req, res) => {
   }
 });
 
-// Serve os arquivos estáticos do site (ARI.dc.html, support.js, etc.).
+// A raiz (/) serve a versão atual do site: o ARI.dc.html (IA via /api/complete e
+// pinning de scroll corrigido). Precede o static para não cair no index.html antigo.
+app.get("/", (req, res) => res.sendFile(`${__dirname}/ARI.dc.html`));
+
+// Serve os arquivos estáticos do site (support.js, bpmn-viewer.js, CSS, etc.).
 app.use(express.static(__dirname));
 
 const PORT = process.env.PORT || 3000;
