@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Override DC runtime's FULL_PAGE_CSS which injects html,body{height:100%} and
+     #dc-root,.sc-host{height:100%} — those clamp the document to the viewport and
+     prevent the 400vh scroll spacer from being scrollable.
+     overflow-x:clip (NOT hidden): hidden forces overflow-y:auto, turning body into a
+     scroll container that traps position:sticky and stops the frame from pinning.
+     clip prevents horizontal overflow without creating a scroll container. */
+  html,body{margin:0;padding:0;height:auto!important;background:#ffffff;color:#0a1f44;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip;}
+  #dc-root,#dc-root>.sc-host{height:auto!important;overflow:visible!important;}
+  html::-webkit-scrollbar,body::-webkit-scrollbar{width:0;height:0;}
+  html{scrollbar-width:none;}
+  *{box-sizing:border-box;}
+  /* Shared motion tokens — one source of truth for the curves/durations used across
+     the page. --ease-out-strong (mirrored by the `ease` const in the DC script)
+     drives the big panel/card slides; --ease-out drives UI micro-interactions. */
+  :root{
+    --ease-out:cubic-bezier(.23,1,.32,1);
+    --ease-out-strong:cubic-bezier(.16,1,.3,1);
+    --dur-press:.16s; --dur-fast:.2s; --dur-slow:.5s; --dur-panel:.8s;
+  }
+  @keyframes ariBob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  @keyframes ariFade{from{opacity:0}to{opacity:1}}
+  @keyframes ariSpin{to{transform:rotate(360deg)}}
+  @keyframes ariRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  /* Placeholder darkened from #9aa7bd (~2.3:1) to meet the 4.5:1 contrast floor. */
+  textarea::placeholder{color:#6b7688;}
+  /* Even line lengths on display headings. */
+  h1,h2{text-wrap:balance;}
+  /* Press feedback: every button dips slightly when pressed. transform is
+     forced so it wins over any inline/hover transform during the press. */
+  button{transition:transform var(--dur-press) var(--ease-out),background var(--dur-fast) linear,box-shadow var(--dur-fast) linear;}
+  button:active:not(:disabled){transform:scale(.97)!important;}
+  /* Keyboard focus rings — buttons use appearance:none and textareas set
+     outline:none inline, so both need an explicit visible focus state. */
+  button:focus-visible{outline:2px solid #1c5cff;outline-offset:3px;}
+  textarea{transition:box-shadow .18s var(--ease-out),border-color .18s var(--ease-out);}
+  textarea:focus-visible{border-color:#1c5cff!important;box-shadow:0 0 0 3px rgba(28,92,255,.22);}
+  /* Accessibility: honor reduced-motion. Kill the looping/idle CSS motion and
+     collapse entrance movement to a gentle fade. The 3D idle motion, pointer
+     parallax and panel blur/slide are gated separately in JS via matchMedia. */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;}
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="./bpmn-diagram.css">
+<link rel="stylesheet" href="./bpmn-viewer.css">
+<script src="./bpmn-viewer.js"></script>
+</helmet>
+<div ref="{{ setRoot }}" style="position:relative;width:100%;">
+
+  <!-- progress bar -->
+  <div style="position:fixed;top:0;left:0;width:100%;height:3px;background:rgba(10,31,68,.06);z-index:60;">
+    <div ref="{{ setProgress }}" style="height:100%;width:0%;background:#1c5cff;box-shadow:0 0 12px rgba(28,92,255,.6);"></div>
+  </div>
+
+  <!-- nav dots -->
+  <nav aria-label="Navegação por seções" style="position:fixed;right:clamp(18px,2.4vw,34px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:50;align-items:center;">
+    <button onClick="{{ go0 }}" aria-label="Ir para: início" style="{{ dot0 }}"></button>
+    <button onClick="{{ go1 }}" aria-label="Ir para: mapeamentos" style="{{ dot1 }}"></button>
+    <button onClick="{{ go2 }}" aria-label="Ir para: POPs" style="{{ dot2 }}"></button>
+    <button onClick="{{ go3 }}" aria-label="Ir para: manuais" style="{{ dot3 }}"></button>
+  </nav>
+
+  <!-- scroll spacer (drives the pinned scroll) -->
+  <div style="height:400vh;position:relative;">
+    <div style="position:sticky;top:0;height:100vh;width:100%;overflow:hidden;">
+
+      <!-- ambient background glow -->
+      <div style="position:absolute;inset:0;background:radial-gradient(60% 60% at 74% 42%, rgba(28,92,255,.10), rgba(28,92,255,0) 70%), radial-gradient(40% 50% at 18% 80%, rgba(10,31,68,.05), rgba(10,31,68,0) 70%);pointer-events:none;"></div>
+      <!-- faint floor line -->
+      <div style="position:absolute;left:0;right:0;bottom:16vh;height:1px;background:linear-gradient(90deg,rgba(10,31,68,0),rgba(10,31,68,.07),rgba(10,31,68,0));pointer-events:none;"></div>
+
+      <!-- 3D canvas (full bleed, robot offset right) -->
+      <canvas ref="{{ setCanvas }}" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:block;"></canvas>
+
+      <!-- LEFT: text panels -->
+      <div style="position:absolute;inset:0;z-index:3;pointer-events:none;">
+
+        <!-- panel 0: hero -->
+        <div style="{{ panel0 }}">
+          <div style="width:min(92%,520px);">
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:22px;">ASSISTENTE DE ROTINAS INTELIGENTES</div>
+          <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(40px,5vw,70px);line-height:1.02;letter-spacing:-0.03em;color:#0a1f44;margin:0 0 22px;">Olá, eu sou<br>a <span style="color:#1c5cff;">ARI</span>.</h1>
+          <p style="font-size:clamp(16px,1.25vw,19px);line-height:1.62;color:#475569;margin:0 0 28px;max-width:480px;">Eu transformo descrições simples do seu dia a dia em <strong style="color:#0a1f44;font-weight:600;">mapeamentos</strong>, <strong style="color:#0a1f44;font-weight:600;">POPs</strong> e <strong style="color:#0a1f44;font-weight:600;">manuais</strong> completos — automaticamente.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:13px;font-weight:500;color:#0a1f44;background:rgba(28,92,255,.08);border:1px solid rgba(28,92,255,.16);padding:7px 14px;border-radius:999px;">Mapeamentos BPMN</span>
+            <span style="font-size:13px;font-weight:500;color:#0a1f44;background:rgba(28,92,255,.08);border:1px solid rgba(28,92,255,.16);padding:7px 14px;border-radius:999px;">POPs</span>
+            <span style="font-size:13px;font-weight:500;color:#0a1f44;background:rgba(28,92,255,.08);border:1px solid rgba(28,92,255,.16);padding:7px 14px;border-radius:999px;">Manuais</span>
+          </div>
+          </div>
+        </div>
+
+        <!-- panel 1: mapeamentos -->
+        <div style="{{ panel1 }}">
+          <div style="width:min(92%,520px);">
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 01</div>
+          <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">Mapeamentos automáticos em BPMN</h2>
+          <p style="font-size:clamp(16px,1.2vw,18.5px);line-height:1.62;color:#475569;margin:0 0 26px;max-width:470px;">Descreva a tarefa em linguagem natural e eu desenho o fluxo completo em notação BPMN — atividades, decisões e raias, pronto para você revisar.</p>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px;">
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Da descrição ao diagrama em segundos</li>
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Notação BPMN padrão de mercado</li>
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Edite e ajuste quando quiser</li>
+          </ul>
+          <button onClick="{{ openBpmn }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span style="font-size:17px;">→</span></button>
+          </div>
+        </div>
+
+        <!-- panel 2: POPs -->
+        <div style="{{ panel2 }}">
+          <div style="width:min(92%,520px);">
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 02</div>
+          <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">POPs gerados a partir do mapeamento</h2>
+          <p style="font-size:clamp(16px,1.2vw,18.5px);line-height:1.62;color:#475569;margin:0 0 26px;max-width:470px;">Com o mapeamento pronto e um campo de descrição da atividade, eu redijo o Procedimento Operacional Padrão completo, passo a passo, no seu modelo.</p>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px;">
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Baseado no fluxo já mapeado</li>
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Passo a passo estruturado</li>
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>No seu modelo de POP</li>
+          </ul>
+          <button onClick="{{ openPop }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span style="font-size:17px;">→</span></button>
+          </div>
+        </div>
+
+        <!-- panel 3: manuais -->
+        <div style="{{ panel3 }}">
+          <div style="width:min(92%,520px);">
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 03</div>
+          <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">Manuais em modelo padrão</h2>
+          <p style="font-size:clamp(16px,1.2vw,18.5px);line-height:1.62;color:#475569;margin:0 0 26px;max-width:470px;">Diga o que o manual precisa cobrir e eu estruturo o documento inteiro em um modelo padronizado, pronto para revisar e distribuir.</p>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px;">
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Estrutura padronizada</li>
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>A partir de uma descrição simples</li>
+            <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Pronto para distribuir</li>
+          </ul>
+          <button onClick="{{ openManual }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span style="font-size:17px;">→</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: floating output mock cards -->
+      <div style="{{ cardsWrap }}">
+
+        <!-- card 1: BPMN -->
+        <div style="{{ card1 }}">
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.6px;color:#1c5cff;margin-bottom:16px;">BPMN GERADO</div>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="width:18px;height:18px;border-radius:50%;border:2px solid #16a34a;flex:none;"></div>
+            <div style="height:2px;flex:1;background:#cbd5e1;"></div>
+            <div style="padding:9px 11px;border-radius:7px;background:rgba(28,92,255,.1);border:1px solid rgba(28,92,255,.25);font-size:11px;font-weight:500;color:#0a1f44;white-space:nowrap;">Receber</div>
+            <div style="height:2px;width:14px;background:#cbd5e1;"></div>
+            <div style="width:20px;height:20px;background:#fff;border:2px solid #f59e0b;transform:rotate(45deg);flex:none;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;margin-top:14px;padding-left:30px;">
+            <div style="padding:9px 11px;border-radius:7px;background:rgba(28,92,255,.1);border:1px solid rgba(28,92,255,.25);font-size:11px;font-weight:500;color:#0a1f44;white-space:nowrap;">Aprovar</div>
+            <div style="height:2px;flex:1;background:#cbd5e1;"></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2.5px solid #0a1f44;flex:none;"></div>
+          </div>
+        </div>
+
+        <!-- card 2: POP -->
+        <div style="{{ card2 }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.6px;color:#1c5cff;">POP — 0042</div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:500;">v1.0</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <div style="display:flex;gap:10px;align-items:center;"><span style="width:18px;height:18px;border-radius:5px;background:#1c5cff;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none;">1</span><span style="height:7px;flex:1;background:#e2e8f0;border-radius:4px;"></span></div>
+            <div style="display:flex;gap:10px;align-items:center;"><span style="width:18px;height:18px;border-radius:5px;background:#1c5cff;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none;">2</span><span style="height:7px;width:72%;background:#e2e8f0;border-radius:4px;"></span></div>
+            <div style="display:flex;gap:10px;align-items:center;"><span style="width:18px;height:18px;border-radius:5px;background:#1c5cff;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none;">3</span><span style="height:7px;width:88%;background:#e2e8f0;border-radius:4px;"></span></div>
+          </div>
+        </div>
+
+        <!-- card 3: manual -->
+        <div style="{{ card3 }}">
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.6px;color:#1c5cff;margin-bottom:14px;">MANUAL</div>
+          <div style="height:10px;width:60%;background:#0a1f44;border-radius:4px;margin-bottom:8px;"></div>
+          <div style="height:6px;width:40%;background:#cbd5e1;border-radius:4px;margin-bottom:16px;"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="height:6px;width:100%;background:#e2e8f0;border-radius:4px;"></div>
+            <div style="height:6px;width:92%;background:#e2e8f0;border-radius:4px;"></div>
+            <div style="height:6px;width:96%;background:#e2e8f0;border-radius:4px;"></div>
+            <div style="height:6px;width:70%;background:#e2e8f0;border-radius:4px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- scroll hint -->
+      <div style="{{ hint }}">
+        <div style="width:24px;height:38px;border:2px solid rgba(10,31,68,.35);border-radius:13px;display:flex;justify-content:center;padding-top:6px;">
+          <div style="width:4px;height:8px;border-radius:2px;background:#1c5cff;animation:ariBob 1.4s ease-in-out infinite;"></div>
+        </div>
+        <span style="font-size:13px;font-weight:500;letter-spacing:.4px;color:#64748b;">Role para descobrir</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GENERATOR OVERLAY -->
+  <div style="{{ overlay }}">
+    <div style="max-width:1160px;margin:0 auto;padding:clamp(28px,5vw,60px) clamp(20px,5vw,56px);">
+      <button onClick="{{ closeScreen }}" style="display:inline-flex;align-items:center;gap:8px;background:none;border:none;font-family:'IBM Plex Sans';font-size:15px;font-weight:500;color:#475569;cursor:pointer;padding:8px 0;margin-bottom:24px;"><span style="font-size:18px;">←</span> Voltar para a ARI</button>
+      <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:14px;">{{ genEyebrow }}</div>
+      <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,3.6vw,46px);line-height:1.05;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 12px;">{{ genTitle }}</h2>
+      <p style="font-size:17px;line-height:1.55;color:#475569;margin:0 0 38px;max-width:660px;">{{ genSubtitle }}</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:26px;align-items:start;">
+
+        <div style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(22px,3vw,30px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);">
+          <sc-if value="{{ showPop }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:10px;">Imagem do fluxograma do processo</div>
+            <label ref="{{ setDrop }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:1.5px dashed rgba(28,92,255,.4);border-radius:13px;background:rgba(28,92,255,.04);padding:22px;cursor:pointer;text-align:center;margin-bottom:26px;transition:border-color .15s,background .15s;">
+              <input type="file" ref="{{ setFile }}" onChange="{{ onFile }}" accept=".png,.jpg,.jpeg,.webp" style="display:none;">
+              <div style="width:38px;height:38px;border-radius:10px;background:rgba(28,92,255,.12);display:flex;align-items:center;justify-content:center;color:#1c5cff;font-size:22px;line-height:1;">+</div>
+              <span style="font-size:14px;font-weight:500;color:#1c5cff;word-break:break-all;">{{ fileLabel }}</span>
+            </label>
+          </sc-if>
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:10px;">{{ genInputLabel }}</div>
+          <textarea ref="{{ setText }}" placeholder="{{ genPlaceholder }}" style="width:100%;min-height:200px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:13px;padding:16px;font-family:'IBM Plex Sans';font-size:15.5px;line-height:1.55;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
+          <sc-if value="{{ showBpmn }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin:18px 0 10px;">Cor das atividades</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              <div onClick="{{ c0 }}" style="{{ sw0 }}"></div>
+              <div onClick="{{ c1 }}" style="{{ sw1 }}"></div>
+              <div onClick="{{ c2 }}" style="{{ sw2 }}"></div>
+              <div onClick="{{ c3 }}" style="{{ sw3 }}"></div>
+              <div onClick="{{ c4 }}" style="{{ sw4 }}"></div>
+              <div onClick="{{ c5 }}" style="{{ sw5 }}"></div>
+            </div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:#64748b;">
+              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#dcfce7;border:1.5px solid #16a34a;"></span>Início</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#fef9c3;border:1.5px solid #ca8a04;"></span>Decisão</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#fee2e2;border:1.5px solid #dc2626;"></span>Fim</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ genError }}" hint-placeholder-val="">
+            <div style="color:#dc2626;font-size:13.5px;margin-top:12px;">{{ genError }}</div>
+          </sc-if>
+          <button onClick="{{ generate }}" disabled="{{ loading }}" style="{{ genBtnStyle }}">{{ genBtnLabel }}</button>
+        </div>
+
+        <div style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(22px,3vw,30px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);min-height:360px;display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <div style="width:9px;height:9px;border-radius:50%;background:#1c5cff;"></div>
+            <span style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:1px;color:#0a1f44;">RESULTADO DA ARI</span>
+          </div>
+          <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#64748b;min-height:240px;">
+              <div style="width:34px;height:34px;border:3px solid rgba(28,92,255,.2);border-top-color:#1c5cff;border-radius:50%;animation:ariSpin .8s linear infinite;"></div>
+              <span style="font-size:14.5px;">A ARI está gerando...</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showText }}" hint-placeholder-val="{{ false }}">
+            <div style="white-space:pre-wrap;font-family:'IBM Plex Sans';font-size:15px;line-height:1.65;color:#1f2d45;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;">{{ result }}</div>
+          </sc-if>
+          <sc-if value="{{ hasBpmn }}" hint-placeholder-val="{{ false }}">
+            <div ref="{{ setPreview }}" style="width:100%;height:440px;border:1px solid rgba(10,31,68,.1);border-radius:12px;background:#fff;overflow:hidden;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;"></div>
+            <button onClick="{{ downloadBpmn }}" style="margin-top:18px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#16a34a;border:none;padding:13px 20px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(22,163,74,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);"><span style="font-size:17px;">↓</span> Baixar arquivo .bpmn</button>
+            <div style="margin-top:20px;border-top:1px solid rgba(10,31,68,.08);padding-top:16px;">
+              <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Ajustar o mapeamento</div>
+              <p style="font-size:13px;color:#64748b;margin:0 0 10px;">Peça uma alteração em linguagem natural — a ARI muda só o que você pedir.</p>
+              <textarea ref="{{ setEditText }}" placeholder="Ex.: adicione uma raia 'Diretoria' e mova a aprovação para ela; ou: renomeie a etapa 2 para 'Conferir documentos'." style="width:100%;min-height:72px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:12px;font-family:'IBM Plex Sans';font-size:14.5px;line-height:1.5;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
+              <button onClick="{{ applyEdit }}" disabled="{{ editing }}" style="{{ editBtnStyle }}">{{ editBtnLabel }}</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ popConfirm }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin:16px 0 4px;">Etapas com print de evidência</div>
+            <div ref="{{ setPopSteps }}" style="border:1px solid rgba(10,31,68,.1);border-radius:11px;padding:4px 12px;background:#fbfcfe;max-height:260px;overflow:auto;"></div>
+            <button onClick="{{ confirmPop }}" style="margin-top:14px;width:100%;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);">Gerar POP</button>
+          </sc-if>
+          <sc-if value="{{ hasPop }}" hint-placeholder-val="{{ false }}">
+            <div ref="{{ setPopPreview }}" style="width:100%;max-height:560px;overflow:auto;border:1px solid rgba(10,31,68,.1);border-radius:12px;background:#e8edf2;padding:14px;margin-top:16px;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;"></div>
+            <button onClick="{{ downloadPop }}" style="margin-top:16px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#16a34a;border:none;padding:13px 20px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(22,163,74,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);"><span style="font-size:17px;">↓</span> Baixar POP (.pptx)</button>
+          </sc-if>
+          <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#94a3b8;text-align:center;padding:30px;min-height:240px;">
+              <div style="width:46px;height:46px;border-radius:13px;background:rgba(28,92,255,.08);display:flex;align-items:center;justify-content:center;color:#1c5cff;font-size:22px;">✦</div>
+              <span style="font-size:14.5px;max-width:260px;line-height:1.5;">Preencha ao lado e clique em gerar — o resultado aparece aqui.</span>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { active: 0, screen: null, loading: false, result: '', fileName: '', err: '', bpmnXml: '', actColorIdx: 0, popReady: false, editing: false };
+
+  // Paleta para a cor das atividades (início/fim/gateway têm cor fixa).
+  PALETTE = [
+    { name: 'Azul', fill: '#dbeafe', stroke: '#1c5cff' },
+    { name: 'Verde-água', fill: '#ccfbf1', stroke: '#0d9488' },
+    { name: 'Roxo', fill: '#ede9fe', stroke: '#7c3aed' },
+    { name: 'Laranja', fill: '#ffedd5', stroke: '#ea580c' },
+    { name: 'Rosa', fill: '#fce7f3', stroke: '#db2777' },
+    { name: 'Cinza', fill: '#e2e8f0', stroke: '#475569' }
+  ];
+
+  // stable refs/handlers (identity preserved across re-renders)
+  setCanvas = (el) => { this.canvasEl = el; };
+  setProgress = (el) => { this.progressEl = el; };
+  setRoot = (el) => { this.rootEl = el; };
+  setText = (el) => { this.textEl = el; };
+  setFile = (el) => { this.fileEl = el; };
+
+  // Área de arrastar e soltar a imagem do fluxograma. O framework não expõe
+  // eventos de drag no template, então os listeners são anexados via ref.
+  setDrop = (el) => {
+    if (!el || el.dataset.dropWired) return;
+    el.dataset.dropWired = '1';
+    const hl = (on) => {
+      el.style.borderColor = on ? '#1c5cff' : 'rgba(28,92,255,.4)';
+      el.style.background = on ? 'rgba(28,92,255,.12)' : 'rgba(28,92,255,.04)';
+    };
+    el.addEventListener('dragover', (e) => { e.preventDefault(); hl(true); });
+    el.addEventListener('dragleave', () => hl(false));
+    el.addEventListener('drop', (e) => {
+      e.preventDefault(); hl(false);
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return;
+      if (!/\.(png|jpe?g|webp)$/i.test(f.name)) {
+        this.setState({ err: 'Formato não suportado — use .png, .jpg ou .webp.' });
+        return;
+      }
+      // Sincroniza com o input file para o fluxo existente continuar igual.
+      try { if (this.fileEl) this.fileEl.files = e.dataTransfer.files; } catch (_) { /* fallback: droppedFile */ }
+      this.droppedFile = f;
+      this.setState({ fileName: f.name, err: '' });
+    });
+  };
+  setPreview = (el) => { this.previewEl = el; };
+
+  pickColor = (i) => this.setState({ actColorIdx: i });
+  c0 = () => this.pickColor(0);
+  c1 = () => this.pickColor(1);
+  c2 = () => this.pickColor(2);
+  c3 = () => this.pickColor(3);
+  c4 = () => this.pickColor(4);
+  c5 = () => this.pickColor(5);
+
+  openBpmn = () => this.openScreen('bpmn');
+  openPop = () => this.openScreen('pop');
+  openManual = () => this.openScreen('manual');
+  openScreen(s) {
+    document.body.style.overflow = 'hidden';
+    if (this.textEl) this.textEl.value = '';
+    if (this.fileEl) this.fileEl.value = '';
+    this.popBlob = null; this.popData = null; this.popImage = null; this.droppedFile = null;
+    this.setState({ screen: s, result: '', err: '', fileName: '', loading: false, bpmnXml: '', popReady: false, popConfirm: false });
+  }
+  closeScreen = () => {
+    document.body.style.overflow = '';
+    this.destroyViewer();
+    this.setState({ screen: null });
+  };
+  onFile = (e) => { const f = e.target.files && e.target.files[0]; this.droppedFile = null; this.setState({ fileName: f ? f.name : '' }); };
+
+  destroyViewer() {
+    if (this.viewer) { try { this.viewer.destroy(); } catch (_) {} this.viewer = null; this.viewerEl = null; }
+  }
+
+  // Renderiza o BPMN gerado visualmente (com cores) usando o bpmn-js.
+  renderPreview = () => {
+    const xml = this.state.bpmnXml;
+    if (!xml) return;
+    if (!window.BpmnJS || !this.previewEl) {
+      this._previewTries = (this._previewTries || 0) + 1;
+      if (this._previewTries < 40) setTimeout(this.renderPreview, 100);
+      return;
+    }
+    this._previewTries = 0;
+    if (this.viewer && this.viewerEl !== this.previewEl) this.destroyViewer();
+    if (!this.viewer) { this.viewer = new window.BpmnJS({ container: this.previewEl }); this.viewerEl = this.previewEl; }
+    this.viewer.importXML(xml).then(() => {
+      try { this.viewer.get('canvas').zoom('fit-viewport', 'auto'); } catch (_) {}
+    }).catch(() => {});
+  };
+
+  mock(screen, text) {
+    const t = (text || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if (screen === 'bpmn') return '● Início\n   │\n   ▼\n▭ ' + (t || 'Receber solicitação') + '\n   │\n   ▼\n◆ Está conforme?\n   ├─ Sim ▸ ▭ Prosseguir e registrar\n   └─ Não ▸ ▭ Revisar e corrigir\n   │\n   ▼\n▭ Concluir e notificar\n   │\n   ▼\n◉ Fim\n\n(Pré-visualização local — conecte a IA para o fluxo BPMN completo.)';
+    if (screen === 'pop') return 'POP — Procedimento Operacional Padrão\n\nObjetivo\nPadronizar a execução de: ' + (t || 'atividade descrita') + '.\n\nResponsável\nEquipe responsável pelo processo.\n\nPasso a passo\n1. Receber e validar a solicitação.\n2. Conferir os critérios definidos no mapeamento.\n3. Executar a atividade conforme o fluxo.\n4. Registrar a conclusão e notificar os envolvidos.\n\n(Pré-visualização local — conecte a IA para o POP completo.)';
+    return 'Manual — Modelo Padrão\n\n1. Objetivo\nOrientar sobre: ' + (t || 'o tema descrito') + '.\n\n2. Pré-requisitos\nAcesso e permissões necessárias.\n\n3. Passo a passo\n3.1 Primeiro passo.\n3.2 Segundo passo.\n3.3 Terceiro passo.\n\n4. Dúvidas frequentes\n\n(Pré-visualização local — conecte a IA para o manual completo.)';
+  }
+
+  // ─── Ponte com a IA ─────────────────────────────────────────────────────────
+  // Usa window.claude.complete quando disponível (pré-visualização do Claude
+  // Design) e, caso contrário, chama o proxy seguro do servidor (/api/complete),
+  // que guarda a chave da Anthropic e fala com a API.
+  async complete(prompt) {
+    if (window.claude && window.claude.complete) {
+      return await window.claude.complete(prompt);
+    }
+    const res = await fetch('/api/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    if (!res.ok) throw new Error('proxy ' + res.status);
+    const data = await res.json();
+    return (data && data.text) || '';
+  }
+
+  // ─── Extração via IA ───────────────────────────────────────────────────────
+  // A ARI lê o texto corrido e devolve a estrutura lógica do processo como JSON.
+  async aiExtractNodes(text) {
+    const prompt =
+      'Você é a ARI, especialista em mapeamento de processos de negócio (BPMN). ' +
+      'Leia a descrição do processo abaixo (texto livre, pode estar em prosa) e extraia a estrutura lógica do fluxo, na ordem correta, identificando o RESPONSÁVEL (setor, área ou cargo) de cada etapa — isso vira as raias (lanes) do diagrama.\n\n' +
+      'Responda SOMENTE com um objeto JSON válido — sem markdown, sem crases, sem comentários, sem nenhum texto antes ou depois. Formato exato:\n' +
+      '{"nodes":[' +
+      '{"type":"task","name":"Ação a executar","actor":"Responsável"},' +
+      '{"type":"decision","name":"Pergunta de sim/não?","actor":"Responsável","sim":[{"name":"ação se sim","actor":"Responsável"}],"nao":[{"name":"ação se não","actor":"Responsável"}]}' +
+      ']}\n\n' +
+      'Regras:\n' +
+      '- "task": uma atividade/ação do processo. Nome curto (até ~6 palavras), verbo no início, em português.\n' +
+      '- "actor": quem executa a etapa — o setor/área/cargo responsável (ex.: "Comercial", "Financeiro", "Cliente", "Expedição", "Gerência"). SEMPRE preencha; se o texto não disser explicitamente, infira o responsável mais provável. Use nomes curtos e consistentes (reutilize o mesmo nome para o mesmo responsável).\n' +
+      '- DECISÕES SEMPRE SÃO "decision" (gateway), NUNCA "task". Toda pergunta de sim/não, verificação ou condição ("se...", "caso...", "verificar se...", "está conforme?", "foi aprovado?", "tem estoque?") DEVE ser um nó {type:"decision"} com "name" terminando em "?". É PROIBIDO criar uma "task" cujo nome seja uma pergunta. Se uma etapa for uma pergunta, transforme-a em "decision".\n' +
+      '- Em "decision", "sim" e "nao" são as ações de cada caminho (listas, cada item com "actor"). Use [] quando um caminho apenas segue adiante sem ação própria. NÃO crie um segundo gateway de "junção"/"fim da decisão" — os caminhos se reencontram naturalmente na próxima etapa.\n' +
+      '- Reconheça decisões mesmo implícitas no texto corrido (ex.: "se houver estoque... caso contrário...", "verifica se foi aprovado", "quando o valor excede o limite").\n' +
+      '- Capture TODAS as atividades relevantes, na sequência lógica. Não invente etapas que não estão no texto.\n' +
+      '- NÃO inclua evento de início nem de fim — eu adiciono automaticamente.\n\n' +
+      'Descrição do processo:\n"' + text + '"';
+    const raw = await this.complete(prompt);
+    if (!raw) throw new Error('sem resposta');
+    // Isola o objeto JSON, mesmo que venha cercado por texto/crases.
+    let s = String(raw).trim().replace(/^```(?:json)?/i, '').replace(/```$/,'').trim();
+    const a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a === -1 || b === -1) throw new Error('json não encontrado');
+    const data = JSON.parse(s.slice(a, b + 1));
+    const nodes = this.normalizeNodes(data && data.nodes);
+    if (!nodes.length) throw new Error('vazio');
+    return nodes;
+  }
+
+  // Edição incremental: a IA recebe a estrutura atual + a instrução do usuário e
+  // devolve a estrutura inteira alterando APENAS o que foi pedido.
+  async aiEditNodes(currentNodes, instruction) {
+    const prompt =
+      'Você é a ARI, especialista em mapeamento de processos (BPMN). Abaixo está a estrutura atual de um processo em JSON e uma instrução de alteração do usuário. ' +
+      'Aplique SOMENTE a alteração pedida e mantenha todo o resto exatamente igual (mesmos nomes, mesma ordem, mesmos responsáveis).\n\n' +
+      'Responda SOMENTE com o JSON completo atualizado, sem markdown, sem crases, sem texto extra. Mesmo formato do original:\n' +
+      '{"nodes":[{"type":"task","name":"...","actor":"..."},{"type":"decision","name":"...?","actor":"...","sim":[{"name":"...","actor":"..."}],"nao":[{"name":"...","actor":"..."}]}]}\n\n' +
+      'Regras: preserve o que não foi mencionado; "actor" é o responsável/raia de cada etapa; não invente etapas além do que a instrução pede; nomes curtos em português.\n\n' +
+      'Estrutura atual:\n' + JSON.stringify({ nodes: currentNodes }) + '\n\nInstrução do usuário:\n"' + instruction + '"';
+    const raw = await this.complete(prompt);
+    if (!raw) throw new Error('sem resposta');
+    let s = String(raw).trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+    const a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a === -1 || b === -1) throw new Error('json não encontrado');
+    const data = JSON.parse(s.slice(a, b + 1));
+    const nodes = this.normalizeNodes(data && data.nodes);
+    if (!nodes.length) throw new Error('vazio');
+    return nodes;
+  }
+
+  setEditText = (el) => { this.editEl = el; };
+  applyEdit = async () => {
+    const instr = (this.editEl && this.editEl.value || '').trim();
+    if (!instr) { this.setState({ err: 'Descreva a alteração que você quer no mapeamento.' }); return; }
+    if (!this.bpmnNodes) return;
+    this.setState({ editing: true, err: '' });
+    try {
+      const updated = await this.aiEditNodes(this.bpmnNodes, instr);
+      this.bpmnNodes = updated;
+      const actColor = this.PALETTE[this.state.actColorIdx || 0];
+      const built = this.buildBpmnFromNodes(updated, actColor);
+      this.setState({ editing: false, result: built.summary, bpmnXml: built.xml, err: '' });
+      if (this.editEl) this.editEl.value = '';
+      this._previewTries = 0;
+      setTimeout(this.renderPreview, 80);
+    } catch (e) {
+      this.setState({ editing: false, err: 'Não consegui aplicar a alteração. Tente reformular o pedido.' });
+    }
+  };
+
+  // Garante o formato: task{name,actor} | decision{name,actor,sim:[{name,actor}],nao:[...]}.
+  normalizeNodes(arr) {
+    const cap = (s) => { s = String(s || '').trim(); return s ? s[0].toUpperCase() + s.slice(1) : s; };
+    const actorOf = (x) => (x && typeof x === 'object' ? (x.actor || x.lane || x.responsavel || x.setor || '') : '');
+    const toList = (v, defActor) => (Array.isArray(v) ? v : (v == null || v === '' ? [] : [v]))
+      .map((x) => ({ name: cap(typeof x === 'string' ? x : (x && x.name) || ''), actor: (actorOf(x) || defActor || '').toString().trim() }))
+      .filter((t) => t.name);
+    const out = [];
+    for (const n of (Array.isArray(arr) ? arr : [])) {
+      if (!n) continue;
+      const actor = (n.actor || n.lane || n.responsavel || n.setor || '').toString().trim();
+      // Rede de segurança: uma "task" cujo nome é uma pergunta vira gateway.
+      const looksQuestion = n.type !== 'decision' && /\?\s*$/.test((n.name || '').trim());
+      if (n.type === 'decision' || n.sim || n.nao || looksQuestion) {
+        let name = cap(n.name || 'Decisão');
+        if (!/\?$/.test(name)) name += '?';
+        out.push({ type: 'decision', name, actor, sim: toList(n.sim, actor), nao: toList(n.nao, actor) });
+      } else if (n.name) {
+        out.push({ type: 'task', name: cap(n.name), actor });
+      }
+    }
+    return out;
+  }
+
+  // ─── Fallback offline (heurística) ─────────────────────────────────────────
+  // Usado só quando a IA não está disponível (ex.: pré-visualização local).
+  parseStepsFromText(text) {
+    const cap = (s) => { s = (s || '').trim(); return s ? s[0].toUpperCase() + s.slice(1) : s; };
+    let segs = String(text).split(/\r?\n/);
+    segs = segs.flatMap((s) => s.split(/(?<=[.;])\s+/)).flatMap((s) => s.split(';'));
+    segs = segs.map((s) => s.replace(/^[\s\-•*]*\d*[.)]?\s*/, '').replace(/\.$/, '').trim()).filter(Boolean);
+    if (!segs.length) throw new Error('vazio');
+    const decRe = /^(se\b|caso\b|se houver|verifica|verificar|checar)/i;
+    const elseRe = /^(senão|se não|caso contrário|do contrário|sen[aã]o)/i;
+    const cleanCond = (raw) => {
+      let c = raw.replace(/^(se houver|se caso|se não houver|se|caso|verifica(?:r)? se|checar se)\s*/i, '').trim();
+      c = c.replace(/[,:].*$/, '').trim();
+      if (!c) c = raw.trim();
+      c = cap(c);
+      if (!/\?$/.test(c)) c += '?';
+      return c;
+    };
+    const nodes = [];
+    for (let i = 0; i < segs.length; i++) {
+      const raw = segs[i];
+      if (decRe.test(raw) && !elseRe.test(raw)) {
+        const m = raw.match(/^((?:se|caso)[^,:]*)[,:]\s*(.+)$/i);
+        const simAction = m && m[2] ? m[2] : '';
+        const name = cleanCond(m ? m[1] : raw);
+        let naoAction = '';
+        if (i + 1 < segs.length && elseRe.test(segs[i + 1])) {
+          naoAction = segs[i + 1].replace(elseRe, '').replace(/^[,:]\s*/, '').trim();
+          i++;
+        }
+        nodes.push({ type: 'decision', name, actor: '', sim: simAction ? [{ name: cap(simAction), actor: '' }] : [], nao: naoAction ? [{ name: cap(naoAction), actor: '' }] : [] });
+      } else {
+        nodes.push({ type: 'task', name: cap(raw) });
+      }
+    }
+    return nodes;
+  }
+
+  // ─── Layout + XML BPMN 2.0 (dispatcher) ────────────────────────────────────
+  // Com 2+ responsáveis distintos, desenha com pool + raias (lanes); caso
+  // contrário usa o layout simples (sem pool). Sempre devolve { xml, summary }.
+  buildBpmnFromNodes(nodes, actColor) {
+    if (!nodes || !nodes.length) throw new Error('vazio');
+    const actors = [], seen = new Set();
+    const add = (a) => { a = (a || '').trim(); if (a && !seen.has(a)) { seen.add(a); actors.push(a); } };
+    for (const n of nodes) {
+      add(n.actor);
+      if (n.type === 'decision') { (n.sim || []).forEach((t) => add(t.actor)); (n.nao || []).forEach((t) => add(t.actor)); }
+    }
+    if (actors.length >= 2) return this.buildLanedBpmn(nodes, actors, actColor);
+    return this.buildSimpleBpmn(nodes, actColor);
+  }
+
+  // Esquema de cores por tipo. Início verde, fim vermelho, gateway amarelo,
+  // atividade na cor escolhida. Devolve um helper que gera os atributos de cor
+  // do BPMNShape (compatível com bpmn.io/bioc e com a cor padrão OMG).
+  colorAttrsFor(actColor) {
+    const act = actColor && actColor.fill ? actColor : { fill: '#dbeafe', stroke: '#1c5cff' };
+    const SCHEME = {
+      startEvent: { fill: '#dcfce7', stroke: '#16a34a' },
+      endEvent: { fill: '#fee2e2', stroke: '#dc2626' },
+      exclusiveGateway: { fill: '#fef9c3', stroke: '#ca8a04' },
+      task: { fill: act.fill, stroke: act.stroke }
+    };
+    return (type) => {
+      const c = SCHEME[type] || SCHEME.task;
+      return ' bioc:stroke="' + c.stroke + '" bioc:fill="' + c.fill + '" color:background-color="' + c.fill + '" color:border-color="' + c.stroke + '"';
+    };
+  }
+
+  // Layout simples, sem pool (usado quando não há responsáveis identificados).
+  buildSimpleBpmn(nodes, actColor) {
+    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    if (!nodes || !nodes.length) throw new Error('vazio');
+    const colorOf = this.colorAttrsFor(actColor);
+
+    const W = { startEvent: 36, endEvent: 36, task: 100, exclusiveGateway: 50 };
+    const H = { startEvent: 36, endEvent: 36, task: 80, exclusiveGateway: 50 };
+    const GAP = 60, CY = 240, BRANCH = 130, X0 = 152;
+    const els = [], flows = [];
+    let id = 0; const nid = (p) => p + '_' + (++id);
+    const place = (type, name, x, cy) => {
+      const w = W[type], h = H[type];
+      const el = { id: nid(type === 'task' ? 'Task' : type === 'exclusiveGateway' ? 'Gateway' : type === 'startEvent' ? 'StartEvent' : 'EndEvent'), type, name: name || '', x, y: Math.round(cy - h / 2), w, h };
+      els.push(el); return el;
+    };
+    const cx = (e) => e.x + e.w / 2, cyOf = (e) => e.y + e.h / 2;
+    const connect = (src, tgt, name, wp) => { flows.push({ id: nid('Flow'), src: src.id, tgt: tgt.id, name: name || '', wp }); };
+    const hWp = (a, b) => [[a.x + a.w, cyOf(a)], [b.x, cyOf(b)]];
+
+    let x = X0;
+    // Roteamento: reta quando mesma altura; senão sobe/desce num corredor livre
+    // logo antes do destino. Sem gateway de junção (apenas o gateway inicial).
+    const routeTo = (s, t) => {
+      const sx = s.x + s.w, sy = cyOf(s), tx = t.x, ty = cyOf(t);
+      if (Math.round(sy) === Math.round(ty)) return [[sx, sy], [tx, ty]];
+      const vx = tx - GAP / 2;
+      return [[sx, sy], [vx, sy], [vx, ty], [tx, ty]];
+    };
+    const start = place('startEvent', 'Início', x, CY); x += W.startEvent + GAP;
+    let prevs = [{ el: start, label: '' }];
+
+    for (const n of nodes) {
+      if (n.type === 'decision') {
+        const gwD = place('exclusiveGateway', n.name || 'Decisão?', x, CY); x += W.exclusiveGateway + GAP;
+        prevs.forEach((p) => connect(p.el, gwD, p.label, routeTo(p.el, gwD)));
+        const xBr = x;
+        const layBranch = (names, laneCY, label, isTop) => {
+          if (!names || !names.length) return [{ el: gwD, label }]; // ramo vazio: gateway leva o rótulo ao próximo nó
+          let bx = xBr, p = null, first = null;
+          names.forEach((nm, i) => {
+            const t = place('task', nm.name, bx, laneCY); bx += W.task + GAP;
+            if (i === 0) first = t; else connect(p, t, '', hWp(p, t));
+            p = t;
+          });
+          connect(gwD, first, label, [[cx(gwD), isTop ? gwD.y : gwD.y + gwD.h], [cx(gwD), cyOf(first)], [first.x, cyOf(first)]]);
+          return [{ el: p, label: '' }];
+        };
+        const simExits = layBranch(n.sim, CY - BRANCH, 'Sim', true);
+        const naoExits = layBranch(n.nao, CY + BRANCH, 'Não', false);
+        prevs = simExits.concat(naoExits);
+        let maxRight = gwD.x + gwD.w;
+        prevs.forEach((e) => { maxRight = Math.max(maxRight, e.el.x + e.el.w); });
+        x = maxRight + GAP;
+      } else {
+        const t = place('task', n.name, x, CY); x += W.task + GAP;
+        prevs.forEach((p) => connect(p.el, t, p.label, routeTo(p.el, t)));
+        prevs = [{ el: t, label: '' }];
+      }
+    }
+    const end = place('endEvent', 'Fim', x, CY);
+    prevs.forEach((p) => connect(p.el, end, p.label, routeTo(p.el, end)));
+
+    const tag = (el) => {
+      if (el.type === 'exclusiveGateway') {
+        const dir = el.name ? ' name="' + esc(el.name) + '" gatewayDirection="Diverging"' : ' gatewayDirection="Converging"';
+        return '    <exclusiveGateway id="' + el.id + '"' + dir + '/>';
+      }
+      return '    <' + el.type + ' id="' + el.id + '" name="' + esc(el.name) + '"/>';
+    };
+    const flowTag = (f) => '    <sequenceFlow id="' + f.id + '"' + (f.name ? ' name="' + esc(f.name) + '"' : '') + ' sourceRef="' + f.src + '" targetRef="' + f.tgt + '"/>';
+    const shapeTag = (el) => '      <bpmndi:BPMNShape id="' + el.id + '_di" bpmnElement="' + el.id + '"' + (el.type === 'exclusiveGateway' ? ' isMarkerVisible="true"' : '') + colorOf(el.type) + '>\n        <omgdc:Bounds x="' + el.x + '" y="' + el.y + '" width="' + el.w + '" height="' + el.h + '"/>\n      </bpmndi:BPMNShape>';
+    const edgeTag = (f) => '      <bpmndi:BPMNEdge id="' + f.id + '_di" bpmnElement="' + f.id + '">\n' + f.wp.map((p) => '        <omgdi:waypoint x="' + Math.round(p[0]) + '" y="' + Math.round(p[1]) + '"/>').join('\n') + '\n      </bpmndi:BPMNEdge>';
+
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" targetNamespace="http://bpmn.io/schema/bpmn" id="Definitions_ARI">\n' +
+      '  <process id="Process_1" isExecutable="false">\n' +
+      els.map(tag).join('\n') + '\n' +
+      flows.map(flowTag).join('\n') + '\n' +
+      '  </process>\n' +
+      '  <bpmndi:BPMNDiagram id="BPMNDiagram_1">\n' +
+      '    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">\n' +
+      els.map(shapeTag).join('\n') + '\n' +
+      flows.map(edgeTag).join('\n') + '\n' +
+      '    </bpmndi:BPMNPlane>\n' +
+      '  </bpmndi:BPMNDiagram>\n' +
+      '</definitions>\n';
+
+    const taskCount = els.filter((e) => e.type === 'task').length;
+    const gwCount = els.filter((e) => e.type === 'exclusiveGateway' && e.name).length;
+    let summary = 'MAPEAMENTO BPMN GERADO\n\nInício\n';
+    for (const n of nodes) {
+      if (n.type === 'decision') {
+        summary += '  <> ' + n.name + '\n';
+        summary += '        Sim: ' + ((n.sim && n.sim.length) ? n.sim.map((t) => t.name).join(' -> ') : '(segue)') + '\n';
+        summary += '        Não: ' + ((n.nao && n.nao.length) ? n.nao.map((t) => t.name).join(' -> ') : '(segue)') + '\n';
+      } else {
+        summary += '  -> ' + n.name + '\n';
+      }
+    }
+    summary += '  -> Fim\n\n';
+    summary += taskCount + ' atividade(s), ' + gwCount + ' decisão(ões).\n';
+    summary += 'Clique em "Baixar arquivo .bpmn" — abre no bpmn.io, Camunda e Bizagi.';
+    return { xml, summary };
+  }
+
+  // Layout com pool + raias (lanes), uma raia por responsável.
+  // x avança pela ordem da sequência; y é o centro da raia do responsável.
+  // Ramos do gateway ocupam colunas próprias (nunca se sobrepõem).
+  buildLanedBpmn(nodes, actors, actColor) {
+    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const colorOf = this.colorAttrsFor(actColor);
+    const POOL_X = 160, POOL_Y = 80, LANE_H = 150, LANE_LABEL_W = 30, STEP_W = 170, MARGIN_RIGHT = 70;
+    const CONTENT_CX0 = POOL_X + LANE_LABEL_W + 60;
+    const W = { startEvent: 36, endEvent: 36, task: 100, exclusiveGateway: 50 };
+    const H = { startEvent: 36, endEvent: 36, task: 80, exclusiveGateway: 50 };
+
+    const laneIndex = {};
+    actors.forEach((a, i) => { laneIndex[a] = i; });
+    const laneOf = (a) => { a = (a || '').trim(); return (a && laneIndex[a] != null) ? laneIndex[a] : 0; };
+    const cx = (step) => CONTENT_CX0 + step * STEP_W;
+    const cyOfLane = (li) => POOL_Y + li * LANE_H + LANE_H / 2;
+
+    const els = [], flows = [];
+    const laneEls = actors.map(() => []);
+    let id = 0; const nid = (p) => p + '_' + (++id);
+    let maxStep = 0;
+    // Ocupação por célula (coluna:raia) — garante que nada se sobreponha e
+    // mantém os ramos do gateway em colunas paralelas quando possível.
+    const cells = new Set();
+    const reserve = (step, li) => { let s = Math.max(0, step); while (cells.has(s + ':' + li)) s++; cells.add(s + ':' + li); return s; };
+    const place = (type, name, prefStep, li) => {
+      const s = reserve(prefStep, li);
+      const w = W[type], h = H[type];
+      const ccx = cx(s), ccy = cyOfLane(li);
+      const el = { id: nid(type === 'task' ? 'Task' : type === 'exclusiveGateway' ? 'Gateway' : type === 'startEvent' ? 'StartEvent' : 'EndEvent'), type, name: name || '', x: Math.round(ccx - w / 2), y: Math.round(ccy - h / 2), w, h, li, step: s };
+      els.push(el); laneEls[li].push(el.id); if (s > maxStep) maxStep = s;
+      return el;
+    };
+    const cyc = (e) => e.y + e.h / 2;
+    // As setas são roteadas DEPOIS de tudo posicionado (com a ocupação completa),
+    // para nunca passar por cima de uma caixa.
+    const pending = [];
+    const connect = (src, tgt, name) => { pending.push({ src, tgt, name: name || '' }); };
+
+    const start = place('startEvent', 'Início', 0, laneOf(nodes[0] && nodes[0].actor));
+    // prevs = saídas pendentes que se ligam ao próximo nó. Cada uma carrega um
+    // rótulo opcional (Sim/Não para ramos vazios). Sem gateway de junção: os
+    // ramos voltam a se encontrar direto no próximo passo (merge implícito).
+    let prevs = [{ el: start, label: '' }];
+    const nextStep = () => Math.max.apply(null, prevs.map((p) => p.el.step)) + 1;
+
+    for (const n of nodes) {
+      if (n.type === 'decision') {
+        const gwD = place('exclusiveGateway', n.name || 'Decisão?', nextStep(), laneOf(n.actor));
+        prevs.forEach((p) => connect(p.el, gwD, p.label));
+        // Cada ramo é encadeado; só o gateway INICIAL é criado (sem o de junção).
+        const layBranch = (tasks, label) => {
+          if (!tasks || !tasks.length) return [{ el: gwD, label }]; // ramo vazio: gateway é a saída, leva o rótulo ao próximo nó
+          let p = null;
+          (tasks).forEach((t, i) => {
+            const el = place('task', t.name, gwD.step + 1 + i, laneOf(t.actor));
+            if (i === 0) connect(gwD, el, label); else connect(p, el, '');
+            p = el;
+          });
+          return [{ el: p, label: '' }];
+        };
+        prevs = layBranch(n.sim, 'Sim').concat(layBranch(n.nao, 'Não'));
+      } else {
+        const t = place('task', n.name, nextStep(), laneOf(n.actor));
+        prevs.forEach((p) => connect(p.el, t, p.label));
+        prevs = [{ el: t, label: '' }];
+      }
+    }
+    const end = place('endEvent', 'Fim', nextStep(), (prevs[0] && prevs[0].el.li) || 0);
+    prevs.forEach((p) => connect(p.el, end, p.label));
+
+    // ── Roteamento ortogonal sem sobreposição ──
+    // Sai pela direita, sobe/desce por um corredor livre entre colunas (gapX) e
+    // entra pela esquerda do destino. Quando a faixa na raia destino está
+    // ocupada, desvia por um canal no topo da raia (sem caixas).
+    const laneTop = (li) => POOL_Y + li * LANE_H;
+    const occupied = (col, li) => cells.has(col + ':' + li);
+    const spanClear = (cA, cB, li) => { const lo = Math.min(cA, cB), hi = Math.max(cA, cB); for (let c = lo + 1; c < hi; c++) if (occupied(c, li)) return false; return true; };
+    for (const f of pending) {
+      const src = f.src, tgt = f.tgt;
+      const sX = src.x + src.w, sY = cyc(src);          // borda direita da origem
+      const tX = tgt.x, tY = cyc(tgt);                  // borda esquerda do destino
+      const gapX = cx(src.step) + STEP_W / 2;           // corredor vertical livre após a origem
+      let wp;
+      if (src.li === tgt.li && spanClear(src.step, tgt.step, src.li)) {
+        wp = [[sX, sY], [tX, tY]];                       // reta na mesma raia
+      } else if (spanClear(src.step, tgt.step, tgt.li)) {
+        wp = [[sX, sY], [gapX, sY], [gapX, tY], [tX, tY]]; // cotovelo pelo corredor
+      } else {
+        const ch = laneTop(tgt.li) + 16;                 // canal no topo da raia destino
+        wp = [[sX, sY], [gapX, sY], [gapX, ch], [tX, ch], [tX, tY]];
+      }
+      flows.push({ id: nid('Flow'), src: src.id, tgt: tgt.id, name: f.name, wp });
+    }
+
+    const poolWidth = Math.round((cx(maxStep) + 50) - POOL_X + MARGIN_RIGHT);
+    const poolHeight = actors.length * LANE_H;
+    const laneX = POOL_X + LANE_LABEL_W;
+    const laneW = poolWidth - LANE_LABEL_W;
+    const COLLAB = 'Collaboration_1', PROCESS = 'Process_1', PART = 'Participant_1';
+    const laneId = (i) => 'Lane_' + (i + 1);
+
+    const tag = (el) => {
+      if (el.type === 'exclusiveGateway') {
+        const dir = el.name ? ' name="' + esc(el.name) + '" gatewayDirection="Diverging"' : ' gatewayDirection="Converging"';
+        return '      <exclusiveGateway id="' + el.id + '"' + dir + '/>';
+      }
+      return '      <' + el.type + ' id="' + el.id + '" name="' + esc(el.name) + '"/>';
+    };
+    const flowTag = (f) => '      <sequenceFlow id="' + f.id + '"' + (f.name ? ' name="' + esc(f.name) + '"' : '') + ' sourceRef="' + f.src + '" targetRef="' + f.tgt + '"/>';
+    const laneTag = (a, i) => '        <lane id="' + laneId(i) + '" name="' + esc(a) + '">\n' +
+      laneEls[i].map((eid) => '          <flowNodeRef>' + eid + '</flowNodeRef>').join('\n') +
+      (laneEls[i].length ? '\n' : '') + '        </lane>';
+    const shapeTag = (el) => '      <bpmndi:BPMNShape id="' + el.id + '_di" bpmnElement="' + el.id + '"' + (el.type === 'exclusiveGateway' ? ' isMarkerVisible="true"' : '') + colorOf(el.type) + '>\n        <omgdc:Bounds x="' + el.x + '" y="' + el.y + '" width="' + el.w + '" height="' + el.h + '"/>\n      </bpmndi:BPMNShape>';
+    const laneShape = (a, i) => '      <bpmndi:BPMNShape id="' + laneId(i) + '_di" bpmnElement="' + laneId(i) + '" isHorizontal="true">\n        <omgdc:Bounds x="' + laneX + '" y="' + (POOL_Y + i * LANE_H) + '" width="' + laneW + '" height="' + LANE_H + '"/>\n      </bpmndi:BPMNShape>';
+    const edgeTag = (f) => '      <bpmndi:BPMNEdge id="' + f.id + '_di" bpmnElement="' + f.id + '">\n' + f.wp.map((p) => '        <omgdi:waypoint x="' + Math.round(p[0]) + '" y="' + Math.round(p[1]) + '"/>').join('\n') + '\n      </bpmndi:BPMNEdge>';
+
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" targetNamespace="http://bpmn.io/schema/bpmn" id="Definitions_ARI">\n' +
+      '  <collaboration id="' + COLLAB + '">\n' +
+      '    <participant id="' + PART + '" name="Processo" processRef="' + PROCESS + '"/>\n' +
+      '  </collaboration>\n' +
+      '  <process id="' + PROCESS + '" isExecutable="false">\n' +
+      '    <laneSet id="LaneSet_1">\n' +
+      actors.map(laneTag).join('\n') + '\n' +
+      '    </laneSet>\n' +
+      els.map(tag).join('\n') + '\n' +
+      flows.map(flowTag).join('\n') + '\n' +
+      '  </process>\n' +
+      '  <bpmndi:BPMNDiagram id="BPMNDiagram_1">\n' +
+      '    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="' + COLLAB + '">\n' +
+      '      <bpmndi:BPMNShape id="' + PART + '_di" bpmnElement="' + PART + '" isHorizontal="true">\n        <omgdc:Bounds x="' + POOL_X + '" y="' + POOL_Y + '" width="' + poolWidth + '" height="' + poolHeight + '"/>\n      </bpmndi:BPMNShape>\n' +
+      actors.map(laneShape).join('\n') + '\n' +
+      els.map(shapeTag).join('\n') + '\n' +
+      flows.map(edgeTag).join('\n') + '\n' +
+      '    </bpmndi:BPMNPlane>\n' +
+      '  </bpmndi:BPMNDiagram>\n' +
+      '</definitions>\n';
+
+    const taskCount = els.filter((e) => e.type === 'task').length;
+    const gwCount = els.filter((e) => e.type === 'exclusiveGateway' && e.name).length;
+    let summary = 'MAPEAMENTO BPMN GERADO (com raias)\n\nRaias: ' + actors.join(', ') + '\n\nInício\n';
+    for (const n of nodes) {
+      if (n.type === 'decision') {
+        summary += '  <> [' + (n.actor || '?') + '] ' + n.name + '\n';
+        summary += '        Sim: ' + ((n.sim && n.sim.length) ? n.sim.map((t) => t.name + ' [' + (t.actor || '?') + ']').join(' -> ') : '(segue)') + '\n';
+        summary += '        Não: ' + ((n.nao && n.nao.length) ? n.nao.map((t) => t.name + ' [' + (t.actor || '?') + ']').join(' -> ') : '(segue)') + '\n';
+      } else {
+        summary += '  -> [' + (n.actor || '?') + '] ' + n.name + '\n';
+      }
+    }
+    summary += '  -> Fim\n\n';
+    summary += actors.length + ' raia(s), ' + taskCount + ' atividade(s), ' + gwCount + ' decisão(ões).\n';
+    summary += 'Clique em "Baixar arquivo .bpmn" — abre no bpmn.io, Camunda e Bizagi.';
+    return { xml, summary };
+  }
+
+  downloadBpmn = () => {
+    const xml = this.state.bpmnXml;
+    if (!xml) return;
+    const blob = new Blob([xml], { type: 'application/bpmn+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mapeamento-ari.bpmn';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  generate = async () => {
+    const screen = this.state.screen;
+    const text = (this.textEl && this.textEl.value || '').trim();
+    if (!text) { this.setState({ err: 'Descreva o que você precisa para a ARI gerar.' }); return; }
+    this.setState({ loading: true, result: '', err: '', bpmnXml: '', popReady: false, popConfirm: false });
+
+    // Funcionalidade 01: a IA lê o texto e extrai a estrutura do processo; o JS
+    // monta um arquivo .bpmn 2.0 válido e baixável a partir dessa estrutura.
+    if (screen === 'bpmn') {
+      try {
+        let nodes = null;
+        try { nodes = await this.aiExtractNodes(text); }
+        catch (_) { nodes = null; } // se a IA falhar, cai no fallback offline
+        if (!nodes || !nodes.length) nodes = this.parseStepsFromText(text);
+        this.bpmnNodes = nodes; // guarda a estrutura para edições posteriores
+        const actColor = this.PALETTE[this.state.actColorIdx || 0];
+        const built = this.buildBpmnFromNodes(nodes, actColor);
+        this.setState({ loading: false, result: built.summary, bpmnXml: built.xml, err: '' });
+        this._previewTries = 0;
+        setTimeout(this.renderPreview, 80);
+      } catch (e) {
+        this.setState({ loading: false, err: 'Não consegui montar o BPMN. Tente descrever o processo com um pouco mais de detalhe.' });
+      }
+      return;
+    }
+
+    // Funcionalidade 02: POP no modelo da consultoria. A IA valida e estrutura
+    // as informações (pergunta se algo essencial faltar); o servidor monta o
+    // .pptx e o site mostra a PRÉ-VISUALIZAÇÃO + botão de download explícito
+    // (download automático pós-fetch é bloqueado por navegadores).
+    if (screen === 'pop') {
+      let parsed;
+      try { parsed = await this.aiPreparePop(text); }
+      catch (_) { parsed = null; }
+      if (!parsed) { this.setState({ loading: false, err: 'Não consegui interpretar as informações. Detalhe o processo, o setor e as etapas com suas descrições.' }); return; }
+      if (parsed.status === 'questions') {
+        const qs = (parsed.questions || []).map((q, i) => (i + 1) + '. ' + q).join('\n');
+        this.setState({ loading: false, result: 'Antes de gerar o POP, a ARI precisa esclarecer:\n\n' + qs + '\n\nComplete essas informações no campo ao lado e clique em gerar novamente.' });
+        return;
+      }
+      // etapas estruturadas: o usuário escolhe quais terão print antes de gerar
+      this.popData = parsed.data;
+      this.setState({ loading: false, popConfirm: true, result: 'A ARI estruturou o POP. Nem toda etapa precisa de print de comprovação — desmarque abaixo as que não precisam e clique em "Gerar POP".' });
+      this._popStepsTries = 0;
+      setTimeout(this.renderPopStepPicker, 80);
+      return;
+    }
+
+    // Funcionalidade 03: manual em texto (mantém o fluxo de texto).
+    const plain = ' Responda em português, em texto simples e bem organizado: sem markdown, sem usar # ou * ou ** ou emojis. Use apenas títulos em MAIÚSCULAS, números (1, 2, 3) e hífens (-) para listas, e quebras de linha para separar as seções.';
+    const manualPrompt = 'Você é a ARI, assistente de processos. Gere um manual em modelo padrão contendo: título e objetivo, sumário e seções numeradas com instruções passo a passo. Baseie-se na descrição abaixo.' + plain + '\n\nDescrição do manual:\n"' + text + '"';
+    try {
+      const out = (await this.complete(manualPrompt) || '').trim();
+      this.setState({ loading: false, result: out || this.mock('manual', text) });
+    } catch (e) {
+      this.setState({ loading: false, result: this.mock('manual', text) });
+    }
+  };
+
+  // Lê um arquivo como dataURL (base64) para enviar a imagem do fluxograma.
+  readFileDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  // ─── Seleção de etapas com print (antes de gerar) ──────────────────────────
+  setPopSteps = (el) => { this.popStepsEl = el; };
+
+  renderPopStepPicker = () => {
+    if (!this.popData) return;
+    if (!this.popStepsEl) {
+      this._popStepsTries = (this._popStepsTries || 0) + 1;
+      if (this._popStepsTries < 40) setTimeout(this.renderPopStepPicker, 100);
+      return;
+    }
+    this._popStepsTries = 0;
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    this.popStepsEl.innerHTML = (this.popData.steps || []).map((s, i) =>
+      '<label style="display:flex;gap:10px;align-items:flex-start;padding:8px 2px;border-bottom:1px solid #eff2f5;cursor:pointer;">' +
+        '<input type="checkbox" checked data-pop-step="' + i + '" style="margin-top:2px;accent-color:#1c5cff;width:16px;height:16px;flex:none;cursor:pointer;">' +
+        '<span style="font-size:14px;line-height:1.4;color:#0a1f44;"><b>' + (i + 1) + '.</b> ' + esc(s.title) + '</span>' +
+      '</label>').join('');
+  };
+
+  confirmPop = async () => {
+    if (!this.popData) return;
+    if (this.popStepsEl) {
+      this.popStepsEl.querySelectorAll('input[data-pop-step]').forEach((b) => {
+        const i = +b.getAttribute('data-pop-step');
+        if (this.popData.steps[i]) this.popData.steps[i].hasPrint = b.checked;
+      });
+    }
+    this.setState({ loading: true, popConfirm: false, err: '', result: '' });
+    try {
+      let imageBase64 = null;
+      const imgFile = (this.fileEl && this.fileEl.files[0]) || this.droppedFile;
+      if (imgFile) {
+        try { imageBase64 = await this.readFileDataURL(imgFile); } catch (_) { imageBase64 = null; }
+      }
+      const res = await fetch('/api/pop-pptx', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: this.popData, imageBase64 })
+      });
+      if (!res.ok) throw new Error('pop ' + res.status);
+      this.popBlob = await res.blob();
+      this.popImage = imageBase64;
+      this.popFileName = 'POP-' + (this.popData.processName || 'processo').replace(/[^\wÀ-ſ]+/g, '-') + '.pptx';
+      const semImg = imageBase64 ? '' : ' Obs.: sem imagem do fluxograma — o espaço ficou como placeholder; anexe a imagem e gere de novo para incluí-la.';
+      this.setState({ loading: false, popReady: true, result: 'POP pronto! Confira a pré-visualização abaixo e clique em "Baixar POP (.pptx)". No Canva: Criar um design > Importar arquivo > selecione o .pptx — cada texto vira uma caixa editável.' + semImg });
+      this._popTries = 0;
+      setTimeout(this.renderPopPreview, 80);
+    } catch (e) {
+      this.setState({ loading: false, err: 'Não consegui gerar o POP. Tente novamente.' });
+    }
+  };
+
+  // ─── Preview + download do POP ──────────────────────────────────────────────
+  setPopPreview = (el) => { this.popPreviewEl = el; };
+
+  downloadPop = () => {
+    if (!this.popBlob) return;
+    const url = URL.createObjectURL(this.popBlob);
+    const a = document.createElement('a');
+    a.href = url; a.download = this.popFileName || 'POP.pptx';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  };
+
+  renderPopPreview = () => {
+    if (!this.popData) return;
+    if (!this.popPreviewEl) {
+      this._popTries = (this._popTries || 0) + 1;
+      if (this._popTries < 40) setTimeout(this.renderPopPreview, 100);
+      return;
+    }
+    this._popTries = 0;
+    this.popPreviewEl.innerHTML = this.buildPopPreviewHTML(this.popData, this.popImage);
+  };
+
+  // Monta o HTML da pré-visualização replicando o visual do modelo do POP
+  // (mesmas cores/hierarquia do .pptx: navy #0A1F2E, teal #2BA8BC).
+  buildPopPreviewHTML(d, img) {
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const today = new Date().toLocaleDateString('pt-BR');
+    const ab = (d.sector || 'XX').normalize('NFD').replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase() || 'XX';
+    const code = d.code || ('POP-' + ab + '-001');
+    const emission = d.emission || today;
+    const steps = Array.isArray(d.steps) ? d.steps : [];
+
+    const page = (inner) => '<div style="background:#fff;border:1px solid #E4E9ED;border-radius:10px;box-shadow:0 8px 22px -14px rgba(10,31,46,.3);padding:26px 28px;margin-bottom:14px;">' + inner + '</div>';
+    const secHead = (n, t) => '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#0A1F2E;color:#fff;font:700 12px Arial;">' + n + '</span><span style="font:700 16px Arial;color:#0A1F2E;">' + t + '</span></div><div style="height:1px;background:#E4E9ED;margin-bottom:2px;"></div><div style="width:44px;height:3px;background:#2BA8BC;margin-bottom:14px;"></div>';
+    const lbl = (t) => '<div style="font:700 8.5px Arial;letter-spacing:.8px;color:#8A98A5;margin-bottom:3px;">' + t + '</div>';
+    const val = (t) => '<div style="font:700 12px Arial;color:#0A1F2E;">' + esc(t) + '</div>';
+    const cell = (l, v) => '<div style="border:1px solid #E4E9ED;padding:9px 12px;background:#fff;">' + lbl(l) + val(v) + '</div>';
+
+    // capa
+    let html = page(
+      '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E4E9ED;padding-bottom:10px;margin-bottom:34px;">' +
+        '<span style="font:700 11px Arial;color:#0A1F2E;">' + esc(d.consultancy || '[ Nome da sua consultoria ]') + '</span>' +
+        '<span style="font:700 8.5px Arial;letter-spacing:1.4px;color:#8A98A5;">DOCUMENTO INTERNO</span>' +
+      '</div>' +
+      '<div style="font:700 10px Arial;letter-spacing:2px;color:#2BA8BC;margin-bottom:8px;">PROCEDIMENTO OPERACIONAL PADRÃO</div>' +
+      '<div style="font:800 64px Arial;color:#0A1F2E;line-height:1;">POP</div>' +
+      '<div style="width:56px;height:5px;background:#2BA8BC;margin:14px 0 18px;"></div>' +
+      '<div style="display:inline-block;background:#DCF1F4;border-radius:9px;padding:9px 16px;font:700 17px Arial;color:#2BA8BC;margin-bottom:12px;">' + esc(d.processName) + '</div>' +
+      '<div style="font:italic 12px Georgia;color:#8A98A5;margin-bottom:34px;">' + esc(d.oneLineDesc) + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);">' + cell('CÓDIGO', code) + cell('VERSÃO', d.version || '001') + cell('EMISSÃO', emission) + cell('ÁREA', d.sector) + '</div>'
+    );
+    // identificação
+    html += page(
+      secHead('i', 'Identificação do documento') +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;">' +
+        cell('TÍTULO / ATIVIDADE', d.processName) + cell('CÓDIGO', code) +
+        cell('ÁREA / SETOR', d.sector) + cell('RESPONSÁVEL(IS)', d.responsible || ('Equipe de ' + (d.sector || ''))) +
+        cell('DATA DE EMISSÃO', emission) + cell('ÚLTIMA REVISÃO', d.lastRevision || emission) +
+        cell('VERSÃO', d.version || '001') + cell('MATERIAIS NECESSÁRIOS', d.materials || '—') +
+      '</div>'
+    );
+    // páginas fixas (nota)
+    html += '<div style="display:flex;gap:8px;align-items:center;background:#F4F6F8;border:1px dashed #cdd6dd;border-radius:9px;padding:10px 14px;margin-bottom:14px;font:11px Arial;color:#8A98A5;">O arquivo inclui também as páginas fixas do modelo: <b style="color:#2A3540;">Introdução + Mapeamento de processos</b> (1 página) · <b style="color:#2A3540;">Legenda BPMN</b></div>';
+    // processo & fluxograma
+    const imgBlock = img
+      ? '<img src="' + img + '" style="width:100%;display:block;border-radius:6px;background:#fff;" alt="fluxograma">' +
+        '<div style="font:italic 10px Georgia;color:#8A98A5;margin-top:6px;text-align:center;">Fluxogramas largos ganham também uma página ampliada (girada 90°) no arquivo, para leitura melhor.</div>'
+      : '<div style="display:flex;align-items:center;justify-content:center;height:150px;font:italic 11px Georgia;color:#8A98A5;">[ Cole aqui o fluxograma do processo ]</div>';
+    html += page(
+      secHead('4', 'O processo &amp; fluxograma') +
+      '<div style="font:700 12.5px Arial;color:#0A1F2E;margin-bottom:8px;">Descrição do processo</div>' +
+      '<div style="background:#F4F6F8;border-radius:8px;padding:13px 15px;font:12px Georgia;color:#2A3540;line-height:1.6;white-space:pre-wrap;margin-bottom:16px;">' + esc(d.processText) + '</div>' +
+      '<div style="font:700 12.5px Arial;color:#0A1F2E;margin-bottom:8px;">Fluxograma</div>' +
+      '<div style="border:1.5px dashed #cdd6dd;border-radius:9px;padding:10px;">' + imgBlock + '</div>'
+    );
+    // descrição das etapas
+    html += page(
+      secHead('5', 'Descrição das etapas') +
+      steps.map((s, i) =>
+        '<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #EFF2F5;">' +
+          '<span style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#DCF1F4;color:#2BA8BC;font:700 12px Arial;">' + (i + 1) + '</span>' +
+          '<span style="font:12.5px Georgia;color:#2A3540;">' + esc(s.title) + '</span>' +
+        '</div>').join('')
+    );
+    // POP detalhado — tópico 6 no formato de tabela do modelo (POP-RH-003)
+    const TB = '#3A4550'; // linha da tabela (escura, como o modelo impresso)
+    const trow = (cells, first) => '<div style="display:flex;' + (first ? '' : 'border-top:1px solid ' + TB + ';') + '">' + cells + '</div>';
+    const tcell = (content, o) => { o = o || {}; return '<div style="' + (o.first ? '' : 'border-left:1px solid ' + TB + ';') + 'flex:' + (o.flex || '1 1 0') + ';min-width:0;padding:' + (o.pad || '7px 10px') + ';' + (o.style || '') + '">' + content + '</div>'; };
+    const lv = (l, v) => '<span style="font:700 10.5px Arial;color:#0A1F2E;">' + l + ' </span><span style="font:10.5px Arial;color:#2A3540;word-break:break-word;">' + esc(v) + '</span>';
+    const metaC = (l, v) => '<div style="font:7.5px Arial;color:#2A3540;">' + l + '</div><div style="font:700 9.5px Arial;color:#0A1F2E;margin-top:2px;word-break:break-word;">' + esc(v) + '</div>';
+    const bar = (t) => trow(tcell('<div style="font:700 9.5px Arial;color:#fff;letter-spacing:1px;text-align:center;">' + t + '</div>', { first: true, style: 'background:#0A1F2E;' }));
+    const logoMark = '<div style="display:inline-flex;align-items:flex-end;gap:2px;height:26px;">' +
+      '<span style="width:5px;height:16px;background:#2BA8BC;border-radius:2px;"></span>' +
+      '<span style="width:5px;height:24px;background:#0A1F2E;border-radius:2px;"></span>' +
+      '<span style="width:5px;height:13px;background:#2BA8BC;border-radius:2px;"></span></div>';
+    const obs = (d.processText && d.processText.trim()) ? d.processText : d.oneLineDesc;
+    const centerCell = 'display:flex;align-items:center;justify-content:center;';
+    const procRows = steps.map((s, i) => {
+      const hasPrint = s.hasPrint !== false;
+      return trow(tcell(
+        '<div style="font:700 11px Arial;color:#0A1F2E;margin-bottom:6px;">' + (i + 1) + '. ' + esc(s.title) + '</div>' +
+        '<div style="display:flex;gap:8px;font:10.5px Georgia;color:#2A3540;line-height:1.5;' + (hasPrint ? 'margin-bottom:10px;' : '') + '"><span style="color:#2BA8BC;flex:none;">•</span><span style="word-break:break-word;">' + esc(s.description) + '</span></div>' +
+        (hasPrint ? '<div style="border:1.5px dashed #cdd6dd;border-radius:6px;min-height:88px;display:flex;align-items:center;justify-content:center;font:italic 10px Georgia;color:#8A98A5;">[ Cole o print da tela ]</div>' : ''),
+        { first: true }));
+    }).join('');
+    html += page(
+      secHead('6', 'POP — procedimento detalhado') +
+      '<div style="border:1px solid ' + TB + ';font-family:Arial;color:#0A1F2E;">' +
+        trow(
+          tcell(logoMark, { first: true, flex: '0 0 92px', style: centerCell }) +
+          tcell('<div style="font:700 12px Arial;text-align:center;">PROCEDIMENTO OPERACIONAL PADRÃO - POP</div>', { flex: '1 1 0', style: centerCell }) +
+          tcell('<div style="font:8.5px Arial;color:#2A3540;text-align:center;">Página 1 de 1</div>', { flex: '0 0 78px', style: centerCell }),
+          true) +
+        trow(
+          tcell(metaC('Data de emissão:', emission), { first: true }) +
+          tcell(metaC('Data da Revisão:', d.lastRevision || emission)) +
+          tcell(metaC('Área:', d.sector)) +
+          tcell(metaC('Versão nº', d.version || '001'))) +
+        trow(
+          tcell(lv('Código:', code), { first: true, flex: '0 0 40%' }) +
+          tcell(lv('Atividade:', String(d.processName || '').toUpperCase()))) +
+        trow(tcell(lv('Responsável:', d.responsible || ('Equipe de ' + (d.sector || ''))), { first: true })) +
+        trow(tcell(lv('Materiais necessários:', d.materials || '—'), { first: true })) +
+        bar('OBSERVAÇÕES') +
+        trow(tcell('<div style="font:10px Georgia;color:#2A3540;line-height:1.55;white-space:pre-wrap;">' + esc(obs) + '</div>', { first: true })) +
+        bar('PROCEDIMENTO') +
+        procRows +
+        trow(tcell(lv('Referência complementar:', '') + '<span style="font:italic 9.5px Georgia;color:#8A98A5;">[ preencha se houver ]</span>', { first: true })) +
+        trow(
+          tcell(lv('Elaborado por:', 'Produtiva Junior'), { first: true, flex: '0 0 60%' }) +
+          tcell(lv('Revisão:', 'Trimestral'))) +
+      '</div>'
+    );
+    // página final — logo + crédito
+    html += page(
+      '<div style="text-align:center;padding:44px 0 36px;">' +
+        '<img src="/logo%20empresa.png" style="width:92px;height:auto;display:block;margin:0 auto 18px;" alt="logo" onerror="this.style.display=\'none\'">' +
+        '<div style="font:italic 12px Georgia;color:#8A98A5;margin-bottom:6px;">Feito por</div>' +
+        '<div style="font:800 18px Arial;color:#0A1F2E;letter-spacing:1.5px;">PRODUTIVA JUNIOR</div>' +
+        '<div style="width:44px;height:3px;background:#2BA8BC;margin:14px auto 12px;"></div>' +
+        '<div style="font:10px Arial;color:#8A98A5;">' + code + ' · v' + (d.version || '001') + '</div>' +
+      '</div>'
+    );
+    return html;
+  }
+
+  // A IA valida e estrutura os dados do POP. Retorna {status:'ok',data} ou
+  // {status:'questions',questions:[...]} quando algo está mal detalhado.
+  async aiPreparePop(text) {
+    const prompt =
+      'Você é a ARI, consultora sênior de processos. O usuário quer gerar um POP (Procedimento Operacional Padrão) no modelo da consultoria a partir das informações abaixo.\n\n' +
+      'EXTRAIA E REDIJA (em português profissional):\n' +
+      '- "processName": nome do processo, curto e formal (ex.: "Recebimento de mercadorias").\n' +
+      '- "sector": setor/área responsável.\n' +
+      '- "oneLineDesc": UMA frase dizendo o que este procedimento padroniza.\n' +
+      '- "processText": 2 parágrafos — 1º: objetivo do processo e o gatilho que o inicia; 2º: visão geral das etapas em ordem e como o processo é concluído.\n' +
+      '- "responsible": cargo/equipe responsável (se não informado, infira: "Equipe de [setor]").\n' +
+      '- "materials": sistemas/materiais usados, separados por vírgula (infira dos detalhes: ERP, planilha, e-mail, chat...).\n' +
+      '- "steps": TODAS as etapas na ordem de execução. Cada uma com: "title" curto começando com verbo no infinitivo (ex.: "Conferir os itens recebidos") e "description" EXECUTÁVEL com 2 a 4 frases — o que fazer, onde/em qual sistema, e o critério de conclusão. Enriqueça a redação profissionalmente, mas NÃO invente etapas, sistemas ou regras que o usuário não mencionou.\n\n' +
+      'SEJA ASSERTIVA: se der para identificar o processo, o setor e as etapas, GERE (status "ok") — infira o resto com confiança a partir do contexto. Use "questions" APENAS se faltar algo essencial: nome do processo indecifrável, setor ausente, nenhuma etapa reconhecível, ou etapa incompreensível a ponto de impedir a redação. Máximo de 3 perguntas, específicas e objetivas. NUNCA pergunte sobre responsável, materiais, datas, código ou versão — esses são inferidos ou preenchidos com padrão.\n\n' +
+      'Responda SOMENTE com um objeto JSON válido (sem markdown, sem crases, sem texto extra):\n' +
+      'Faltando essencial: {"status":"questions","questions":["pergunta 1","pergunta 2"]}\n' +
+      'Completo: {"status":"ok","data":{"processName":"...","sector":"...","oneLineDesc":"...","processText":"...","responsible":"...","materials":"...","steps":[{"title":"...","description":"..."}]}}\n\n' +
+      'Informações fornecidas pelo usuário:\n"' + text + '"';
+    const raw = await this.complete(prompt);
+    if (!raw) throw new Error('sem resposta');
+    let s = String(raw).trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+    const a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a === -1 || b === -1) throw new Error('json não encontrado');
+    const data = JSON.parse(s.slice(a, b + 1));
+    if (data.status === 'questions' && Array.isArray(data.questions) && data.questions.length) return data;
+    if (data.status === 'ok' && data.data && data.data.processName) {
+      // saneamento mínimo
+      const d = data.data;
+      d.steps = (Array.isArray(d.steps) ? d.steps : []).map((x) => ({ title: (x && x.title || '').toString(), description: (x && x.description || '').toString() })).filter((x) => x.title);
+      if (!d.steps.length) return { status: 'questions', questions: ['Liste as etapas do processo, cada uma com uma breve descrição do que deve ser feito.'] };
+      return data;
+    }
+    throw new Error('resposta inesperada');
+  }
+
+  findScroller() {
+    let n = this.rootEl ? this.rootEl.parentElement : null;
+    while (n && n !== document.documentElement) {
+      const cs = getComputedStyle(n);
+      if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && n.scrollHeight > n.clientHeight + 4) return n;
+      n = n.parentElement;
+    }
+    if (document.body.scrollHeight > document.body.clientHeight + 4 &&
+        ['auto', 'scroll'].includes(getComputedStyle(document.body).overflowY)) return document.body;
+    return window;
+  }
+  metrics() {
+    // Pick whichever container actually scrolls (host setups vary: window, html, or body).
+    const cands = [document.scrollingElement, document.documentElement, document.body].filter(Boolean);
+    let best = { top: 0, max: 0, el: null };
+    for (const el of cands) {
+      const max = el.scrollHeight - el.clientHeight;
+      if (max > best.max) best = { top: el.scrollTop, max, el };
+    }
+    const winMax = document.documentElement.scrollHeight - window.innerHeight;
+    if (window.scrollY > 0 || winMax > best.max) {
+      if (winMax >= best.max) best = { top: window.scrollY, max: winMax, el: window };
+    }
+    return best;
+  }
+  go0 = () => this.goTo(0);
+  go1 = () => this.goTo(1);
+  go2 = () => this.goTo(2);
+  go3 = () => this.goTo(3);
+
+  goTo(i) {
+    const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+    const target = (i / 3) * max;
+    this.animateScrollTo(target, 240);
+  }
+
+  // Custom rAF scroll — fast and with controllable duration (native 'smooth'
+  // is slow over the long per-section distance and feels stuck).
+  animateScrollTo(target, duration) {
+    if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
+    const start = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    const dist = target - start;
+    if (Math.abs(dist) < 1) return;
+    // Reduced motion: jump straight to the section instead of animating the scroll.
+    if (this.reduceMotion) { window.scrollTo(0, target); return; }
+    const t0 = performance.now();
+    const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2); // easeInOutCubic
+    const step = () => {
+      const k = Math.min(1, (performance.now() - t0) / duration);
+      window.scrollTo(0, start + dist * ease(k));
+      if (k < 1) this._scrollRaf = requestAnimationFrame(step);
+      else this._scrollRaf = null;
+    };
+    this._scrollRaf = requestAnimationFrame(step);
+  }
+
+  componentDidMount() {
+    this.scrollProgress = 0;
+    this.mouse = { x: 0, y: 0 };
+    this.tMouse = { x: 0, y: 0 };
+    this._lastSetActive = 0;
+
+    // Accessibility: users who prefer reduced motion get a still robot (no float,
+    // parallax, wave or blink) and opacity-only panel/card transitions.
+    this._rmQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    this.reduceMotion = !!(this._rmQuery && this._rmQuery.matches);
+    this._onRM = () => { this.reduceMotion = !!(this._rmQuery && this._rmQuery.matches); this.setState({}); };
+    if (this._rmQuery && this._rmQuery.addEventListener) this._rmQuery.addEventListener('change', this._onRM);
+
+    this._onScroll = () => {
+      // Read window.scrollY directly — avoids metrics() picking the wrong container.
+      const top = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+      const p = max > 0 ? Math.min(1, Math.max(0, top / max)) : 0;
+      this.scrollProgress = p;
+      if (this.progressEl) this.progressEl.style.width = (p * 100) + '%';
+      // Compare against _lastSetActive, not this.state.active, to avoid stale async state.
+      const active = Math.min(3, Math.max(0, Math.round(p * 3)));
+      if (active !== this._lastSetActive) {
+        this._lastSetActive = active;
+        this.setState({ active });
+      }
+    };
+    this._onResize = () => { this.resize(); };
+    this._onMove = (e) => {
+      this.tMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      this.tMouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+
+    // --- Snap scroll: one wheel/trackpad gesture = exactly one section ---
+    this._locked = false;
+    this._unlockTimer = null;
+    this._minUnlockAt = 0;
+    this._armUnlock = (idle) => {
+      if (this._unlockTimer) clearTimeout(this._unlockTimer);
+      const fire = () => {
+        const remaining = this._minUnlockAt - performance.now();
+        if (remaining > 0) { this._unlockTimer = setTimeout(fire, remaining); }
+        else { this._locked = false; this._unlockTimer = null; }
+      };
+      this._unlockTimer = setTimeout(fire, idle);
+    };
+    this._onWheel = (e) => {
+      // Let the generator overlay scroll natively when it's open.
+      if (this.state.screen) return;
+      e.preventDefault();
+      if (this._locked) { this._armUnlock(60); return; } // swallow momentum tail
+      const dir = e.deltaY > 0 ? 1 : (e.deltaY < 0 ? -1 : 0);
+      if (!dir) return;
+      const target = Math.min(3, Math.max(0, this._lastSetActive + dir));
+      if (target === this._lastSetActive) return; // at an edge — do nothing
+      this._locked = true;
+      this._minUnlockAt = performance.now() + 250; // hold through the scroll animation
+      this.goTo(target);
+      this._armUnlock(60);
+    };
+    this._onKey = (e) => {
+      if (this.state.screen) return;
+      const down = ['ArrowDown', 'PageDown', ' ', 'Spacebar'].includes(e.key);
+      const up = ['ArrowUp', 'PageUp'].includes(e.key);
+      if (!down && !up) return;
+      e.preventDefault();
+      if (this._locked) return;
+      const dir = down ? 1 : -1;
+      const target = Math.min(3, Math.max(0, this._lastSetActive + dir));
+      if (target === this._lastSetActive) return;
+      this._locked = true;
+      this._minUnlockAt = performance.now() + 250;
+      this.goTo(target);
+      this._armUnlock(60);
+    };
+
+    // capture: true catches scroll on any inner container the host may create
+    document.addEventListener('scroll', this._onScroll, { capture: true, passive: true });
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    window.addEventListener('resize', this._onResize);
+    window.addEventListener('pointermove', this._onMove);
+    window.addEventListener('wheel', this._onWheel, { passive: false });
+    window.addEventListener('keydown', this._onKey);
+    this._onScroll();
+
+    this.POSES = [
+      { rotY: 0.00, tilt: 0.00, armR: -1.15, armL: 0.18 },
+      { rotY: 0.20, tilt: 0.11, armR: -0.20, armL: 1.42 },
+      { rotY: -0.14, tilt: -0.07, armR: -0.85, armL: 1.00 },
+      { rotY: 0.12, tilt: 0.09, armR: -0.25, armL: 1.58 }
+    ];
+
+    this.waitThree();
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('scroll', this._onScroll, { capture: true });
+    window.removeEventListener('scroll', this._onScroll);
+    window.removeEventListener('resize', this._onResize);
+    window.removeEventListener('pointermove', this._onMove);
+    window.removeEventListener('wheel', this._onWheel, { passive: false });
+    window.removeEventListener('keydown', this._onKey);
+    if (this._rmQuery && this._rmQuery.removeEventListener) this._rmQuery.removeEventListener('change', this._onRM);
+    if (this._unlockTimer) clearTimeout(this._unlockTimer);
+    if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
+    if (this.raf) cancelAnimationFrame(this.raf);
+    if (this.renderer) this.renderer.dispose();
+  }
+
+  waitThree() {
+    if (window.THREE && this.canvasEl) { this.initThree(); }
+    else { setTimeout(() => this.waitThree(), 60); }
+  }
+
+  initThree() {
+    const THREE = window.THREE;
+    const scene = new THREE.Scene();
+    this.scene = scene;
+
+    const renderer = new THREE.WebGLRenderer({ canvas: this.canvasEl, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    this.renderer = renderer;
+
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(0, 0.3, 7);
+    this.camera = camera;
+
+    // lights
+    scene.add(new THREE.AmbientLight(0xffffff, 0.78));
+    const key = new THREE.DirectionalLight(0xffffff, 0.85);
+    key.position.set(3, 5, 4); scene.add(key);
+    const rim = new THREE.PointLight(0x1c5cff, 0.9, 30);
+    rim.position.set(-4, 1, 2); scene.add(rim);
+    const fill = new THREE.DirectionalLight(0xdfe8ff, 0.4);
+    fill.position.set(-2, -1, 3); scene.add(fill);
+
+    // materials
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf3f6fc, roughness: 0.42, metalness: 0.12 });
+    const shellMat = new THREE.MeshStandardMaterial({ color: 0xe6ecf7, roughness: 0.5, metalness: 0.1 });
+    const accentMat = new THREE.MeshStandardMaterial({ color: 0x1c5cff, roughness: 0.32, metalness: 0.35 });
+    const darkMat = new THREE.MeshStandardMaterial({ color: 0x0a1426, roughness: 0.45, metalness: 0.2 });
+    const glowMat = new THREE.MeshStandardMaterial({ color: 0x6db0ff, emissive: 0x1c5cff, emissiveIntensity: 1.5, roughness: 0.3 });
+
+    const robot = new THREE.Group();
+    this.robot = robot;
+
+    // body
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.55, 1.0), bodyMat);
+    robot.add(body);
+    // belt
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(1.54, 0.16, 1.04), accentMat);
+    belt.position.y = -0.55; robot.add(belt);
+    // chest panel
+    const chest = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.5, 0.08), darkMat);
+    chest.position.set(0, 0.12, 0.51); robot.add(chest);
+    const chestDot = new THREE.Mesh(new THREE.CircleGeometry(0.09, 24), glowMat);
+    chestDot.position.set(0, 0.12, 0.56); robot.add(chestDot);
+
+    // neck
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.24, 0.22, 20), shellMat);
+    neck.position.y = 0.88; robot.add(neck);
+
+    // head group
+    const head = new THREE.Group();
+    head.position.y = 1.34;
+    const headMesh = new THREE.Mesh(new THREE.BoxGeometry(1.42, 1.12, 1.05), bodyMat);
+    head.add(headMesh);
+    // face screen
+    const face = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.78, 0.1), darkMat);
+    face.position.z = 0.52; head.add(face);
+    // eyes
+    const eyes = new THREE.Group();
+    const eyeGeo = new THREE.SphereGeometry(0.12, 20, 20);
+    const eyeL = new THREE.Mesh(eyeGeo, glowMat); eyeL.position.set(-0.26, 0.05, 0.58);
+    const eyeR = new THREE.Mesh(eyeGeo, glowMat); eyeR.position.set(0.26, 0.05, 0.58);
+    eyes.add(eyeL); eyes.add(eyeR);
+    head.add(eyes);
+    this.eyes = eyes;
+    // smile
+    const smile = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.025, 12, 24, Math.PI), glowMat);
+    smile.position.set(0, -0.2, 0.58); smile.rotation.z = Math.PI; head.add(smile);
+    // ears
+    const earGeo = new THREE.CylinderGeometry(0.13, 0.13, 0.14, 20);
+    const earL = new THREE.Mesh(earGeo, accentMat); earL.rotation.z = Math.PI / 2; earL.position.set(-0.78, 0, 0); head.add(earL);
+    const earR = new THREE.Mesh(earGeo, accentMat); earR.rotation.z = Math.PI / 2; earR.position.set(0.78, 0, 0); head.add(earR);
+    // antenna
+    const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.42, 12), shellMat);
+    stalk.position.y = 0.78; head.add(stalk);
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.1, 18, 18), glowMat);
+    ball.position.y = 1.02; head.add(ball);
+    this.antennaBall = ball;
+    robot.add(head);
+    this.head = head;
+
+    // arms (pivot at shoulder, parts hang down)
+    const makeArm = (sx) => {
+      const g = new THREE.Group();
+      const up = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.62, 16), accentMat);
+      up.position.y = -0.31; g.add(up);
+      const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.155, 16, 16), shellMat);
+      elbow.position.y = -0.62; g.add(elbow);
+      const fore = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.115, 0.55, 16), accentMat);
+      fore.position.y = -0.92; g.add(fore);
+      const hand = new THREE.Mesh(new THREE.SphereGeometry(0.185, 18, 18), bodyMat);
+      hand.position.y = -1.24; g.add(hand);
+      g.position.set(sx * 1.04, 0.52, 0.14);
+      return g;
+    };
+    const armR = makeArm(1); robot.add(armR); this.armR = armR;
+    const armL = makeArm(-1); robot.add(armL); this.armL = armL;
+
+    robot.position.x = 1.9;
+    robot.position.y = 0;
+    scene.add(robot);
+
+    this.t0 = performance.now();
+    this.resize();
+    this.animate();
+  }
+
+  resize() {
+    if (!this.renderer || !this.canvasEl) return;
+    const w = this.canvasEl.clientWidth || window.innerWidth;
+    const h = this.canvasEl.clientHeight || window.innerHeight;
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w / h;
+    // base horizontal offset (animate() flips the sign for section 2)
+    this.baseX = w < 760 ? 0.6 : (w < 1100 ? 1.15 : 1.55);
+    this.camera.updateProjectionMatrix();
+  }
+
+  animate = () => {
+    this.raf = requestAnimationFrame(this.animate);
+    const T = window.THREE;
+    const t = (performance.now() - this.t0) / 1000;
+    const lerp = (a, b, k) => a + (b - a) * k;
+    const rm = this.reduceMotion;
+
+    // smooth mouse — under reduced motion the pointer parallax is disabled by
+    // easing the smoothed mouse toward the origin instead of the real pointer.
+    this.mouse.x = lerp(this.mouse.x, rm ? 0 : this.tMouse.x, 0.05);
+    this.mouse.y = lerp(this.mouse.y, rm ? 0 : this.tMouse.y, 0.05);
+
+    // pose blend from scroll. armR>0 raises the right arm outward-right;
+    // armL<0 raises the left arm outward-left -> arms always swing AWAY from the body.
+    const POSES = [
+      { rotY:  0.00, tilt:  0.00, armR:  1.98, armL: -0.24 },
+      { rotY:  0.16, tilt:  0.10, armR:  0.30, armL: -1.95 },
+      { rotY: -0.18, tilt: -0.06, armR:  1.95, armL: -0.28 },
+      { rotY:  0.14, tilt:  0.09, armR:  0.30, armL: -2.00 }
+    ];
+    const s = this.scrollProgress * 3;
+    const i = Math.min(2, Math.floor(s));
+    const f = s - i;
+    const A = POSES[i], B = POSES[i + 1];
+    const rotY = lerp(A.rotY, B.rotY, f);
+    const tilt = lerp(A.tilt, B.tilt, f);
+    const tArmR = lerp(A.armR, B.armR, f);
+    const tArmL = lerp(A.armL, B.armL, f);
+
+    // robot slides to the opposite side of the text (text-right on section 2)
+    const baseX = this.baseX != null ? this.baseX : 1.9;
+    const sideX = this.state.active === 2 ? -baseX : baseX;
+    this.targetX = lerp(this.targetX != null ? this.targetX : sideX, sideX, 0.07);
+
+    // position: section side + pointer parallax + float (float/parallax off under reduced motion)
+    this.robot.position.x = lerp(this.robot.position.x, this.targetX + this.mouse.x * 0.5, 0.08);
+    this.robot.position.y = rm ? lerp(this.robot.position.y, 0, 0.08) : (Math.sin(t * 1.5) * 0.07 - this.mouse.y * 0.18);
+
+    // body turns toward the pointer (idle sway disabled under reduced motion)
+    const bodyTarget = rotY + (rm ? 0 : this.mouse.x * 0.5 + Math.sin(t * 0.6) * 0.03);
+    this.robot.rotation.y = lerp(this.robot.rotation.y, bodyTarget, 0.07);
+    this.robot.rotation.z = lerp(this.robot.rotation.z, rm ? 0 : Math.sin(t * 0.8) * 0.015 - this.mouse.x * 0.05, 0.05);
+
+    // head tracks the pointer more strongly (pointer tracking off under reduced motion)
+    this.head.rotation.z = lerp(this.head.rotation.z, tilt, 0.08);
+    this.head.rotation.x = lerp(this.head.rotation.x, rm ? 0 : -this.mouse.y * 0.32, 0.08);
+    this.head.rotation.y = lerp(this.head.rotation.y, rm ? 0 : this.mouse.x * 0.34, 0.08);
+
+    // wave on hero (fades as you scroll into section 1; suppressed under reduced motion)
+    const waveAmt = Math.max(0, 1 - Math.min(s, 1));
+    const wave = rm ? 0 : Math.sin(t * 7) * 0.22 * waveAmt;
+    this.armR.rotation.z = lerp(this.armR.rotation.z, tArmR + wave, 0.1);
+    this.armL.rotation.z = lerp(this.armL.rotation.z, tArmL, 0.1);
+    // raised arm reaches slightly forward (toward the viewer)
+    this.armR.rotation.x = lerp(this.armR.rotation.x, tArmR > 0.8 ? -0.22 : 0, 0.1);
+    this.armL.rotation.x = lerp(this.armL.rotation.x, tArmL < -0.8 ? -0.22 : 0, 0.1);
+
+    // antenna bob + blink (frozen under reduced motion)
+    this.antennaBall.position.y = 1.02 + (rm ? 0 : Math.sin(t * 2.4) * 0.04);
+    const ph = t % 3.6;
+    const blink = (!rm && ph > 3.42) ? 0.12 : 1;
+    this.eyes.scale.y = lerp(this.eyes.scale.y, blink, 0.45);
+
+    this.renderer.render(this.scene, this.camera);
+  };
+
+  renderVals() {
+    const active = this.state.active;
+    const rm = this.reduceMotion;
+    const ease = 'cubic-bezier(.16,1,.3,1)';
+    // Under reduced motion, entrances/exits are opacity-only (no slide, scale or blur).
+    const panelBase = 'position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(24px,7vw,110px);transition:opacity .75s ' + ease + ', transform .8s ' + ease + ', filter .55s ease;will-change:opacity,transform,filter;';
+    const panel = (i) => panelBase
+      + (i === 2 ? 'align-items:flex-end;' : 'align-items:flex-start;')
+      + (i === active
+        ? 'opacity:1;transform:translateY(0) scale(1);filter:blur(0);pointer-events:auto;'
+        : rm
+          ? 'opacity:0;transform:none;filter:none;pointer-events:none;'
+          : 'opacity:0;transform:translateY(' + (i < active ? '-70px' : '70px') + ') scale(.9);filter:blur(8px);pointer-events:none;');
+
+    const cardBase = 'position:absolute;inset:0;background:#fff;border:1px solid rgba(10,31,68,.07);border-radius:16px;padding:20px;box-shadow:0 24px 60px -20px rgba(10,31,68,.22);transition:opacity .7s ' + ease + ', transform .8s ' + ease + ';will-change:opacity,transform;';
+    const card = (i) => cardBase + (i === active
+      ? 'opacity:1;transform:translateY(0) scale(1) rotate(0deg);pointer-events:auto;'
+      : rm
+        ? 'opacity:0;transform:none;pointer-events:none;'
+        : 'opacity:0;transform:translateY(38px) scale(.86) rotate(-2.5deg);pointer-events:none;');
+
+    // Slide the cards between the right edge and the mirrored left position with a
+    // GPU transform (animating left/right can't interpolate the `auto` side, so the
+    // cards used to teleport). Anchored right; translateX crosses to the left slot.
+    const cardsToLeft = 'translateX(calc(2 * clamp(20px,5vw,80px) + clamp(260px,24vw,340px) - 100vw))';
+    const cardsWrap = 'position:absolute;bottom:15vh;right:clamp(20px,5vw,80px);left:auto;width:clamp(260px,24vw,340px);height:200px;z-index:4;transition:transform .8s ' + ease + ';'
+      + 'transform:' + (active === 2 ? cardsToLeft : 'translateX(0)') + ';';
+
+    const dot = (i) => {
+      const on = i === active;
+      return 'appearance:none;border:none;padding:0;cursor:pointer;border-radius:999px;transition:height .4s ' + ease + ',background-color .4s linear;width:8px;'
+        + (on ? 'height:26px;background:#1c5cff;' : 'height:8px;background:rgba(10,31,68,.18);');
+    };
+
+    const hint = 'position:absolute;left:clamp(24px,7vw,110px);bottom:7vh;display:flex;align-items:center;gap:14px;z-index:5;transition:opacity .5s ease;'
+      + (active === 0 ? 'opacity:1;' : 'opacity:0;pointer-events:none;');
+
+    // ---- generator overlay ----
+    const screen = this.state.screen;
+    const open = !!screen;
+    // visibility is delayed until after the fade/slide finishes when closing, so the
+    // "voltar" transition actually plays instead of the overlay vanishing instantly.
+    const overlay = 'position:fixed;inset:0;z-index:200;overflow-y:auto;background:#f5f8fc;transition:opacity .42s ease, transform .5s ' + ease + ', visibility 0s linear ' + (open ? '0s' : '.5s') + ';'
+      + (open ? 'opacity:1;transform:translateY(0);pointer-events:auto;visibility:visible;'
+              : 'opacity:0;transform:translateY(40px);pointer-events:none;visibility:hidden;');
+    const G = {
+      bpmn: { e: 'FUNCIONALIDADE 01', t: 'Gerar mapeamento em BPMN', s: 'Descreva a tarefa em linguagem natural e a ARI desenha o fluxo completo em notação BPMN.', l: 'Descrição da tarefa', p: 'Ex.: Quando um pedido chega, o comercial confere o estoque. Se houver, emite a nota e envia para a expedição; se não, avisa o cliente e encerra.' },
+      pop: { e: 'FUNCIONALIDADE 02', t: 'Gerar POP (PowerPoint para o Canva)', s: 'Anexe a imagem do fluxograma e descreva o processo. A ARI valida as informações e, se algo faltar, pergunta antes de gerar. O arquivo sai em .pptx — ao importar no Canva, cada texto vira uma caixa editável, sem embaralhar.', l: 'Informações do processo', p: 'Inclua: nome do processo, setor responsável, uma breve descrição e a lista de etapas — cada etapa com uma descrição do que fazer.\n\nEx.: Processo: Aprovação de pedidos. Setor: Comercial. Descrição: análise e aprovação de pedidos de clientes. Etapas:\n1) Receber a solicitação — registrar o pedido no sistema conferindo os campos.\n2) Validar crédito — consultar o ERP e verificar limite/pendências.\n3) Confirmar estoque — checar disponibilidade e reservar itens.\n4) Aprovar e emitir a ordem — registrar a aprovação e notificar cliente e logística.' },
+      manual: { e: 'FUNCIONALIDADE 03', t: 'Gerar manual em modelo padrão', s: 'Descreva o que o manual precisa cobrir e a ARI estrutura o documento inteiro em um modelo padronizado.', l: 'O que o manual deve cobrir', p: 'Ex.: Manual de uso do sistema de chamados para novos colaboradores, do login à abertura e acompanhamento de tickets.' }
+    };
+    const g = G[screen] || { e: '', t: '', s: '', l: '', p: '' };
+    const loading = this.state.loading;
+    const genBtnStyle = 'margin-top:24px;width:100%;font-family:IBM Plex Sans,sans-serif;font-size:16px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:15px;border-radius:12px;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);'
+      + (loading ? 'opacity:.6;cursor:wait;' : 'cursor:pointer;');
+
+    // Swatches da paleta de cor das atividades (com anel de seleção).
+    const ci = this.state.actColorIdx || 0;
+    const sw = (i) => { const p = this.PALETTE[i]; return 'width:30px;height:30px;border-radius:8px;cursor:pointer;background:' + p.fill + ';border:3px solid ' + (i === ci ? p.stroke : 'transparent') + ';box-shadow:0 1px 3px rgba(10,31,68,.12);transition:border .15s;'; };
+    const editing = !!this.state.editing;
+    const editBtnStyle = 'margin-top:12px;width:100%;font-family:IBM Plex Sans,sans-serif;font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:12px;border-radius:11px;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);' + (editing ? 'opacity:.6;cursor:wait;' : 'cursor:pointer;');
+
+    return {
+      setCanvas: this.setCanvas, setProgress: this.setProgress,
+      go0: this.go0, go1: this.go1, go2: this.go2, go3: this.go3,
+      panel0: panel(0), panel1: panel(1), panel2: panel(2), panel3: panel(3),
+      card1: card(1), card2: card(2), card3: card(3),
+      dot0: dot(0), dot1: dot(1), dot2: dot(2), dot3: dot(3),
+      cardsWrap, hint,
+      openBpmn: this.openBpmn, openPop: this.openPop, openManual: this.openManual,
+      closeScreen: this.closeScreen, generate: this.generate,
+      setText: this.setText, setFile: this.setFile, onFile: this.onFile, setDrop: this.setDrop,
+      overlay, showPop: screen === 'pop', showBpmn: screen === 'bpmn',
+      genEyebrow: g.e, genTitle: g.t, genSubtitle: g.s, genInputLabel: g.l, genPlaceholder: g.p,
+      loading, hasResult: !!this.state.result,
+      showText: !!this.state.result && !this.state.bpmnXml,
+      showEmpty: !loading && !this.state.result && !this.state.bpmnXml,
+      result: this.state.result, fileLabel: this.state.fileName || 'Clique ou arraste a imagem aqui (.png, .jpg)',
+      genError: this.state.err, genBtnLabel: loading ? 'Gerando...' : 'Gerar com a ARI', genBtnStyle,
+      hasBpmn: !!this.state.bpmnXml, downloadBpmn: this.downloadBpmn, setPreview: this.setPreview,
+      c0: this.c0, c1: this.c1, c2: this.c2, c3: this.c3, c4: this.c4, c5: this.c5,
+      sw0: sw(0), sw1: sw(1), sw2: sw(2), sw3: sw(3), sw4: sw(4), sw5: sw(5),
+      setEditText: this.setEditText, applyEdit: this.applyEdit, editing,
+      editBtnLabel: editing ? 'Aplicando...' : 'Aplicar alteração', editBtnStyle,
+      hasPop: !!this.state.popReady, downloadPop: this.downloadPop, setPopPreview: this.setPopPreview,
+      popConfirm: !!this.state.popConfirm, setPopSteps: this.setPopSteps, confirmPop: this.confirmPop
+    };
+  }
+}
+</script>
+</body>
+</html>

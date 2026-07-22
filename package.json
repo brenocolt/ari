@@ -1,0 +1,15 @@
+{
+  "name": "ari-site",
+  "version": "1.0.0",
+  "description": "Site da ARI com proxy seguro para a API da Anthropic",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0",
+    "express": "^5.1.0",
+    "pdfkit": "^0.19.1",
+    "pptxgenjs": "^4.0.1"
+  }
+}

@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+  targetNamespace="http://bpmn.io/schema/bpmn"
+  id="Definitions_1">
+
+  <!-- ═══════════════════════════════════════════
+       COLLABORATION: declara o pool (participant)
+       apontando para o processo via processRef
+       ═══════════════════════════════════════════ -->
+  <collaboration id="Collaboration_1">
+    <participant id="Participant_1" name="Empresa" processRef="Process_1" />
+  </collaboration>
+
+  <!-- ═══════════════════════════════════════════
+       PROCESS: contém laneSet + todos os elementos
+       ═══════════════════════════════════════════ -->
+  <process id="Process_1" isExecutable="false">
+
+    <laneSet id="LaneSet_1">
+
+      <!-- Lane 0: Comercial (índice 0) -->
+      <lane id="Lane_Comercial" name="Comercial">
+        <flowNodeRef>StartEvent_1</flowNodeRef>
+        <flowNodeRef>Task_RegistrarPedido</flowNodeRef>
+        <flowNodeRef>Task_NotificarCliente</flowNodeRef>
+        <flowNodeRef>EndEvent_Reprovado</flowNodeRef>
+      </lane>
+
+      <!-- Lane 1: Financeiro (índice 1) -->
+      <lane id="Lane_Financeiro" name="Financeiro">
+        <flowNodeRef>Task_AnalisarCredito</flowNodeRef>
+        <flowNodeRef>Gateway_Credito</flowNodeRef>
+      </lane>
+
+      <!-- Lane 2: Expedição (índice 2) -->
+      <lane id="Lane_Expedicao" name="Expedição">
+        <flowNodeRef>Task_PrepararEnvio</flowNodeRef>
+        <flowNodeRef>EndEvent_Aprovado</flowNodeRef>
+      </lane>
+
+    </laneSet>
+
+    <!-- Elementos de fluxo -->
+    <startEvent id="StartEvent_1" name="Pedido recebido" />
+
+    <task id="Task_RegistrarPedido" name="Registrar pedido" />
+
+    <task id="Task_AnalisarCredito" name="Analisar crédito" />
+
+    <exclusiveGateway id="Gateway_Credito" name="Crédito aprovado?" />
+
+    <task id="Task_PrepararEnvio" name="Preparar envio" />
+
+    <task id="Task_NotificarCliente" name="Notificar cliente (reprovado)" />
+
+    <endEvent id="EndEvent_Aprovado" name="Pedido expedido" />
+
+    <endEvent id="EndEvent_Reprovado" name="Cliente notificado" />
+
+    <!-- Fluxos de sequência -->
+    <sequenceFlow id="Flow_1" sourceRef="StartEvent_1"         targetRef="Task_RegistrarPedido" />
+    <sequenceFlow id="Flow_2" sourceRef="Task_RegistrarPedido" targetRef="Task_AnalisarCredito" />
+    <sequenceFlow id="Flow_3" sourceRef="Task_AnalisarCredito" targetRef="Gateway_Credito" />
+    <sequenceFlow id="Flow_4" sourceRef="Gateway_Credito"      targetRef="Task_PrepararEnvio"    name="Sim" />
+    <sequenceFlow id="Flow_5" sourceRef="Gateway_Credito"      targetRef="Task_NotificarCliente" name="Não" />
+    <sequenceFlow id="Flow_6" sourceRef="Task_PrepararEnvio"   targetRef="EndEvent_Aprovado" />
+    <sequenceFlow id="Flow_7" sourceRef="Task_NotificarCliente" targetRef="EndEvent_Reprovado" />
+
+  </process>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       BPMN DIAGRAM
+       Layout (ver seção 2 para as fórmulas):
+
+       Constantes:
+         POOL_X        = 160     (x onde começa o pool, deixa espaço para label)
+         POOL_Y        = 80      (y do topo do pool)
+         LANE_H        = 150     (altura de cada lane)
+         LANE_LABEL_W  = 30      (largura da faixa de rótulo da lane, à esquerda)
+         STEP_W        = 140     (avanço horizontal entre etapas)
+         CONTENT_X0    = POOL_X + LANE_LABEL_W + 20   = 210  (x do centro do 1º elemento)
+
+       Elementos na sequência (passo 0..N-1):
+         step 0: StartEvent_1           lane Comercial  (índice 0)
+         step 1: Task_RegistrarPedido   lane Comercial  (índice 0)
+         step 2: Task_AnalisarCredito   lane Financeiro (índice 1)
+         step 3: Gateway_Credito        lane Financeiro (índice 1)
+         step 4 (ramo Sim): Task_PrepararEnvio   lane Expedição  (índice 2) — mesmo x_step que step 4
+         step 4 (ramo Não): Task_NotificarCliente lane Comercial (índice 0) — mesmo x_step que step 4
+         step 5 (ramo Sim): EndEvent_Aprovado     lane Expedição  (índice 2) — x_step 5
+         step 5 (ramo Não): EndEvent_Reprovado    lane Comercial  (índice 0) — x_step 5
+
+       Fórmulas de posição (shapes):
+         elemento_center_x = CONTENT_X0 + step_index * STEP_W
+         elemento_center_y = POOL_Y + lane_index * LANE_H + LANE_H/2
+
+         task    : x = center_x - 50,  y = center_y - 40,  w=100, h=80
+         evento  : x = center_x - 18,  y = center_y - 18,  w=36,  h=36
+         gateway : x = center_x - 25,  y = center_y - 25,  w=50,  h=50
+
+       Dimensões do pool e lanes:
+         n_steps        = 6  (passos 0..5, o mais largo define a largura)
+         CONTENT_W      = STEP_W * n_steps + 80   (margem direita)
+         POOL_WIDTH     = LANE_LABEL_W + CONTENT_W
+         POOL_HEIGHT    = n_lanes * LANE_H         = 3 * 150 = 450
+
+         Pool Bounds    : x=160, y=80, width=950, height=450
+         Lane Bounds    : x=160, y=(80 + idx*150), width=950, height=150
+           (as lanes usam o mesmo x e width do pool)
+
+       Waypoints de edges (borda-a-borda, ver seção 3):
+         saída  pela borda DIREITA do elemento origem : (x+w, cy)
+         entrada pela borda ESQUERDA do elemento destino: (x, cy)
+         setas que cruzam lanes: acrescentar ponto intermediário no mesmo x
+           mas no y da lane destino (ver Flow_4 e Flow_5 abaixo)
+       ═══════════════════════════════════════════════════════════════ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+
+      <!-- ── POOL ── -->
+      <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
+        <omgdc:Bounds x="160" y="80" width="950" height="450" />
+      </bpmndi:BPMNShape>
+
+      <!-- ── LANES ── -->
+      <!-- Lane Comercial: índice 0 → y = 80 + 0*150 = 80 -->
+      <bpmndi:BPMNShape id="Lane_Comercial_di" bpmnElement="Lane_Comercial" isHorizontal="true">
+        <omgdc:Bounds x="190" y="80" width="920" height="150" />
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Financeiro: índice 1 → y = 80 + 1*150 = 230 -->
+      <bpmndi:BPMNShape id="Lane_Financeiro_di" bpmnElement="Lane_Financeiro" isHorizontal="true">
+        <omgdc:Bounds x="190" y="230" width="920" height="150" />
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Expedição: índice 2 → y = 80 + 2*150 = 380 -->
+      <bpmndi:BPMNShape id="Lane_Expedicao_di" bpmnElement="Lane_Expedicao" isHorizontal="true">
+        <omgdc:Bounds x="190" y="380" width="920" height="150" />
+      </bpmndi:BPMNShape>
+
+      <!-- ════════════════════════════════
+           SHAPES DOS ELEMENTOS
+           CONTENT_X0 = 210  (190 label_w=30 + margem 20 → centro do passo 0 = 210+18=228...
+           ajuste fino abaixo para clareza visual)
+
+           Usamos centros absolutos calculados:
+             passo 0: cx=260   passo 1: cx=400   passo 2: cx=540
+             passo 3: cx=680   passo 4: cx=820   passo 5: cx=960 (ajuste para caber no pool w=950 → cx=960 ok, borda em 960+18=978 < 160+950+30=1140 ✓... ajuste: lane x=190, lane w=920 → borda direita=1110)
+
+           Centros verticais por lane (POOL_Y=80, LANE_H=150):
+             Comercial  (idx 0): cy = 80 + 0*150 + 75 = 155
+             Financeiro (idx 1): cy = 80 + 1*150 + 75 = 305
+             Expedição  (idx 2): cy = 80 + 2*150 + 75 = 455
+           ════════════════════════════════ -->
+
+      <!-- StartEvent_1 | passo 0 | Comercial cy=155 | cx=260 -->
+      <!-- evento: x=cx-18=242, y=cy-18=137, w=36, h=36 -->
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <omgdc:Bounds x="242" y="137" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task_RegistrarPedido | passo 1 | Comercial cy=155 | cx=400 -->
+      <!-- task: x=cx-50=350, y=cy-40=115, w=100, h=80 -->
+      <bpmndi:BPMNShape id="Task_RegistrarPedido_di" bpmnElement="Task_RegistrarPedido">
+        <omgdc:Bounds x="350" y="115" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task_AnalisarCredito | passo 2 | Financeiro cy=305 | cx=540 -->
+      <!-- task: x=490, y=265, w=100, h=80 -->
+      <bpmndi:BPMNShape id="Task_AnalisarCredito_di" bpmnElement="Task_AnalisarCredito">
+        <omgdc:Bounds x="490" y="265" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Gateway_Credito | passo 3 | Financeiro cy=305 | cx=680 -->
+      <!-- gateway: x=cx-25=655, y=cy-25=280, w=50, h=50 -->
+      <bpmndi:BPMNShape id="Gateway_Credito_di" bpmnElement="Gateway_Credito" isMarkerVisible="true">
+        <omgdc:Bounds x="655" y="280" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task_PrepararEnvio | passo 4 ramo Sim | Expedição cy=455 | cx=820 -->
+      <!-- task: x=770, y=415, w=100, h=80 -->
+      <bpmndi:BPMNShape id="Task_PrepararEnvio_di" bpmnElement="Task_PrepararEnvio">
+        <omgdc:Bounds x="770" y="415" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task_NotificarCliente | passo 4 ramo Não | Comercial cy=155 | cx=820 -->
+      <!-- task: x=770, y=115, w=100, h=80 -->
+      <bpmndi:BPMNShape id="Task_NotificarCliente_di" bpmnElement="Task_NotificarCliente">
+        <omgdc:Bounds x="770" y="115" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent_Aprovado | passo 5 ramo Sim | Expedição cy=455 | cx=960 -->
+      <!-- evento: x=942, y=437, w=36, h=36 -->
+      <bpmndi:BPMNShape id="EndEvent_Aprovado_di" bpmnElement="EndEvent_Aprovado">
+        <omgdc:Bounds x="942" y="437" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent_Reprovado | passo 5 ramo Não | Comercial cy=155 | cx=960 -->
+      <!-- evento: x=942, y=137, w=36, h=36 -->
+      <bpmndi:BPMNShape id="EndEvent_Reprovado_di" bpmnElement="EndEvent_Reprovado">
+        <omgdc:Bounds x="942" y="137" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- ════════════════════════════════
+           EDGES (waypoints borda-a-borda)
+           Notação: (borda-direita-origem) → (borda-esquerda-destino)
+           Para setas que NÃO cruzam lanes: 2 waypoints diretos.
+           Para setas que CRUZAM lanes: 3 ou 4 waypoints com "cotovelo"
+             no x intermediário e y da lane destino.
+           ════════════════════════════════ -->
+
+      <!-- Flow_1: StartEvent_1 → Task_RegistrarPedido
+           Mesma lane (Comercial). 2 waypoints.
+           Saída: borda direita StartEvent = (242+36=278, 155)
+           Entrada: borda esquerda Task = (350, 155) -->
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <omgdi:waypoint x="278" y="155" />
+        <omgdi:waypoint x="350" y="155" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Flow_2: Task_RegistrarPedido → Task_AnalisarCredito
+           Cruza lane: Comercial cy=155 → Financeiro cy=305.
+           Saída: borda direita Task = (350+100=450, 155)
+           Waypoint intermediário: desce no x=450 até cy da lane destino
+           Entrada: borda esquerda destino = (490, 305)
+           Waypoints: (450,155) → (450,305) → (490,305)
+           Nota: o ponto (450,155)→(450,305) é a descida vertical;
+           depois vai horizontal até a borda do próximo elemento. -->
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <omgdi:waypoint x="450" y="155" />
+        <omgdi:waypoint x="450" y="305" />
+        <omgdi:waypoint x="490" y="305" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Flow_3: Task_AnalisarCredito → Gateway_Credito
+           Mesma lane (Financeiro). 2 waypoints.
+           Saída: (490+100=590, 305)
+           Entrada: borda esquerda gateway = (655, 305) -->
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <omgdi:waypoint x="590" y="305" />
+        <omgdi:waypoint x="655" y="305" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Flow_4: Gateway_Credito → Task_PrepararEnvio  [Sim]
+           Cruza: Financeiro cy=305 → Expedição cy=455.
+           Saída: borda direita gateway = (655+50=705, 305)
+           Desce no x=705 até y=455 (cy da Expedição), depois vai para borda esquerda destino.
+           Waypoints: (705,305) → (705,455) → (770,455) -->
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <omgdi:waypoint x="705" y="305" />
+        <omgdi:waypoint x="705" y="455" />
+        <omgdi:waypoint x="770" y="455" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Flow_5: Gateway_Credito → Task_NotificarCliente  [Não]
+           Cruza: Financeiro cy=305 → Comercial cy=155.
+           Saída: borda direita gateway = (705, 305)
+           Sobe no x=705 até y=155 (cy Comercial), depois vai para borda esquerda destino.
+           Waypoints: (705,305) → (705,155) → (770,155) -->
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <omgdi:waypoint x="705" y="305" />
+        <omgdi:waypoint x="705" y="155" />
+        <omgdi:waypoint x="770" y="155" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Flow_6: Task_PrepararEnvio → EndEvent_Aprovado
+           Mesma lane (Expedição). 2 waypoints.
+           Saída: (770+100=870, 455)
+           Entrada: borda esquerda endEvent = (942, 455) -->
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <omgdi:waypoint x="870" y="455" />
+        <omgdi:waypoint x="942" y="455" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Flow_7: Task_NotificarCliente → EndEvent_Reprovado
+           Mesma lane (Comercial). 2 waypoints.
+           Saída: (770+100=870, 155)
+           Entrada: borda esquerda endEvent = (942, 155) -->
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <omgdi:waypoint x="870" y="155" />
+        <omgdi:waypoint x="942" y="155" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>
