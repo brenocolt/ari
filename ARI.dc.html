@@ -10,7 +10,7 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 <style>
   /* Override DC runtime's FULL_PAGE_CSS which injects html,body{height:100%} and
      #dc-root,.sc-host{height:100%} — those clamp the document to the viewport and
@@ -46,6 +46,10 @@
   /* Keyboard focus rings — buttons use appearance:none and textareas set
      outline:none inline, so both need an explicit visible focus state. */
   button:focus-visible{outline:2px solid #1c5cff;outline-offset:3px;}
+  /* Texto só para leitores de tela (status ao vivo). */
+  .ari-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  /* A área de upload é um <label>; o input fica visualmente oculto mas focável. */
+  .ari-drop:focus-within{outline:2px solid #1c5cff;outline-offset:3px;}
   textarea{transition:box-shadow .18s var(--ease-out),border-color .18s var(--ease-out);}
   textarea:focus-visible{border-color:#1c5cff!important;box-shadow:0 0 0 3px rgba(28,92,255,.22);}
   /* Accessibility: honor reduced-motion. Kill the looping/idle CSS motion and
@@ -55,10 +59,8 @@
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;}
   }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <link rel="stylesheet" href="./bpmn-diagram.css">
 <link rel="stylesheet" href="./bpmn-viewer.css">
-<script src="./bpmn-viewer.js"></script>
 </helmet>
 <div ref="{{ setRoot }}" style="position:relative;width:100%;">
 
@@ -68,7 +70,7 @@
   </div>
 
   <!-- nav dots -->
-  <nav aria-label="Navegação por seções" style="position:fixed;right:clamp(18px,2.4vw,34px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:50;align-items:center;">
+  <nav ref="{{ setNav }}" aria-label="Navegação por seções" style="position:fixed;right:clamp(18px,2.4vw,34px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:50;align-items:center;">
     <button onClick="{{ go0 }}" aria-label="Ir para: início" style="{{ dot0 }}"></button>
     <button onClick="{{ go1 }}" aria-label="Ir para: mapeamentos" style="{{ dot1 }}"></button>
     <button onClick="{{ go2 }}" aria-label="Ir para: POPs" style="{{ dot2 }}"></button>
@@ -76,7 +78,7 @@
   </nav>
 
   <!-- scroll spacer (drives the pinned scroll) -->
-  <div style="height:400vh;position:relative;">
+  <div ref="{{ setStage }}" style="height:400vh;position:relative;">
     <div style="position:sticky;top:0;height:100vh;width:100%;overflow:hidden;">
 
       <!-- ambient background glow -->
@@ -91,7 +93,7 @@
       <div style="position:absolute;inset:0;z-index:3;pointer-events:none;">
 
         <!-- panel 0: hero -->
-        <div style="{{ panel0 }}">
+        <div aria-hidden="{{ hid0 }}" style="{{ panel0 }}">
           <div style="width:min(92%,520px);">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:22px;">ASSISTENTE DE ROTINAS INTELIGENTES</div>
           <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(40px,5vw,70px);line-height:1.02;letter-spacing:-0.03em;color:#0a1f44;margin:0 0 22px;">Olá, eu sou<br>a <span style="color:#1c5cff;">ARI</span>.</h1>
@@ -105,7 +107,7 @@
         </div>
 
         <!-- panel 1: mapeamentos -->
-        <div style="{{ panel1 }}">
+        <div aria-hidden="{{ hid1 }}" style="{{ panel1 }}">
           <div style="width:min(92%,520px);">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 01</div>
           <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">Mapeamentos automáticos em BPMN</h2>
@@ -115,12 +117,12 @@
             <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Notação BPMN padrão de mercado</li>
             <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Edite e ajuste quando quiser</li>
           </ul>
-          <button onClick="{{ openBpmn }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span style="font-size:17px;">→</span></button>
+          <button onClick="{{ openBpmn }}" tabIndex="{{ tab1 }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span aria-hidden="true" style="font-size:17px;">→</span></button>
           </div>
         </div>
 
         <!-- panel 2: POPs -->
-        <div style="{{ panel2 }}">
+        <div aria-hidden="{{ hid2 }}" style="{{ panel2 }}">
           <div style="width:min(92%,520px);">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 02</div>
           <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">POPs gerados a partir do mapeamento</h2>
@@ -130,12 +132,12 @@
             <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Passo a passo estruturado</li>
             <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>No seu modelo de POP</li>
           </ul>
-          <button onClick="{{ openPop }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span style="font-size:17px;">→</span></button>
+          <button onClick="{{ openPop }}" tabIndex="{{ tab2 }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span aria-hidden="true" style="font-size:17px;">→</span></button>
           </div>
         </div>
 
         <!-- panel 3: manuais -->
-        <div style="{{ panel3 }}">
+        <div aria-hidden="{{ hid3 }}" style="{{ panel3 }}">
           <div style="width:min(92%,520px);">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 03</div>
           <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">Manuais em modelo padrão</h2>
@@ -145,13 +147,13 @@
             <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>A partir de uma descrição simples</li>
             <li style="display:flex;align-items:center;gap:12px;font-size:15.5px;color:#0a1f44;"><span style="width:7px;height:7px;border-radius:2px;background:#1c5cff;flex:none;"></span>Pronto para distribuir</li>
           </ul>
-          <button onClick="{{ openManual }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span style="font-size:17px;">→</span></button>
+          <button onClick="{{ openManual }}" tabIndex="{{ tab3 }}" style="display:inline-flex;align-items:center;gap:9px;margin-top:30px;font-family:'IBM Plex Sans';font-size:15.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .2s;" style-hover="background:#1850e0;transform:translateY(-1px);">Fazer agora <span aria-hidden="true" style="font-size:17px;">→</span></button>
           </div>
         </div>
       </div>
 
       <!-- RIGHT: floating output mock cards -->
-      <div style="{{ cardsWrap }}">
+      <div aria-hidden="true" style="{{ cardsWrap }}">
 
         <!-- card 1: BPMN -->
         <div style="{{ card1 }}">
@@ -174,7 +176,7 @@
         <div style="{{ card2 }}">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
             <div style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.6px;color:#1c5cff;">POP — 0042</div>
-            <div style="font-size:10px;color:#94a3b8;font-weight:500;">v1.0</div>
+            <div style="font-size:10px;color:#64748b;font-weight:500;">v1.0</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:11px;">
             <div style="display:flex;gap:10px;align-items:center;"><span style="width:18px;height:18px;border-radius:5px;background:#1c5cff;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none;">1</span><span style="height:7px;flex:1;background:#e2e8f0;border-radius:4px;"></span></div>
@@ -198,7 +200,7 @@
       </div>
 
       <!-- scroll hint -->
-      <div style="{{ hint }}">
+      <div aria-hidden="true" style="{{ hint }}">
         <div style="width:24px;height:38px;border:2px solid rgba(10,31,68,.35);border-radius:13px;display:flex;justify-content:center;padding-top:6px;">
           <div style="width:4px;height:8px;border-radius:2px;background:#1c5cff;animation:ariBob 1.4s ease-in-out infinite;"></div>
         </div>
@@ -209,35 +211,108 @@
   </div>
 
   <!-- GENERATOR OVERLAY -->
-  <div style="{{ overlay }}">
+  <div ref="{{ setOverlay }}" role="dialog" aria-modal="true" aria-labelledby="ari-gen-title" aria-hidden="{{ overlayHidden }}" style="{{ overlay }}">
     <div style="max-width:1160px;margin:0 auto;padding:clamp(28px,5vw,60px) clamp(20px,5vw,56px);">
-      <button onClick="{{ closeScreen }}" style="display:inline-flex;align-items:center;gap:8px;background:none;border:none;font-family:'IBM Plex Sans';font-size:15px;font-weight:500;color:#475569;cursor:pointer;padding:8px 0;margin-bottom:24px;"><span style="font-size:18px;">←</span> Voltar para a ARI</button>
+      <button onClick="{{ closeScreen }}" style="display:inline-flex;align-items:center;gap:8px;background:none;border:none;font-family:'IBM Plex Sans';font-size:15px;font-weight:500;color:#475569;cursor:pointer;padding:8px 0;margin-bottom:24px;"><span aria-hidden="true" style="font-size:18px;">←</span> Voltar para a ARI</button>
       <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:14px;">{{ genEyebrow }}</div>
-      <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,3.6vw,46px);line-height:1.05;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 12px;">{{ genTitle }}</h2>
+      <h2 id="ari-gen-title" style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,3.6vw,46px);line-height:1.05;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 12px;">{{ genTitle }}</h2>
       <p style="font-size:17px;line-height:1.55;color:#475569;margin:0 0 38px;max-width:660px;">{{ genSubtitle }}</p>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:26px;align-items:start;">
+      <!-- POP: escolha do modelo de design -->
+      <sc-if value="{{ popSetupModel }}" hint-placeholder-val="{{ false }}">
+        <section aria-labelledby="ari-pop-step-model" style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(22px,3vw,32px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);animation:ariRise .4s cubic-bezier(.16,1,.3,1) both;">
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:12px;letter-spacing:1.6px;color:#1c5cff;margin-bottom:6px;">{{ setupStepModel }}</div>
+          <h3 id="ari-pop-step-model" tabIndex="-1" style="font-family:'Space Grotesk';font-weight:700;font-size:22px;color:#0a1f44;margin:0 0 6px;outline:none;">Escolha o modelo do POP</h3>
+          <p style="font-size:14.5px;line-height:1.5;color:#64748b;margin:0 0 22px;">O conteúdo é o mesmo nos três; muda o visual. As cores seguem a logo da empresa.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px;">
+            <button type="button" onClick="{{ pickModel1 }}" aria-pressed="{{ mp1 }}" style="{{ mcard1 }}">
+              <div ref="{{ setThumb1 }}" aria-hidden="true" style="width:100%;aspect-ratio:595/842;background:#f1f4f8;border-radius:6px;overflow:hidden;box-shadow:0 6px 18px -10px rgba(10,31,68,.35);"></div>
+              <span style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:14px;"><span style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:#0a1f44;">Modelo 1 · Clássico</span><span style="font-size:12.5px;font-weight:600;color:#1c5cff;">{{ msel1 }}</span></span>
+              <span style="display:block;margin-top:4px;font-size:13px;line-height:1.45;color:#64748b;">Fundo claro e número da seção vazado</span>
+            </button>
+            <button type="button" onClick="{{ pickModel2 }}" aria-pressed="{{ mp2 }}" style="{{ mcard2 }}">
+              <div ref="{{ setThumb2 }}" aria-hidden="true" style="width:100%;aspect-ratio:595/842;background:#f1f4f8;border-radius:6px;overflow:hidden;box-shadow:0 6px 18px -10px rgba(10,31,68,.35);"></div>
+              <span style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:14px;"><span style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:#0a1f44;">Modelo 2 · Faixas</span><span style="font-size:12.5px;font-weight:600;color:#1c5cff;">{{ msel2 }}</span></span>
+              <span style="display:block;margin-top:4px;font-size:13px;line-height:1.45;color:#64748b;">Capa e cabeçalhos em faixa de cor</span>
+            </button>
+            <button type="button" onClick="{{ pickModel3 }}" aria-pressed="{{ mp3 }}" style="{{ mcard3 }}">
+              <div ref="{{ setThumb3 }}" aria-hidden="true" style="width:100%;aspect-ratio:595/842;background:#f1f4f8;border-radius:6px;overflow:hidden;box-shadow:0 6px 18px -10px rgba(10,31,68,.35);"></div>
+              <span style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:14px;"><span style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:#0a1f44;">Modelo 3 · Lateral</span><span style="font-size:12.5px;font-weight:600;color:#1c5cff;">{{ msel3 }}</span></span>
+              <span style="display:block;margin-top:4px;font-size:13px;line-height:1.45;color:#64748b;">Barra lateral colorida com título vertical</span>
+            </button>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- POP: logo da empresa e paleta de cores -->
+      <sc-if value="{{ popSetupLogo }}" hint-placeholder-val="{{ false }}">
+        <section aria-labelledby="ari-pop-step-logo" style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(22px,3vw,32px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);animation:ariRise .4s cubic-bezier(.16,1,.3,1) both;">
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:12px;letter-spacing:1.6px;color:#1c5cff;margin-bottom:6px;">{{ setupStepLogo }}</div>
+          <h3 id="ari-pop-step-logo" tabIndex="-1" style="font-family:'Space Grotesk';font-weight:700;font-size:22px;color:#0a1f44;margin:0 0 6px;outline:none;">Logo da empresa</h3>
+          <p style="font-size:14.5px;line-height:1.5;color:#64748b;margin:0 0 22px;">A logo entra na capa do POP e as cores dela viram a paleta do documento.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:26px;align-items:start;">
+            <div>
+              <label ref="{{ setLogoDrop }}" class="ari-drop" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border:1.5px dashed rgba(28,92,255,.4);border-radius:13px;background:rgba(28,92,255,.04);padding:22px;cursor:pointer;text-align:center;min-height:230px;transition:border-color .15s,background .15s;">
+                <input type="file" ref="{{ setLogoFile }}" onChange="{{ onLogoFile }}" accept=".png,.jpg,.jpeg,.webp,.svg" class="ari-sr">
+                <div ref="{{ setLogoView }}" style="display:flex;align-items:center;justify-content:center;width:100%;"></div>
+                <span style="font-size:14px;font-weight:500;color:#1c5cff;">{{ logoDropLabel }}</span>
+              </label>
+              <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{ removeLogo }}" style="margin-top:10px;background:none;border:none;padding:6px 0;font-family:'IBM Plex Sans';font-size:13.5px;font-weight:500;color:#64748b;cursor:pointer;text-decoration:underline;">Remover logo</button>
+              </sc-if>
+              <sc-if value="{{ logoErr }}" hint-placeholder-val="">
+                <div role="alert" style="color:#dc2626;font-size:13.5px;margin-top:10px;">{{ logoErr }}</div>
+              </sc-if>
+            </div>
+            <div ref="{{ setPaletteView }}"></div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:26px;">
+            <button type="button" onClick="{{ backToModels }}" style="font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#1c5cff;background:rgba(28,92,255,.08);border:1px solid rgba(28,92,255,.25);padding:12px 18px;border-radius:11px;cursor:pointer;"><span aria-hidden="true">←</span> Trocar modelo</button>
+            <button type="button" onClick="{{ finishSetup }}" style="font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:12px 22px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);">{{ finishLabel }}</button>
+          </div>
+        </section>
+      </sc-if>
+
+      <div style="{{ genGrid }}">
 
         <div style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(22px,3vw,30px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);">
           <sc-if value="{{ showPop }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px;">
+              <button type="button" onClick="{{ editModel }}" aria-label="{{ modelChipAria }}" style="{{ chipStyle }}">
+                <div ref="{{ setChipThumb }}" aria-hidden="true" style="width:42px;flex:none;aspect-ratio:595/842;border-radius:3px;overflow:hidden;background:#f1f4f8;box-shadow:0 2px 6px rgba(10,31,68,.2);"></div>
+                <span style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+                  <span style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.2px;color:#64748b;">MODELO</span>
+                  <span style="font-weight:600;font-size:14.5px;color:#0a1f44;">{{ modelChipName }}</span>
+                  <span style="font-size:12.5px;font-weight:500;color:#1c5cff;">Trocar</span>
+                </span>
+              </button>
+              <button type="button" onClick="{{ editLogo }}" aria-label="{{ logoChipAria }}" style="{{ chipStyle }}">
+                <div ref="{{ setChipLogo }}" aria-hidden="true" style="width:52px;height:52px;flex:none;border-radius:8px;background:#f1f4f8;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px;"></div>
+                <span style="display:flex;flex-direction:column;gap:3px;min-width:0;">
+                  <span style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.2px;color:#64748b;">LOGO DA EMPRESA</span>
+                  <span style="font-weight:600;font-size:14.5px;color:#0a1f44;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ logoChipName }}</span>
+                  <span ref="{{ setChipSwatches }}" style="display:flex;gap:5px;align-items:center;"></span>
+                </span>
+              </button>
+            </div>
             <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:10px;">Imagem do fluxograma do processo</div>
-            <label ref="{{ setDrop }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:1.5px dashed rgba(28,92,255,.4);border-radius:13px;background:rgba(28,92,255,.04);padding:22px;cursor:pointer;text-align:center;margin-bottom:26px;transition:border-color .15s,background .15s;">
-              <input type="file" ref="{{ setFile }}" onChange="{{ onFile }}" accept=".png,.jpg,.jpeg,.webp" style="display:none;">
+            <label ref="{{ setDrop }}" class="ari-drop" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:1.5px dashed rgba(28,92,255,.4);border-radius:13px;background:rgba(28,92,255,.04);padding:22px;cursor:pointer;text-align:center;margin-bottom:26px;transition:border-color .15s,background .15s;">
+              <input type="file" ref="{{ setFile }}" onChange="{{ onFile }}" accept=".png,.jpg,.jpeg,.webp" class="ari-sr">
               <div style="width:38px;height:38px;border-radius:10px;background:rgba(28,92,255,.12);display:flex;align-items:center;justify-content:center;color:#1c5cff;font-size:22px;line-height:1;">+</div>
               <span style="font-size:14px;font-weight:500;color:#1c5cff;word-break:break-all;">{{ fileLabel }}</span>
             </label>
           </sc-if>
-          <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:10px;">{{ genInputLabel }}</div>
-          <textarea ref="{{ setText }}" placeholder="{{ genPlaceholder }}" style="width:100%;min-height:200px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:13px;padding:16px;font-family:'IBM Plex Sans';font-size:15.5px;line-height:1.55;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
+          <label for="ari-gen-text" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:10px;">{{ genInputLabel }}</label>
+          <textarea id="ari-gen-text" ref="{{ setText }}" onInput="{{ onTextInput }}" placeholder="{{ genPlaceholder }}" style="width:100%;min-height:200px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:13px;padding:16px;font-family:'IBM Plex Sans';font-size:15.5px;line-height:1.55;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
           <sc-if value="{{ showBpmn }}" hint-placeholder-val="{{ false }}">
-            <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin:18px 0 10px;">Cor das atividades</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-              <div onClick="{{ c0 }}" style="{{ sw0 }}"></div>
-              <div onClick="{{ c1 }}" style="{{ sw1 }}"></div>
-              <div onClick="{{ c2 }}" style="{{ sw2 }}"></div>
-              <div onClick="{{ c3 }}" style="{{ sw3 }}"></div>
-              <div onClick="{{ c4 }}" style="{{ sw4 }}"></div>
-              <div onClick="{{ c5 }}" style="{{ sw5 }}"></div>
+            <div id="ari-color-label" style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin:18px 0 10px;">Cor das atividades</div>
+            <div role="group" aria-labelledby="ari-color-label" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              <button type="button" onClick="{{ c0 }}" aria-label="{{ swl0 }}" aria-pressed="{{ swp0 }}" style="{{ sw0 }}"></button>
+              <button type="button" onClick="{{ c1 }}" aria-label="{{ swl1 }}" aria-pressed="{{ swp1 }}" style="{{ sw1 }}"></button>
+              <button type="button" onClick="{{ c2 }}" aria-label="{{ swl2 }}" aria-pressed="{{ swp2 }}" style="{{ sw2 }}"></button>
+              <button type="button" onClick="{{ c3 }}" aria-label="{{ swl3 }}" aria-pressed="{{ swp3 }}" style="{{ sw3 }}"></button>
+              <button type="button" onClick="{{ c4 }}" aria-label="{{ swl4 }}" aria-pressed="{{ swp4 }}" style="{{ sw4 }}"></button>
+              <button type="button" onClick="{{ c5 }}" aria-label="{{ swl5 }}" aria-pressed="{{ swp5 }}" style="{{ sw5 }}"></button>
             </div>
             <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:#64748b;">
               <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#dcfce7;border:1.5px solid #16a34a;"></span>Início</span>
@@ -246,9 +321,9 @@
             </div>
           </sc-if>
           <sc-if value="{{ genError }}" hint-placeholder-val="">
-            <div style="color:#dc2626;font-size:13.5px;margin-top:12px;">{{ genError }}</div>
+            <div role="alert" style="color:#dc2626;font-size:13.5px;margin-top:12px;">{{ genError }}</div>
           </sc-if>
-          <button onClick="{{ generate }}" disabled="{{ loading }}" style="{{ genBtnStyle }}">{{ genBtnLabel }}</button>
+          <button onClick="{{ generate }}" disabled="{{ busy }}" style="{{ genBtnStyle }}">{{ genBtnLabel }}</button>
         </div>
 
         <div style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(22px,3vw,30px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);min-height:360px;display:flex;flex-direction:column;">
@@ -256,23 +331,56 @@
             <div style="width:9px;height:9px;border-radius:50%;background:#1c5cff;"></div>
             <span style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:1px;color:#0a1f44;">RESULTADO DA ARI</span>
           </div>
+          <div class="ari-sr" aria-live="polite">{{ statusMsg }}</div>
+          <sc-if value="{{ notice }}" hint-placeholder-val="">
+            <div style="background:#fffbeb;border:1px solid #fcd34d;color:#78350f;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin-bottom:14px;">{{ notice }}</div>
+          </sc-if>
           <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
             <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#64748b;min-height:240px;">
               <div style="width:34px;height:34px;border:3px solid rgba(28,92,255,.2);border-top-color:#1c5cff;border-radius:50%;animation:ariSpin .8s linear infinite;"></div>
-              <span style="font-size:14.5px;">A ARI está gerando...</span>
+              <span style="font-size:14.5px;max-width:320px;text-align:center;line-height:1.5;">{{ loadingMsg }}</span>
             </div>
           </sc-if>
           <sc-if value="{{ showText }}" hint-placeholder-val="{{ false }}">
             <div style="white-space:pre-wrap;font-family:'IBM Plex Sans';font-size:15px;line-height:1.65;color:#1f2d45;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;">{{ result }}</div>
           </sc-if>
+          <sc-if value="{{ showManualActions }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+              <button type="button" onClick="{{ copyManual }}" style="font-family:'IBM Plex Sans';font-size:14.5px;font-weight:600;color:#1c5cff;background:rgba(28,92,255,.08);border:1px solid rgba(28,92,255,.25);padding:11px 18px;border-radius:11px;cursor:pointer;">{{ copyLabel }}</button>
+              <button type="button" onClick="{{ downloadManual }}" style="font-family:'IBM Plex Sans';font-size:14.5px;font-weight:600;color:#fff;background:#16a34a;border:none;padding:11px 18px;border-radius:11px;cursor:pointer;"><span aria-hidden="true">↓</span> Baixar manual (.txt)</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ bpmnAsk }}" hint-placeholder-val="{{ false }}">
+            <div ref="{{ setQuestions }}" style="border:1px solid rgba(10,31,68,.1);border-radius:11px;padding:2px 14px;background:#fbfcfe;margin-top:16px;max-height:520px;overflow:auto;"></div>
+            <button onClick="{{ confirmQuestions }}" style="margin-top:14px;width:100%;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);">Gerar mapeamento</button>
+          </sc-if>
           <sc-if value="{{ hasBpmn }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ previewHint }}" hint-placeholder-val="">
+              <div style="font-size:12.5px;color:#64748b;margin-bottom:8px;">{{ previewHint }}</div>
+            </sc-if>
             <div ref="{{ setPreview }}" style="width:100%;height:440px;border:1px solid rgba(10,31,68,.1);border-radius:12px;background:#fff;overflow:hidden;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;"></div>
-            <button onClick="{{ downloadBpmn }}" style="margin-top:18px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#16a34a;border:none;padding:13px 20px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(22,163,74,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);"><span style="font-size:17px;">↓</span> Baixar arquivo .bpmn</button>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:18px;">
+              <button onClick="{{ downloadBpmn }}" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#16a34a;border:none;padding:13px 20px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(22,163,74,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);"><span aria-hidden="true" style="font-size:17px;">↓</span> Baixar arquivo .bpmn</button>
+              <button onClick="{{ downloadPng }}" disabled="{{ pngBusy }}" style="{{ pngBtnStyle }}"><span aria-hidden="true" style="font-size:17px;">↓</span> {{ pngBtnLabel }}</button>
+              <button onClick="{{ openEditor }}" disabled="{{ busy }}" style="{{ manualBtnStyle }}"><span aria-hidden="true" style="font-size:16px;">✎</span> {{ manualBtnLabel }}</button>
+            </div>
+            <sc-if value="{{ routeInfo }}" hint-placeholder-val="">
+              <div style="margin-top:10px;font-size:12.5px;color:#64748b;">{{ routeInfo }}</div>
+            </sc-if>
+            <sc-if value="{{ reviewNotes }}" hint-placeholder-val="">
+              <div style="margin-top:10px;font-size:12.5px;line-height:1.55;color:#475569;white-space:pre-wrap;background:#f8fafc;border:1px solid rgba(10,31,68,.08);border-radius:10px;padding:10px 12px;max-height:200px;overflow:auto;">{{ reviewNotes }}</div>
+            </sc-if>
             <div style="margin-top:20px;border-top:1px solid rgba(10,31,68,.08);padding-top:16px;">
               <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Ajustar o mapeamento</div>
               <p style="font-size:13px;color:#64748b;margin:0 0 10px;">Peça uma alteração em linguagem natural — a ARI muda só o que você pedir.</p>
-              <textarea ref="{{ setEditText }}" placeholder="Ex.: adicione uma raia 'Diretoria' e mova a aprovação para ela; ou: renomeie a etapa 2 para 'Conferir documentos'." style="width:100%;min-height:72px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:12px;font-family:'IBM Plex Sans';font-size:14.5px;line-height:1.5;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
-              <button onClick="{{ applyEdit }}" disabled="{{ editing }}" style="{{ editBtnStyle }}">{{ editBtnLabel }}</button>
+              <sc-if value="{{ bpmnManual }}" hint-placeholder-val="{{ false }}">
+                <p style="font-size:12.5px;line-height:1.5;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:8px 10px;margin:0 0 10px;">Você editou o diagrama à mão. Um ajuste por texto mantém as ligações e os nomes, mas redesenha o layout e perde as posições movidas.</p>
+              </sc-if>
+              <textarea ref="{{ setEditText }}" aria-label="Alteração desejada no mapeamento" placeholder="Ex.: adicione uma raia 'Diretoria' e mova a aprovação para ela; ou: renomeie a etapa 2 para 'Conferir documentos'." style="width:100%;min-height:72px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:12px;font-family:'IBM Plex Sans';font-size:14.5px;line-height:1.5;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
+              <button onClick="{{ applyEdit }}" disabled="{{ busy }}" style="{{ editBtnStyle }}">{{ editBtnLabel }}</button>
+              <sc-if value="{{ editErr }}" hint-placeholder-val="">
+                <div role="alert" style="color:#dc2626;font-size:13.5px;margin-top:10px;">{{ editErr }}</div>
+              </sc-if>
             </div>
           </sc-if>
           <sc-if value="{{ popConfirm }}" hint-placeholder-val="{{ false }}">
@@ -282,10 +390,10 @@
           </sc-if>
           <sc-if value="{{ hasPop }}" hint-placeholder-val="{{ false }}">
             <div ref="{{ setPopPreview }}" style="width:100%;max-height:560px;overflow:auto;border:1px solid rgba(10,31,68,.1);border-radius:12px;background:#e8edf2;padding:14px;margin-top:16px;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;"></div>
-            <button onClick="{{ downloadPop }}" style="margin-top:16px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#16a34a;border:none;padding:13px 20px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(22,163,74,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);"><span style="font-size:17px;">↓</span> Baixar POP (.pptx)</button>
+            <button onClick="{{ downloadPop }}" style="margin-top:16px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#16a34a;border:none;padding:13px 20px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(22,163,74,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);"><span aria-hidden="true" style="font-size:17px;">↓</span> Baixar POP (.pptx)</button>
           </sc-if>
           <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ true }}">
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#94a3b8;text-align:center;padding:30px;min-height:240px;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#64748b;text-align:center;padding:30px;min-height:240px;">
               <div style="width:46px;height:46px;border-radius:13px;background:rgba(28,92,255,.08);display:flex;align-items:center;justify-content:center;color:#1c5cff;font-size:22px;">✦</div>
               <span style="font-size:14.5px;max-width:260px;line-height:1.5;">Preencha ao lado e clique em gerar — o resultado aparece aqui.</span>
             </div>
@@ -293,12 +401,32 @@
         </div>
       </div>
     </div>
+
+    <!-- Editor manual do mapeamento (bpmn-js Modeler, carregado sob demanda) -->
+    <sc-if value="{{ bpmnEditing }}" hint-placeholder-val="{{ false }}">
+      <div role="dialog" aria-modal="true" aria-labelledby="ari-editor-title" style="position:fixed;inset:0;z-index:260;background:#f5f8fc;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px clamp(12px,2vw,24px);background:#fff;border-bottom:1px solid rgba(10,31,68,.1);">
+          <h3 id="ari-editor-title" tabIndex="-1" style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:#0a1f44;margin:0 14px 0 0;outline:none;">Editar mapeamento</h3>
+          <button type="button" onClick="{{ editorUndo }}" style="{{ toolBtn }}"><span aria-hidden="true">↶</span> Desfazer</button>
+          <button type="button" onClick="{{ editorRedo }}" style="{{ toolBtn }}"><span aria-hidden="true">↷</span> Refazer</button>
+          <button type="button" onClick="{{ editorFit }}" style="{{ toolBtn }}">Ajustar à tela</button>
+          <span style="flex:1;"></span>
+          <button type="button" onClick="{{ cancelEditor }}" style="{{ toolBtn }}">Cancelar</button>
+          <button type="button" onClick="{{ saveEditor }}" style="font-family:'IBM Plex Sans';font-size:14.5px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;box-shadow:0 10px 22px -12px rgba(28,92,255,.6);">Salvar edições</button>
+        </div>
+        <div style="font-size:13px;line-height:1.5;color:#475569;padding:8px clamp(12px,2vw,24px);background:#f8fafc;border-bottom:1px solid rgba(10,31,68,.06);">Arraste uma caixa para mudar a posição. Para mudar a ligação de uma seta, clique nela e arraste a ponta (início ou fim) até outro elemento; arraste o meio da seta para criar uma dobra. Clique duas vezes para renomear, use a paleta à esquerda para incluir elementos e a tecla Delete para excluir.</div>
+        <sc-if value="{{ editorErr }}" hint-placeholder-val="">
+          <div role="alert" style="color:#dc2626;font-size:13.5px;padding:8px clamp(12px,2vw,24px);background:#fef2f2;">{{ editorErr }}</div>
+        </sc-if>
+        <div ref="{{ setEditorEl }}" style="flex:1;min-height:0;background:#fff;position:relative;"></div>
+      </div>
+    </sc-if>
   </div>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { active: 0, screen: null, loading: false, result: '', fileName: '', err: '', bpmnXml: '', actColorIdx: 0, popReady: false, editing: false };
+  state = { active: 0, screen: null, loading: false, result: '', fileName: '', err: '', editErr: '', notice: '', bpmnXml: '', actColorIdx: 0, popReady: false, popConfirm: false, editing: false, copied: false, routeInfo: '', reviewNotes: '', loadingMsg: '', bpmnAsk: false, popModel: 1, popPalette: null, popSetup: null, logoErr: '', logoName: '', bpmnEditing: false, editorLoading: false, editorDirty: false, editorErr: '', bpmnManual: false, pngBusy: false };
 
   // Paleta para a cor das atividades (início/fim/gateway têm cor fixa).
   PALETTE = [
@@ -310,12 +438,47 @@ class Component extends DCLogic {
     { name: 'Cinza', fill: '#e2e8f0', stroke: '#475569' }
   ];
 
+  // Autoria do POP; o servidor pode sobrescrever via /api/config (ARI_EMPRESA / ARI_REVISAO).
+  brand = { author: 'Produtiva Junior', reviewCycle: 'Trimestral' };
+
+  // Limites de requisição e de imagem (a imagem vai em base64 no JSON, que
+  // cresce ~33%; o servidor aceita até 16 MB por requisição).
+  AI_TIMEOUT_MS = 180000;
+  MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
   // stable refs/handlers (identity preserved across re-renders)
   setCanvas = (el) => { this.canvasEl = el; };
   setProgress = (el) => { this.progressEl = el; };
   setRoot = (el) => { this.rootEl = el; };
   setText = (el) => { this.textEl = el; };
   setFile = (el) => { this.fileEl = el; };
+  setNav = (el) => { this.navEl = el; };
+  setStage = (el) => { this.stageEl = el; };
+  setOverlay = (el) => { this.overlayEl = el; };
+
+  // ─── Armazenamento local (rascunhos e últimos resultados) ──────────────────
+  // Tudo em try/catch: localStorage pode estar bloqueado (aba anônima etc.).
+  store(key, val) { try { if (val == null) localStorage.removeItem('ari:' + key); else localStorage.setItem('ari:' + key, JSON.stringify(val)); } catch (_) {} }
+  load(key) { try { const v = localStorage.getItem('ari:' + key); return v ? JSON.parse(v) : null; } catch (_) { return null; } }
+  onTextInput = (e) => { if (this.state.screen) this.store('draft:' + this.state.screen, e.target.value); };
+
+  // Valida tipo e tamanho da imagem do fluxograma; devolve a mensagem de erro ou ''.
+  imageError(f) {
+    if (!/^image\/(png|jpeg|webp)$/.test(f.type || '') && !/\.(png|jpe?g|webp)$/i.test(f.name || '')) return 'Formato não suportado — use .png, .jpg ou .webp.';
+    if (f.size > this.MAX_IMAGE_BYTES) return 'A imagem tem ' + (f.size / 1048576).toFixed(1) + ' MB — o limite é 8 MB. Reduza ou comprima a imagem.';
+    return '';
+  }
+  acceptImage(f) {
+    const problem = this.imageError(f);
+    if (problem) {
+      this.imageFile = null;
+      if (this.fileEl) this.fileEl.value = '';
+      this.setState({ err: problem, fileName: '' });
+      return;
+    }
+    this.imageFile = f;
+    this.setState({ fileName: f.name, err: '' });
+  }
 
   // Área de arrastar e soltar a imagem do fluxograma. O framework não expõe
   // eventos de drag no template, então os listeners são anexados via ref.
@@ -331,20 +494,33 @@ class Component extends DCLogic {
     el.addEventListener('drop', (e) => {
       e.preventDefault(); hl(false);
       const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-      if (!f) return;
-      if (!/\.(png|jpe?g|webp)$/i.test(f.name)) {
-        this.setState({ err: 'Formato não suportado — use .png, .jpg ou .webp.' });
-        return;
-      }
-      // Sincroniza com o input file para o fluxo existente continuar igual.
-      try { if (this.fileEl) this.fileEl.files = e.dataTransfer.files; } catch (_) { /* fallback: droppedFile */ }
-      this.droppedFile = f;
-      this.setState({ fileName: f.name, err: '' });
+      if (f) this.acceptImage(f);
     });
   };
+  onFile = (e) => { const f = e.target.files && e.target.files[0]; if (f) this.acceptImage(f); else { this.imageFile = null; this.setState({ fileName: '' }); } };
   setPreview = (el) => { this.previewEl = el; };
 
-  pickColor = (i) => this.setState({ actColorIdx: i });
+  // Trocar a cor redesenha o mapeamento já gerado (antes só valia na próxima geração).
+  pickColor = (i) => {
+    // Diagrama editado à mão: troca só as cores das atividades no XML editado,
+    // sem refazer o layout (que perderia as posições movidas).
+    if (this.bpmnManualXml) {
+      const a = this.PALETTE[this.state.actColorIdx || 0], b = this.PALETTE[i];
+      this.bpmnManualXml = this.bpmnManualXml.split(a.fill).join(b.fill).split(a.stroke).join(b.stroke);
+      this.setState({ actColorIdx: i, bpmnXml: this.bpmnManualXml }, () => { this.saveBpmn(i); this.renderPreview(); });
+      return;
+    }
+    this.setState({ actColorIdx: i });
+    if (this.bpmnGraph && this.state.bpmnXml && window.AriBpmn) {
+      const built = window.AriBpmn.buildXml(this.bpmnGraph, this.PALETTE[i]);
+      this.setState({ bpmnXml: built.xml }, this.renderPreview);
+    }
+    this.saveBpmn(i);
+  };
+  // Guarda o mapeamento atual (grafo, cor, faixa do modelo e notas) no navegador.
+  saveBpmn(colorIdx = this.state.actColorIdx || 0, routeInfo = this.state.routeInfo, reviewNotes = this.state.reviewNotes) {
+    this.store('bpmn', this.bpmnGraph ? { graph: this.bpmnGraph, colorIdx, tier: this.bpmnTier || null, routeInfo: routeInfo || '', reviewNotes: reviewNotes || '', xml: this.bpmnManualXml || undefined } : null);
+  }
   c0 = () => this.pickColor(0);
   c1 = () => this.pickColor(1);
   c2 = () => this.pickColor(2);
@@ -352,168 +528,404 @@ class Component extends DCLogic {
   c4 = () => this.pickColor(4);
   c5 = () => this.pickColor(5);
 
+  // ─── Telas do gerador ──────────────────────────────────────────────────────
+  // Cada tela guarda seu próprio estado: "Voltar" e abrir de novo (ou alternar
+  // entre telas) não apaga mais o que já foi gerado.
+  SNAP_STATE = ['result', 'err', 'editErr', 'notice', 'fileName', 'bpmnXml', 'popReady', 'popConfirm', 'routeInfo', 'reviewNotes', 'bpmnAsk', 'bpmnManual'];
+  SNAP_INST = ['bpmnManualXml', 'bpmnGraph', 'bpmnTier', 'bpmnAnalysis', 'bpmnQuestions', 'bpmnAnswers', 'popBlob', 'popData', 'popImage', 'popFileName', 'imageFile'];
+  saveSnapshot(screen) {
+    if (!screen) return;
+    const snap = { state: {}, inst: {} };
+    this.SNAP_STATE.forEach((k) => { snap.state[k] = this.state[k]; });
+    this.SNAP_INST.forEach((k) => { snap.inst[k] = this[k]; });
+    (this._snaps = this._snaps || {})[screen] = snap;
+  }
+  // Recupera o último resultado salvo no navegador (sobrevive a um refresh).
+  storedSnapshot(screen) {
+    if (screen === 'bpmn') {
+      // O desenho (XML) é refeito em openScreen, depois de carregar o bpmn-layout.js.
+      const saved = this.load('bpmn');
+      if (!saved) return null;
+      const graph = saved.graph && Array.isArray(saved.graph.nodes) && saved.graph.nodes.length ? saved.graph
+        : Array.isArray(saved.nodes) && saved.nodes.length ? { legacy: saved.nodes } : null; // formato antigo
+      if (!graph) return null;
+      const idx = this.PALETTE[saved.colorIdx] ? saved.colorIdx : 0;
+      const tier = typeof saved.tier === 'string' ? saved.tier : null;
+      const xml = typeof saved.xml === 'string' && /^\s*<(\?xml|(bpmn\d?:)?definitions)/.test(saved.xml) ? saved.xml : null;
+      if (xml) return { state: { actColorIdx: idx, routeInfo: saved.routeInfo || '', reviewNotes: saved.reviewNotes || '', bpmnXml: xml, bpmnManual: true }, inst: { bpmnGraph: graph, bpmnTier: tier, bpmnManualXml: xml } };
+      return { state: { actColorIdx: idx, routeInfo: saved.routeInfo || '', reviewNotes: saved.reviewNotes || '' }, inst: { bpmnGraph: graph, bpmnTier: tier } };
+    }
+    if (screen === 'manual') {
+      const text = this.load('manual');
+      return typeof text === 'string' && text ? { state: { result: text }, inst: {} } : null;
+    }
+    return null;
+  }
+
   openBpmn = () => this.openScreen('bpmn');
   openPop = () => this.openScreen('pop');
   openManual = () => this.openScreen('manual');
   openScreen(s) {
+    this.cancelRun();
+    this._opener = document.activeElement;
     document.body.style.overflow = 'hidden';
-    if (this.textEl) this.textEl.value = '';
+    if (s === 'bpmn') { this.loadBpmnViewer().catch(() => {}); this.ensureLayout().catch(() => {}); } // aquece os downloads
+    const snap = (this._snaps && this._snaps[s]) || this.storedSnapshot(s) || { state: {}, inst: {} };
+    this.SNAP_INST.forEach((k) => { this[k] = snap.inst[k] || null; });
+    this.destroyModeler();
+    const next = { screen: s, loading: false, editing: false, copied: false, bpmnEditing: false, editorDirty: false, editorErr: '' };
+    // POP: na primeira abertura da sessão, começa pela escolha do modelo e da logo.
+    if (s === 'pop') Object.assign(next, this.initPopStyle(), { popSetup: this.popSetupDone ? null : 'model' });
+    this.SNAP_STATE.forEach((k) => { next[k] = snap.state[k] || (k === 'popReady' || k === 'popConfirm' || k === 'bpmnAsk' || k === 'bpmnManual' ? false : ''); });
+    if (snap.state.actColorIdx != null) next.actColorIdx = snap.state.actColorIdx;
+    if (this.textEl) this.textEl.value = this.load('draft:' + s) || '';
     if (this.fileEl) this.fileEl.value = '';
-    this.popBlob = null; this.popData = null; this.popImage = null; this.droppedFile = null;
-    this.setState({ screen: s, result: '', err: '', fileName: '', loading: false, bpmnXml: '', popReady: false, popConfirm: false });
+    if (this.editEl) this.editEl.value = '';
+    this.setState(next, () => {
+      if (next.bpmnXml) this.renderPreview();
+      else if (s === 'bpmn' && this.bpmnGraph) this.redrawSaved();
+      if (next.bpmnAsk) this.renderQuestions();
+      if (next.popConfirm) this.renderPopStepPicker();
+      if (next.popReady) this.renderPopPreview();
+      if (next.popSetup) { this.focusSetup(next.popSetup); return; }
+      // Foco vai para o campo principal do diálogo (após o overlay ficar visível).
+      setTimeout(() => { if (this.state.screen === s && this.textEl) this.textEl.focus({ preventScroll: true }); }, 60);
+    });
+  }
+  // Mapeamento salvo no navegador: converte o formato antigo e redesenha.
+  async redrawSaved() {
+    try {
+      await this.ensureLayout();
+      if (this.bpmnGraph && this.bpmnGraph.legacy) this.bpmnGraph = window.AriBpmn.legacyToGraph(this.bpmnGraph.legacy);
+      if (this.state.screen === 'bpmn' && this.bpmnGraph) await this.showBpmn({});
+    } catch (_) { this.bpmnGraph = null; }
   }
   closeScreen = () => {
+    if (!this.state.screen) return;
+    this.saveSnapshot(this.state.screen);
+    this.cancelRun();
     document.body.style.overflow = '';
     this.destroyViewer();
-    this.setState({ screen: null });
+    this.destroyModeler();
+    this.setState({ screen: null, loading: false, editing: false, bpmnEditing: false, editorDirty: false }, () => {
+      if (this.robot && !this.raf) this.animate(); // retoma a animação pausada
+      const op = this._opener;
+      if (op && op.focus && document.contains(op)) op.focus({ preventScroll: true });
+    });
   };
-  onFile = (e) => { const f = e.target.files && e.target.files[0]; this.droppedFile = null; this.setState({ fileName: f ? f.name : '' }); };
 
   destroyViewer() {
     if (this.viewer) { try { this.viewer.destroy(); } catch (_) {} this.viewer = null; this.viewerEl = null; }
   }
 
+  // Carrega um script uma única vez (falhas podem ser tentadas de novo).
+  loadScript(src) {
+    const cache = this._scripts || (this._scripts = {});
+    if (!cache[src]) {
+      cache[src] = new Promise((resolve, reject) => {
+        const sc = document.createElement('script');
+        sc.src = src;
+        sc.onload = () => resolve();
+        sc.onerror = () => { delete cache[src]; sc.remove(); reject(new Error('script ' + src)); };
+        document.head.appendChild(sc);
+      });
+    }
+    return cache[src];
+  }
+
+  // O bpmn-viewer.js (~190 KB) só é baixado quando o mapeamento é usado.
+  loadBpmnViewer() {
+    if (this.ViewerCls) return Promise.resolve();
+    return this.loadScript('./bpmn-viewer.js').then(() => { this.ViewerCls = this.ViewerCls || window.BpmnJS; });
+  }
+  // Editor (bpmn-js Modeler, ~540 KB): só baixa quando o usuário pede para editar.
+  // O arquivo também define window.BpmnJS, então o visualizador é guardado antes.
+  loadBpmnModeler() {
+    if (this.ModelerCls) return Promise.resolve();
+    if (!document.querySelector('link[data-ari-bpmn-font]')) {
+      const l = document.createElement('link');
+      l.rel = 'stylesheet'; l.href = './bpmn-font.css'; l.setAttribute('data-ari-bpmn-font', '');
+      document.head.appendChild(l);
+    }
+    return this.loadBpmnViewer().then(() => this.loadScript('./bpmn-modeler.js')).then(() => {
+      this.ModelerCls = window.BpmnJS;
+      window.BpmnJS = this.ViewerCls;
+    });
+  }
+
   // Renderiza o BPMN gerado visualmente (com cores) usando o bpmn-js.
-  renderPreview = () => {
+  renderPreview = async () => {
     const xml = this.state.bpmnXml;
     if (!xml) return;
-    if (!window.BpmnJS || !this.previewEl) {
+    try { await this.loadBpmnViewer(); }
+    catch (_) { this.setState({ notice: 'Não consegui carregar o visualizador do diagrama. O arquivo .bpmn continua disponível para download.' }); return; }
+    if (!this.previewEl) {
       this._previewTries = (this._previewTries || 0) + 1;
       if (this._previewTries < 40) setTimeout(this.renderPreview, 100);
       return;
     }
     this._previewTries = 0;
     if (this.viewer && this.viewerEl !== this.previewEl) this.destroyViewer();
-    if (!this.viewer) { this.viewer = new window.BpmnJS({ container: this.previewEl }); this.viewerEl = this.previewEl; }
-    this.viewer.importXML(xml).then(() => {
-      try { this.viewer.get('canvas').zoom('fit-viewport', 'auto'); } catch (_) {}
-    }).catch(() => {});
+    if (!this.viewer) { this.viewer = new this.ViewerCls({ container: this.previewEl }); this.viewerEl = this.previewEl; }
+    this.viewer.importXML(this.state.bpmnXml).then(() => {
+      try {
+        // Diagramas grandes ficariam ilegíveis "ajustados à tela": abre no
+        // início do processo em escala de leitura (arraste e role para navegar).
+        const canvas = this.viewer.get('canvas');
+        canvas.zoom('fit-viewport', 'auto');
+        if (canvas.zoom() < 0.45 && this.previewEl) {
+          const k = 0.7;
+          canvas.viewbox({ x: 150, y: 70, width: this.previewEl.clientWidth / k, height: this.previewEl.clientHeight / k });
+          this.setState({ previewHint: 'Diagrama grande: arraste para navegar e use a roda do mouse para aproximar ou afastar.' });
+        } else if (this.state.previewHint) this.setState({ previewHint: '' });
+      } catch (_) {}
+    }).catch(() => {
+      this.setState({ notice: 'Não consegui desenhar a pré-visualização. O arquivo .bpmn continua disponível para download.' });
+    });
   };
 
-  mock(screen, text) {
-    const t = (text || '').replace(/\s+/g, ' ').trim().slice(0, 60);
-    if (screen === 'bpmn') return '● Início\n   │\n   ▼\n▭ ' + (t || 'Receber solicitação') + '\n   │\n   ▼\n◆ Está conforme?\n   ├─ Sim ▸ ▭ Prosseguir e registrar\n   └─ Não ▸ ▭ Revisar e corrigir\n   │\n   ▼\n▭ Concluir e notificar\n   │\n   ▼\n◉ Fim\n\n(Pré-visualização local — conecte a IA para o fluxo BPMN completo.)';
-    if (screen === 'pop') return 'POP — Procedimento Operacional Padrão\n\nObjetivo\nPadronizar a execução de: ' + (t || 'atividade descrita') + '.\n\nResponsável\nEquipe responsável pelo processo.\n\nPasso a passo\n1. Receber e validar a solicitação.\n2. Conferir os critérios definidos no mapeamento.\n3. Executar a atividade conforme o fluxo.\n4. Registrar a conclusão e notificar os envolvidos.\n\n(Pré-visualização local — conecte a IA para o POP completo.)';
-    return 'Manual — Modelo Padrão\n\n1. Objetivo\nOrientar sobre: ' + (t || 'o tema descrito') + '.\n\n2. Pré-requisitos\nAcesso e permissões necessárias.\n\n3. Passo a passo\n3.1 Primeiro passo.\n3.2 Segundo passo.\n3.3 Terceiro passo.\n\n4. Dúvidas frequentes\n\n(Pré-visualização local — conecte a IA para o manual completo.)';
-  }
-
   // ─── Ponte com a IA ─────────────────────────────────────────────────────────
-  // Usa window.claude.complete quando disponível (pré-visualização do Claude
-  // Design) e, caso contrário, chama o proxy seguro do servidor (/api/complete),
-  // que guarda a chave da Anthropic e fala com a API.
-  async complete(prompt) {
-    if (window.claude && window.claude.complete) {
-      return await window.claude.complete(prompt);
+  // Cada geração é uma "execução": abrir/fechar tela ou iniciar outra cancela a
+  // anterior, e respostas atrasadas de uma execução cancelada são descartadas
+  // (antes caíam na tela errada).
+  startRun() {
+    this.cancelRun();
+    this._run = { ctrl: new AbortController() };
+    return this._run;
+  }
+  cancelRun() {
+    if (this._run) { try { this._run.ctrl.abort(); } catch (_) {} this._run = null; }
+  }
+  isStale(run) { return run !== this._run; }
+
+  // fetch com timeout e cancelamento; erros saem com .code para friendlyError().
+  async fetchApi(url, body, run, timeoutMs) {
+    const ctrl = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(() => { timedOut = true; ctrl.abort(); }, timeoutMs || this.AI_TIMEOUT_MS);
+    const onCancel = () => ctrl.abort();
+    if (run) run.ctrl.signal.addEventListener('abort', onCancel);
+    const fail = (code, status) => { const e = new Error(code); e.code = code; e.status = status; return e; };
+    try {
+      let res;
+      try {
+        res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+      } catch (e) {
+        throw fail(timedOut ? 'timeout' : (run && run.ctrl.signal.aborted ? 'cancelled' : 'network'));
+      }
+      if (!res.ok) {
+        let info = null;
+        try { info = await res.json(); } catch (_) {}
+        throw fail((info && info.code) || (res.status === 413 ? 'too_large' : 'http'), res.status);
+      }
+      return res;
+    } finally {
+      clearTimeout(timer);
+      if (run) run.ctrl.signal.removeEventListener('abort', onCancel);
     }
-    const res = await fetch('/api/complete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
+  }
+
+  async postJson(url, body, run, timeoutMs) {
+    const res = await this.fetchApi(url, body, run, timeoutMs);
+    try { return await res.json(); } catch (_) { const e = new Error('bad_json'); e.code = 'http'; throw e; }
+  }
+
+  // Usa window.claude.complete quando disponível (pré-visualização do Claude
+  // Design) e, caso contrário, chama o proxy do servidor (/api/complete).
+  // Devolve { text, truncated }.
+  async completeRaw(prompt, run) {
+    if (window.claude && window.claude.complete) {
+      return { text: (await window.claude.complete(prompt)) || '', truncated: false };
+    }
+    const data = await this.postJson('/api/complete', { prompt }, run);
+    return { text: (data && data.text) || '', truncated: !!(data && data.truncated) };
+  }
+  // Variante para respostas JSON: resposta cortada não serve, então vira erro.
+  async complete(prompt, run) {
+    const out = await this.completeRaw(prompt, run);
+    if (out.truncated) { const e = new Error('truncated'); e.code = 'truncated'; throw e; }
+    return out.text;
+  }
+
+  // Isola e interpreta o objeto JSON da resposta, mesmo cercado por texto/crases.
+  parseAiJson(raw) {
+    if (!raw) throw new Error('sem resposta');
+    const s = String(raw).trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+    const a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a === -1 || b === -1) throw new Error('json não encontrado');
+    return JSON.parse(s.slice(a, b + 1));
+  }
+
+  // Mensagem clara por tipo de falha (antes tudo virava "tente novamente").
+  friendlyError(e, fallback) {
+    const code = e && e.code;
+    if (code === 'timeout') return 'A ARI demorou demais para responder. Tente de novo — descrições mais curtas respondem mais rápido.';
+    if (code === 'busy') return 'A IA está sobrecarregada no momento. Aguarde alguns segundos e tente de novo.';
+    if (code === 'too_large') return 'O envio ficou grande demais (provavelmente a imagem). Use uma imagem menor e tente de novo.';
+    if (code === 'network') return 'Sem conexão com o servidor da ARI. Verifique a internet e se o servidor está no ar.';
+    if (code === 'truncated') return 'A resposta ficou longa demais e foi cortada. Tente dividir o processo em partes menores.';
+    if (code === 'refusal') return 'A IA não pôde atender a este pedido. Reformule a descrição e tente de novo.';
+    if (code === 'config') return 'O servidor da ARI está mal configurado (chave ou modelo da IA). Avise o responsável.';
+    return fallback;
+  }
+
+  // ─── Mapeamento BPMN ───────────────────────────────────────────────────────
+  // O servidor conduz a IA (bpmn-ai.js): /analyze escolhe o modelo com o Jev e,
+  // em processos complexos, devolve uma bateria de perguntas; /generate devolve o
+  // grafo já validado e reparado; /review (só no complexo) audita o grafo contra
+  // a descrição. O navegador só desenha o grafo (bpmn-layout.js).
+  BPMN_TIMEOUT_MS = 20 * 60 * 1000;
+
+  // "claude-opus-5-5" -> "Claude Opus 5.5"
+  modelName(id) {
+    const m = /^claude-([a-z]+)-(\d+)(?:-(\d+))?$/.exec(id || '');
+    return m ? 'Claude ' + m[1][0].toUpperCase() + m[1].slice(1) + ' ' + m[2] + (m[3] ? '.' + m[3] : '') : (id || '');
+  }
+  // Legenda: "Complexidade alta (avaliada pelo Jev) · gerado com Claude Opus 5.5 · revisão: 3 correções".
+  describeRoute(analysis, model, fixes) {
+    if (!model) return '';
+    const head = analysis && analysis.label ? 'Complexidade ' + analysis.label + ' (avaliada pelo Jev) · ' : 'Modelo padrão · ';
+    const rev = fixes == null ? '' : ' · revisão automática: ' + (fixes ? fixes + ' correç' + (fixes > 1 ? 'ões' : 'ão') : 'nenhuma correção necessária');
+    return head + 'gerado com ' + this.modelName(model) + rev;
+  }
+
+  // Avisos do validador que a IA não conseguiu resolver.
+  structureNotice(errors) {
+    if (!errors || !errors.length) return '';
+    return 'O validador ainda encontrou ' + errors.length + ' problema(s) estrutural(is) — revise estes pontos no diagrama: ' + errors.slice(0, 3).join(' ') + (errors.length > 3 ? ' …' : '');
+  }
+
+  // Etapa 1: complexidade (Jev) e, se o modelo for o complexo, perguntas.
+  async startBpmn(text, run) {
+    this.setState({ loadingMsg: 'Avaliando a complexidade do processo…' });
+    const an = await this.postJson('/api/bpmn/analyze', { text }, run, this.BPMN_TIMEOUT_MS);
+    if (this.isStale(run)) return;
+    this.bpmnAnalysis = { text, tier: an.tier || null, label: an.label || null, model: an.model || '' };
+    const questions = Array.isArray(an.questions) ? an.questions : [];
+    if (questions.length) {
+      this.bpmnQuestions = questions;
+      this.setState({
+        loading: false, bpmnAsk: true,
+        result: 'Este processo é complexo, então a ARI vai mapeá-lo com ' + this.modelName(an.model) + '. Para o diagrama sair fiel, responda às perguntas abaixo. Deixe em branco as que quiser — a ARI usa a suposição indicada em cada uma.'
+      }, this.renderQuestions);
+      return;
+    }
+    await this.runBpmnGeneration(run, []);
+  }
+
+  // Etapas 2 e 3: gera (com reparo automático) e, no complexo, revisa.
+  async runBpmnGeneration(run, answers) {
+    const an = this.bpmnAnalysis || {};
+    const complex = an.tier === 'complex';
+    const who = an.model ? ' com ' + this.modelName(an.model) : '';
+    this.setState({ loading: true, bpmnAsk: false, loadingMsg: 'Desenhando o mapeamento' + who + (complex ? ' — processos complexos levam alguns minutos…' : '…') });
+    const payload = { text: an.text, answers, tier: an.tier };
+    const gen = await this.postJson('/api/bpmn/generate', payload, run, this.BPMN_TIMEOUT_MS);
+    if (this.isStale(run)) return;
+    let graph = gen.graph, errors = gen.errors, fixes = null, notes = '';
+    if (complex) {
+      this.setState({ loadingMsg: 'Revisando o mapeamento contra a descrição, trecho por trecho…' });
+      try {
+        const rv = await this.postJson('/api/bpmn/review', Object.assign({ graph }, payload), run, this.BPMN_TIMEOUT_MS);
+        if (this.isStale(run)) return;
+        graph = rv.graph; errors = rv.errors;
+        fixes = (rv.problems || []).length;
+        if (fixes) notes = 'Correções da revisão automática:\n' + rv.problems.map((p) => '• ' + p).join('\n');
+      } catch (e) {
+        if (this.isStale(run) || e.code === 'cancelled') return;
+        notes = 'A revisão automática não pôde ser feita (' + this.friendlyError(e, 'erro inesperado').replace(/\.$/, '').toLowerCase() + '); este é o mapeamento antes da revisão.';
+      }
+    }
+    this.bpmnGraph = graph;
+    this.bpmnTier = an.tier || null;
+    const routeInfo = this.describeRoute(an, gen.model, fixes);
+    await this.showBpmn({ notice: this.structureNotice(errors), routeInfo, reviewNotes: notes });
+  }
+
+  // Desenha this.bpmnGraph e guarda no navegador.
+  async showBpmn(extra) {
+    await this.ensureLayout();
+    const built = window.AriBpmn.buildXml(this.bpmnGraph, this.PALETTE[this.state.actColorIdx || 0]);
+    this.bpmnManualXml = null;
+    const next = Object.assign({ loading: false, editing: false, result: built.summary, bpmnXml: built.xml, bpmnManual: false }, extra || {});
+    this.saveBpmn(this.state.actColorIdx || 0, next.routeInfo != null ? next.routeInfo : this.state.routeInfo, next.reviewNotes != null ? next.reviewNotes : this.state.reviewNotes);
+    this._previewTries = 0;
+    this.setState(next, this.renderPreview);
+  }
+
+  // Rascunho local quando a IA não responde (leitura automática simples).
+  async fallbackBpmn(text, e) {
+    try {
+      await this.ensureLayout();
+      this.bpmnGraph = window.AriBpmn.legacyToGraph(this.parseStepsFromText(text));
+      this.bpmnTier = null;
+      await this.showBpmn({
+        notice: 'A IA não respondeu (' + this.friendlyError(e, 'erro inesperado').replace(/\.$/, '').toLowerCase() + '). Este diagrama foi montado por uma leitura automática simples do texto — revise com atenção ou gere de novo.',
+        routeInfo: '', reviewNotes: ''
+      });
+    } catch (_) {
+      this.setState({ loading: false, err: 'Não consegui montar o BPMN. Tente descrever o processo com um pouco mais de detalhe.' });
+    }
+  }
+
+  // Bateria de perguntas (processos complexos).
+  setQuestions = (el) => { this.questionsEl = el; };
+  renderQuestions = () => {
+    const qs = this.bpmnQuestions || [];
+    if (!this.questionsEl) {
+      this._qTries = (this._qTries || 0) + 1;
+      if (this._qTries < 40) setTimeout(this.renderQuestions, 100);
+      return;
+    }
+    this._qTries = 0;
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const saved = this.bpmnAnswers || [];
+    this.questionsEl.innerHTML = qs.map((q, i) =>
+      '<div style="padding:12px 0;border-bottom:1px solid #eff2f5;">' +
+        '<label for="ari-q-' + i + '" style="display:block;font-size:14px;line-height:1.45;color:#0a1f44;font-weight:600;margin-bottom:4px;">' + (i + 1) + '. ' + esc(q.question) + '</label>' +
+        (q.why ? '<div style="font-size:12.5px;line-height:1.45;color:#64748b;margin-bottom:8px;">' + esc(q.why) + '</div>' : '') +
+        '<textarea id="ari-q-' + i + '" data-ari-q="' + i + '" rows="2" placeholder="' + esc(q.suggestion ? 'Se deixar em branco: ' + q.suggestion : 'Sua resposta') + '" style="width:100%;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:10px;padding:9px 11px;font-family:\'IBM Plex Sans\';font-size:14px;line-height:1.45;color:#0a1f44;background:#fff;outline:none;">' + esc(saved[i] || '') + '</textarea>' +
+      '</div>').join('');
+    this.questionsEl.querySelectorAll('textarea[data-ari-q]').forEach((t) => {
+      t.addEventListener('input', () => { (this.bpmnAnswers = this.bpmnAnswers || [])[+t.getAttribute('data-ari-q')] = t.value; });
     });
-    if (!res.ok) throw new Error('proxy ' + res.status);
-    const data = await res.json();
-    return (data && data.text) || '';
-  }
-
-  // ─── Extração via IA ───────────────────────────────────────────────────────
-  // A ARI lê o texto corrido e devolve a estrutura lógica do processo como JSON.
-  async aiExtractNodes(text) {
-    const prompt =
-      'Você é a ARI, especialista em mapeamento de processos de negócio (BPMN). ' +
-      'Leia a descrição do processo abaixo (texto livre, pode estar em prosa) e extraia a estrutura lógica do fluxo, na ordem correta, identificando o RESPONSÁVEL (setor, área ou cargo) de cada etapa — isso vira as raias (lanes) do diagrama.\n\n' +
-      'Responda SOMENTE com um objeto JSON válido — sem markdown, sem crases, sem comentários, sem nenhum texto antes ou depois. Formato exato:\n' +
-      '{"nodes":[' +
-      '{"type":"task","name":"Ação a executar","actor":"Responsável"},' +
-      '{"type":"decision","name":"Pergunta de sim/não?","actor":"Responsável","sim":[{"name":"ação se sim","actor":"Responsável"}],"nao":[{"name":"ação se não","actor":"Responsável"}]}' +
-      ']}\n\n' +
-      'Regras:\n' +
-      '- "task": uma atividade/ação do processo. Nome curto (até ~6 palavras), verbo no início, em português.\n' +
-      '- "actor": quem executa a etapa — o setor/área/cargo responsável (ex.: "Comercial", "Financeiro", "Cliente", "Expedição", "Gerência"). SEMPRE preencha; se o texto não disser explicitamente, infira o responsável mais provável. Use nomes curtos e consistentes (reutilize o mesmo nome para o mesmo responsável).\n' +
-      '- DECISÕES SEMPRE SÃO "decision" (gateway), NUNCA "task". Toda pergunta de sim/não, verificação ou condição ("se...", "caso...", "verificar se...", "está conforme?", "foi aprovado?", "tem estoque?") DEVE ser um nó {type:"decision"} com "name" terminando em "?". É PROIBIDO criar uma "task" cujo nome seja uma pergunta. Se uma etapa for uma pergunta, transforme-a em "decision".\n' +
-      '- Em "decision", "sim" e "nao" são as ações de cada caminho (listas, cada item com "actor"). Use [] quando um caminho apenas segue adiante sem ação própria. NÃO crie um segundo gateway de "junção"/"fim da decisão" — os caminhos se reencontram naturalmente na próxima etapa.\n' +
-      '- Reconheça decisões mesmo implícitas no texto corrido (ex.: "se houver estoque... caso contrário...", "verifica se foi aprovado", "quando o valor excede o limite").\n' +
-      '- Capture TODAS as atividades relevantes, na sequência lógica. Não invente etapas que não estão no texto.\n' +
-      '- NÃO inclua evento de início nem de fim — eu adiciono automaticamente.\n\n' +
-      'Descrição do processo:\n"' + text + '"';
-    const raw = await this.complete(prompt);
-    if (!raw) throw new Error('sem resposta');
-    // Isola o objeto JSON, mesmo que venha cercado por texto/crases.
-    let s = String(raw).trim().replace(/^```(?:json)?/i, '').replace(/```$/,'').trim();
-    const a = s.indexOf('{'), b = s.lastIndexOf('}');
-    if (a === -1 || b === -1) throw new Error('json não encontrado');
-    const data = JSON.parse(s.slice(a, b + 1));
-    const nodes = this.normalizeNodes(data && data.nodes);
-    if (!nodes.length) throw new Error('vazio');
-    return nodes;
-  }
-
-  // Edição incremental: a IA recebe a estrutura atual + a instrução do usuário e
-  // devolve a estrutura inteira alterando APENAS o que foi pedido.
-  async aiEditNodes(currentNodes, instruction) {
-    const prompt =
-      'Você é a ARI, especialista em mapeamento de processos (BPMN). Abaixo está a estrutura atual de um processo em JSON e uma instrução de alteração do usuário. ' +
-      'Aplique SOMENTE a alteração pedida e mantenha todo o resto exatamente igual (mesmos nomes, mesma ordem, mesmos responsáveis).\n\n' +
-      'Responda SOMENTE com o JSON completo atualizado, sem markdown, sem crases, sem texto extra. Mesmo formato do original:\n' +
-      '{"nodes":[{"type":"task","name":"...","actor":"..."},{"type":"decision","name":"...?","actor":"...","sim":[{"name":"...","actor":"..."}],"nao":[{"name":"...","actor":"..."}]}]}\n\n' +
-      'Regras: preserve o que não foi mencionado; "actor" é o responsável/raia de cada etapa; não invente etapas além do que a instrução pede; nomes curtos em português.\n\n' +
-      'Estrutura atual:\n' + JSON.stringify({ nodes: currentNodes }) + '\n\nInstrução do usuário:\n"' + instruction + '"';
-    const raw = await this.complete(prompt);
-    if (!raw) throw new Error('sem resposta');
-    let s = String(raw).trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-    const a = s.indexOf('{'), b = s.lastIndexOf('}');
-    if (a === -1 || b === -1) throw new Error('json não encontrado');
-    const data = JSON.parse(s.slice(a, b + 1));
-    const nodes = this.normalizeNodes(data && data.nodes);
-    if (!nodes.length) throw new Error('vazio');
-    return nodes;
-  }
+  };
+  confirmQuestions = async () => {
+    if (this.state.loading || !this.bpmnAnalysis) return;
+    const qs = this.bpmnQuestions || [];
+    const answers = qs.map((q, i) => ({ question: q.question, suggestion: q.suggestion, answer: String((this.bpmnAnswers || [])[i] || '').trim() }));
+    const run = this.startRun();
+    this.setState({ err: '', notice: '' });
+    try { await this.runBpmnGeneration(run, answers); }
+    catch (e) {
+      if (this.isStale(run) || e.code === 'cancelled') return;
+      // Mantém as perguntas na tela para o usuário tentar de novo.
+      this.setState({ loading: false, bpmnAsk: true, err: this.friendlyError(e, 'Não consegui gerar o mapeamento. Tente novamente.') }, this.renderQuestions);
+    }
+  };
 
   setEditText = (el) => { this.editEl = el; };
   applyEdit = async () => {
+    if (this.state.loading || this.state.editing) return;
     const instr = (this.editEl && this.editEl.value || '').trim();
-    if (!instr) { this.setState({ err: 'Descreva a alteração que você quer no mapeamento.' }); return; }
-    if (!this.bpmnNodes) return;
-    this.setState({ editing: true, err: '' });
+    if (!instr) { this.setState({ editErr: 'Descreva a alteração que você quer no mapeamento.' }); return; }
+    if (!this.bpmnGraph) return;
+    const run = this.startRun();
+    this.setState({ editing: true, editErr: '', notice: '' });
     try {
-      const updated = await this.aiEditNodes(this.bpmnNodes, instr);
-      this.bpmnNodes = updated;
-      const actColor = this.PALETTE[this.state.actColorIdx || 0];
-      const built = this.buildBpmnFromNodes(updated, actColor);
-      this.setState({ editing: false, result: built.summary, bpmnXml: built.xml, err: '' });
+      const out = await this.postJson('/api/bpmn/edit', { graph: this.bpmnGraph, instruction: instr, tier: this.bpmnTier }, run, this.BPMN_TIMEOUT_MS);
+      if (this.isStale(run)) return;
+      this.bpmnGraph = out.graph;
       if (this.editEl) this.editEl.value = '';
-      this._previewTries = 0;
-      setTimeout(this.renderPreview, 80);
+      await this.showBpmn({ editErr: '', notice: this.structureNotice(out.errors) });
     } catch (e) {
-      this.setState({ editing: false, err: 'Não consegui aplicar a alteração. Tente reformular o pedido.' });
+      if (this.isStale(run)) return;
+      this.setState({ editing: false, editErr: this.friendlyError(e, 'Não consegui aplicar a alteração. Tente reformular o pedido.') });
     }
   };
 
-  // Garante o formato: task{name,actor} | decision{name,actor,sim:[{name,actor}],nao:[...]}.
-  normalizeNodes(arr) {
-    const cap = (s) => { s = String(s || '').trim(); return s ? s[0].toUpperCase() + s.slice(1) : s; };
-    const actorOf = (x) => (x && typeof x === 'object' ? (x.actor || x.lane || x.responsavel || x.setor || '') : '');
-    const toList = (v, defActor) => (Array.isArray(v) ? v : (v == null || v === '' ? [] : [v]))
-      .map((x) => ({ name: cap(typeof x === 'string' ? x : (x && x.name) || ''), actor: (actorOf(x) || defActor || '').toString().trim() }))
-      .filter((t) => t.name);
-    const out = [];
-    for (const n of (Array.isArray(arr) ? arr : [])) {
-      if (!n) continue;
-      const actor = (n.actor || n.lane || n.responsavel || n.setor || '').toString().trim();
-      // Rede de segurança: uma "task" cujo nome é uma pergunta vira gateway.
-      const looksQuestion = n.type !== 'decision' && /\?\s*$/.test((n.name || '').trim());
-      if (n.type === 'decision' || n.sim || n.nao || looksQuestion) {
-        let name = cap(n.name || 'Decisão');
-        if (!/\?$/.test(name)) name += '?';
-        out.push({ type: 'decision', name, actor, sim: toList(n.sim, actor), nao: toList(n.nao, actor) });
-      } else if (n.name) {
-        out.push({ type: 'task', name: cap(n.name), actor });
-      }
-    }
-    return out;
-  }
-
   // ─── Fallback offline (heurística) ─────────────────────────────────────────
-  // Usado só quando a IA não está disponível (ex.: pré-visualização local).
+  // Usado só quando a IA não está disponível; vira grafo via AriBpmn.legacyToGraph.
   parseStepsFromText(text) {
     const cap = (s) => { s = (s || '').trim(); return s ? s[0].toUpperCase() + s.slice(1) : s; };
     let segs = String(text).split(/\r?\n/);
@@ -550,337 +962,145 @@ class Component extends DCLogic {
     return nodes;
   }
 
-  // ─── Layout + XML BPMN 2.0 (dispatcher) ────────────────────────────────────
-  // Com 2+ responsáveis distintos, desenha com pool + raias (lanes); caso
-  // contrário usa o layout simples (sem pool). Sempre devolve { xml, summary }.
-  buildBpmnFromNodes(nodes, actColor) {
-    if (!nodes || !nodes.length) throw new Error('vazio');
-    const actors = [], seen = new Set();
-    const add = (a) => { a = (a || '').trim(); if (a && !seen.has(a)) { seen.add(a); actors.push(a); } };
-    for (const n of nodes) {
-      add(n.actor);
-      if (n.type === 'decision') { (n.sim || []).forEach((t) => add(t.actor)); (n.nao || []).forEach((t) => add(t.actor)); }
-    }
-    if (actors.length >= 2) return this.buildLanedBpmn(nodes, actors, actColor);
-    return this.buildSimpleBpmn(nodes, actColor);
-  }
-
-  // Esquema de cores por tipo. Início verde, fim vermelho, gateway amarelo,
-  // atividade na cor escolhida. Devolve um helper que gera os atributos de cor
-  // do BPMNShape (compatível com bpmn.io/bioc e com a cor padrão OMG).
-  colorAttrsFor(actColor) {
-    const act = actColor && actColor.fill ? actColor : { fill: '#dbeafe', stroke: '#1c5cff' };
-    const SCHEME = {
-      startEvent: { fill: '#dcfce7', stroke: '#16a34a' },
-      endEvent: { fill: '#fee2e2', stroke: '#dc2626' },
-      exclusiveGateway: { fill: '#fef9c3', stroke: '#ca8a04' },
-      task: { fill: act.fill, stroke: act.stroke }
-    };
-    return (type) => {
-      const c = SCHEME[type] || SCHEME.task;
-      return ' bioc:stroke="' + c.stroke + '" bioc:fill="' + c.fill + '" color:background-color="' + c.fill + '" color:border-color="' + c.stroke + '"';
-    };
-  }
-
-  // Layout simples, sem pool (usado quando não há responsáveis identificados).
-  buildSimpleBpmn(nodes, actColor) {
-    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    if (!nodes || !nodes.length) throw new Error('vazio');
-    const colorOf = this.colorAttrsFor(actColor);
-
-    const W = { startEvent: 36, endEvent: 36, task: 100, exclusiveGateway: 50 };
-    const H = { startEvent: 36, endEvent: 36, task: 80, exclusiveGateway: 50 };
-    const GAP = 60, CY = 240, BRANCH = 130, X0 = 152;
-    const els = [], flows = [];
-    let id = 0; const nid = (p) => p + '_' + (++id);
-    const place = (type, name, x, cy) => {
-      const w = W[type], h = H[type];
-      const el = { id: nid(type === 'task' ? 'Task' : type === 'exclusiveGateway' ? 'Gateway' : type === 'startEvent' ? 'StartEvent' : 'EndEvent'), type, name: name || '', x, y: Math.round(cy - h / 2), w, h };
-      els.push(el); return el;
-    };
-    const cx = (e) => e.x + e.w / 2, cyOf = (e) => e.y + e.h / 2;
-    const connect = (src, tgt, name, wp) => { flows.push({ id: nid('Flow'), src: src.id, tgt: tgt.id, name: name || '', wp }); };
-    const hWp = (a, b) => [[a.x + a.w, cyOf(a)], [b.x, cyOf(b)]];
-
-    let x = X0;
-    // Roteamento: reta quando mesma altura; senão sobe/desce num corredor livre
-    // logo antes do destino. Sem gateway de junção (apenas o gateway inicial).
-    const routeTo = (s, t) => {
-      const sx = s.x + s.w, sy = cyOf(s), tx = t.x, ty = cyOf(t);
-      if (Math.round(sy) === Math.round(ty)) return [[sx, sy], [tx, ty]];
-      const vx = tx - GAP / 2;
-      return [[sx, sy], [vx, sy], [vx, ty], [tx, ty]];
-    };
-    const start = place('startEvent', 'Início', x, CY); x += W.startEvent + GAP;
-    let prevs = [{ el: start, label: '' }];
-
-    for (const n of nodes) {
-      if (n.type === 'decision') {
-        const gwD = place('exclusiveGateway', n.name || 'Decisão?', x, CY); x += W.exclusiveGateway + GAP;
-        prevs.forEach((p) => connect(p.el, gwD, p.label, routeTo(p.el, gwD)));
-        const xBr = x;
-        const layBranch = (names, laneCY, label, isTop) => {
-          if (!names || !names.length) return [{ el: gwD, label }]; // ramo vazio: gateway leva o rótulo ao próximo nó
-          let bx = xBr, p = null, first = null;
-          names.forEach((nm, i) => {
-            const t = place('task', nm.name, bx, laneCY); bx += W.task + GAP;
-            if (i === 0) first = t; else connect(p, t, '', hWp(p, t));
-            p = t;
-          });
-          connect(gwD, first, label, [[cx(gwD), isTop ? gwD.y : gwD.y + gwD.h], [cx(gwD), cyOf(first)], [first.x, cyOf(first)]]);
-          return [{ el: p, label: '' }];
-        };
-        const simExits = layBranch(n.sim, CY - BRANCH, 'Sim', true);
-        const naoExits = layBranch(n.nao, CY + BRANCH, 'Não', false);
-        prevs = simExits.concat(naoExits);
-        let maxRight = gwD.x + gwD.w;
-        prevs.forEach((e) => { maxRight = Math.max(maxRight, e.el.x + e.el.w); });
-        x = maxRight + GAP;
-      } else {
-        const t = place('task', n.name, x, CY); x += W.task + GAP;
-        prevs.forEach((p) => connect(p.el, t, p.label, routeTo(p.el, t)));
-        prevs = [{ el: t, label: '' }];
-      }
-    }
-    const end = place('endEvent', 'Fim', x, CY);
-    prevs.forEach((p) => connect(p.el, end, p.label, routeTo(p.el, end)));
-
-    const tag = (el) => {
-      if (el.type === 'exclusiveGateway') {
-        const dir = el.name ? ' name="' + esc(el.name) + '" gatewayDirection="Diverging"' : ' gatewayDirection="Converging"';
-        return '    <exclusiveGateway id="' + el.id + '"' + dir + '/>';
-      }
-      return '    <' + el.type + ' id="' + el.id + '" name="' + esc(el.name) + '"/>';
-    };
-    const flowTag = (f) => '    <sequenceFlow id="' + f.id + '"' + (f.name ? ' name="' + esc(f.name) + '"' : '') + ' sourceRef="' + f.src + '" targetRef="' + f.tgt + '"/>';
-    const shapeTag = (el) => '      <bpmndi:BPMNShape id="' + el.id + '_di" bpmnElement="' + el.id + '"' + (el.type === 'exclusiveGateway' ? ' isMarkerVisible="true"' : '') + colorOf(el.type) + '>\n        <omgdc:Bounds x="' + el.x + '" y="' + el.y + '" width="' + el.w + '" height="' + el.h + '"/>\n      </bpmndi:BPMNShape>';
-    const edgeTag = (f) => '      <bpmndi:BPMNEdge id="' + f.id + '_di" bpmnElement="' + f.id + '">\n' + f.wp.map((p) => '        <omgdi:waypoint x="' + Math.round(p[0]) + '" y="' + Math.round(p[1]) + '"/>').join('\n') + '\n      </bpmndi:BPMNEdge>';
-
-    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-      '<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" targetNamespace="http://bpmn.io/schema/bpmn" id="Definitions_ARI">\n' +
-      '  <process id="Process_1" isExecutable="false">\n' +
-      els.map(tag).join('\n') + '\n' +
-      flows.map(flowTag).join('\n') + '\n' +
-      '  </process>\n' +
-      '  <bpmndi:BPMNDiagram id="BPMNDiagram_1">\n' +
-      '    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">\n' +
-      els.map(shapeTag).join('\n') + '\n' +
-      flows.map(edgeTag).join('\n') + '\n' +
-      '    </bpmndi:BPMNPlane>\n' +
-      '  </bpmndi:BPMNDiagram>\n' +
-      '</definitions>\n';
-
-    const taskCount = els.filter((e) => e.type === 'task').length;
-    const gwCount = els.filter((e) => e.type === 'exclusiveGateway' && e.name).length;
-    let summary = 'MAPEAMENTO BPMN GERADO\n\nInício\n';
-    for (const n of nodes) {
-      if (n.type === 'decision') {
-        summary += '  <> ' + n.name + '\n';
-        summary += '        Sim: ' + ((n.sim && n.sim.length) ? n.sim.map((t) => t.name).join(' -> ') : '(segue)') + '\n';
-        summary += '        Não: ' + ((n.nao && n.nao.length) ? n.nao.map((t) => t.name).join(' -> ') : '(segue)') + '\n';
-      } else {
-        summary += '  -> ' + n.name + '\n';
-      }
-    }
-    summary += '  -> Fim\n\n';
-    summary += taskCount + ' atividade(s), ' + gwCount + ' decisão(ões).\n';
-    summary += 'Clique em "Baixar arquivo .bpmn" — abre no bpmn.io, Camunda e Bizagi.';
-    return { xml, summary };
-  }
-
-  // Layout com pool + raias (lanes), uma raia por responsável.
-  // x avança pela ordem da sequência; y é o centro da raia do responsável.
-  // Ramos do gateway ocupam colunas próprias (nunca se sobrepõem).
-  buildLanedBpmn(nodes, actors, actColor) {
-    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const colorOf = this.colorAttrsFor(actColor);
-    const POOL_X = 160, POOL_Y = 80, LANE_H = 150, LANE_LABEL_W = 30, STEP_W = 170, MARGIN_RIGHT = 70;
-    const CONTENT_CX0 = POOL_X + LANE_LABEL_W + 60;
-    const W = { startEvent: 36, endEvent: 36, task: 100, exclusiveGateway: 50 };
-    const H = { startEvent: 36, endEvent: 36, task: 80, exclusiveGateway: 50 };
-
-    const laneIndex = {};
-    actors.forEach((a, i) => { laneIndex[a] = i; });
-    const laneOf = (a) => { a = (a || '').trim(); return (a && laneIndex[a] != null) ? laneIndex[a] : 0; };
-    const cx = (step) => CONTENT_CX0 + step * STEP_W;
-    const cyOfLane = (li) => POOL_Y + li * LANE_H + LANE_H / 2;
-
-    const els = [], flows = [];
-    const laneEls = actors.map(() => []);
-    let id = 0; const nid = (p) => p + '_' + (++id);
-    let maxStep = 0;
-    // Ocupação por célula (coluna:raia) — garante que nada se sobreponha e
-    // mantém os ramos do gateway em colunas paralelas quando possível.
-    const cells = new Set();
-    const reserve = (step, li) => { let s = Math.max(0, step); while (cells.has(s + ':' + li)) s++; cells.add(s + ':' + li); return s; };
-    const place = (type, name, prefStep, li) => {
-      const s = reserve(prefStep, li);
-      const w = W[type], h = H[type];
-      const ccx = cx(s), ccy = cyOfLane(li);
-      const el = { id: nid(type === 'task' ? 'Task' : type === 'exclusiveGateway' ? 'Gateway' : type === 'startEvent' ? 'StartEvent' : 'EndEvent'), type, name: name || '', x: Math.round(ccx - w / 2), y: Math.round(ccy - h / 2), w, h, li, step: s };
-      els.push(el); laneEls[li].push(el.id); if (s > maxStep) maxStep = s;
-      return el;
-    };
-    const cyc = (e) => e.y + e.h / 2;
-    // As setas são roteadas DEPOIS de tudo posicionado (com a ocupação completa),
-    // para nunca passar por cima de uma caixa.
-    const pending = [];
-    const connect = (src, tgt, name) => { pending.push({ src, tgt, name: name || '' }); };
-
-    const start = place('startEvent', 'Início', 0, laneOf(nodes[0] && nodes[0].actor));
-    // prevs = saídas pendentes que se ligam ao próximo nó. Cada uma carrega um
-    // rótulo opcional (Sim/Não para ramos vazios). Sem gateway de junção: os
-    // ramos voltam a se encontrar direto no próximo passo (merge implícito).
-    let prevs = [{ el: start, label: '' }];
-    const nextStep = () => Math.max.apply(null, prevs.map((p) => p.el.step)) + 1;
-
-    for (const n of nodes) {
-      if (n.type === 'decision') {
-        const gwD = place('exclusiveGateway', n.name || 'Decisão?', nextStep(), laneOf(n.actor));
-        prevs.forEach((p) => connect(p.el, gwD, p.label));
-        // Cada ramo é encadeado; só o gateway INICIAL é criado (sem o de junção).
-        const layBranch = (tasks, label) => {
-          if (!tasks || !tasks.length) return [{ el: gwD, label }]; // ramo vazio: gateway é a saída, leva o rótulo ao próximo nó
-          let p = null;
-          (tasks).forEach((t, i) => {
-            const el = place('task', t.name, gwD.step + 1 + i, laneOf(t.actor));
-            if (i === 0) connect(gwD, el, label); else connect(p, el, '');
-            p = el;
-          });
-          return [{ el: p, label: '' }];
-        };
-        prevs = layBranch(n.sim, 'Sim').concat(layBranch(n.nao, 'Não'));
-      } else {
-        const t = place('task', n.name, nextStep(), laneOf(n.actor));
-        prevs.forEach((p) => connect(p.el, t, p.label));
-        prevs = [{ el: t, label: '' }];
-      }
-    }
-    const end = place('endEvent', 'Fim', nextStep(), (prevs[0] && prevs[0].el.li) || 0);
-    prevs.forEach((p) => connect(p.el, end, p.label));
-
-    // ── Roteamento ortogonal sem sobreposição ──
-    // Sai pela direita, sobe/desce por um corredor livre entre colunas (gapX) e
-    // entra pela esquerda do destino. Quando a faixa na raia destino está
-    // ocupada, desvia por um canal no topo da raia (sem caixas).
-    const laneTop = (li) => POOL_Y + li * LANE_H;
-    const occupied = (col, li) => cells.has(col + ':' + li);
-    const spanClear = (cA, cB, li) => { const lo = Math.min(cA, cB), hi = Math.max(cA, cB); for (let c = lo + 1; c < hi; c++) if (occupied(c, li)) return false; return true; };
-    for (const f of pending) {
-      const src = f.src, tgt = f.tgt;
-      const sX = src.x + src.w, sY = cyc(src);          // borda direita da origem
-      const tX = tgt.x, tY = cyc(tgt);                  // borda esquerda do destino
-      const gapX = cx(src.step) + STEP_W / 2;           // corredor vertical livre após a origem
-      let wp;
-      if (src.li === tgt.li && spanClear(src.step, tgt.step, src.li)) {
-        wp = [[sX, sY], [tX, tY]];                       // reta na mesma raia
-      } else if (spanClear(src.step, tgt.step, tgt.li)) {
-        wp = [[sX, sY], [gapX, sY], [gapX, tY], [tX, tY]]; // cotovelo pelo corredor
-      } else {
-        const ch = laneTop(tgt.li) + 16;                 // canal no topo da raia destino
-        wp = [[sX, sY], [gapX, sY], [gapX, ch], [tX, ch], [tX, tY]];
-      }
-      flows.push({ id: nid('Flow'), src: src.id, tgt: tgt.id, name: f.name, wp });
-    }
-
-    const poolWidth = Math.round((cx(maxStep) + 50) - POOL_X + MARGIN_RIGHT);
-    const poolHeight = actors.length * LANE_H;
-    const laneX = POOL_X + LANE_LABEL_W;
-    const laneW = poolWidth - LANE_LABEL_W;
-    const COLLAB = 'Collaboration_1', PROCESS = 'Process_1', PART = 'Participant_1';
-    const laneId = (i) => 'Lane_' + (i + 1);
-
-    const tag = (el) => {
-      if (el.type === 'exclusiveGateway') {
-        const dir = el.name ? ' name="' + esc(el.name) + '" gatewayDirection="Diverging"' : ' gatewayDirection="Converging"';
-        return '      <exclusiveGateway id="' + el.id + '"' + dir + '/>';
-      }
-      return '      <' + el.type + ' id="' + el.id + '" name="' + esc(el.name) + '"/>';
-    };
-    const flowTag = (f) => '      <sequenceFlow id="' + f.id + '"' + (f.name ? ' name="' + esc(f.name) + '"' : '') + ' sourceRef="' + f.src + '" targetRef="' + f.tgt + '"/>';
-    const laneTag = (a, i) => '        <lane id="' + laneId(i) + '" name="' + esc(a) + '">\n' +
-      laneEls[i].map((eid) => '          <flowNodeRef>' + eid + '</flowNodeRef>').join('\n') +
-      (laneEls[i].length ? '\n' : '') + '        </lane>';
-    const shapeTag = (el) => '      <bpmndi:BPMNShape id="' + el.id + '_di" bpmnElement="' + el.id + '"' + (el.type === 'exclusiveGateway' ? ' isMarkerVisible="true"' : '') + colorOf(el.type) + '>\n        <omgdc:Bounds x="' + el.x + '" y="' + el.y + '" width="' + el.w + '" height="' + el.h + '"/>\n      </bpmndi:BPMNShape>';
-    const laneShape = (a, i) => '      <bpmndi:BPMNShape id="' + laneId(i) + '_di" bpmnElement="' + laneId(i) + '" isHorizontal="true">\n        <omgdc:Bounds x="' + laneX + '" y="' + (POOL_Y + i * LANE_H) + '" width="' + laneW + '" height="' + LANE_H + '"/>\n      </bpmndi:BPMNShape>';
-    const edgeTag = (f) => '      <bpmndi:BPMNEdge id="' + f.id + '_di" bpmnElement="' + f.id + '">\n' + f.wp.map((p) => '        <omgdi:waypoint x="' + Math.round(p[0]) + '" y="' + Math.round(p[1]) + '"/>').join('\n') + '\n      </bpmndi:BPMNEdge>';
-
-    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-      '<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" targetNamespace="http://bpmn.io/schema/bpmn" id="Definitions_ARI">\n' +
-      '  <collaboration id="' + COLLAB + '">\n' +
-      '    <participant id="' + PART + '" name="Processo" processRef="' + PROCESS + '"/>\n' +
-      '  </collaboration>\n' +
-      '  <process id="' + PROCESS + '" isExecutable="false">\n' +
-      '    <laneSet id="LaneSet_1">\n' +
-      actors.map(laneTag).join('\n') + '\n' +
-      '    </laneSet>\n' +
-      els.map(tag).join('\n') + '\n' +
-      flows.map(flowTag).join('\n') + '\n' +
-      '  </process>\n' +
-      '  <bpmndi:BPMNDiagram id="BPMNDiagram_1">\n' +
-      '    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="' + COLLAB + '">\n' +
-      '      <bpmndi:BPMNShape id="' + PART + '_di" bpmnElement="' + PART + '" isHorizontal="true">\n        <omgdc:Bounds x="' + POOL_X + '" y="' + POOL_Y + '" width="' + poolWidth + '" height="' + poolHeight + '"/>\n      </bpmndi:BPMNShape>\n' +
-      actors.map(laneShape).join('\n') + '\n' +
-      els.map(shapeTag).join('\n') + '\n' +
-      flows.map(edgeTag).join('\n') + '\n' +
-      '    </bpmndi:BPMNPlane>\n' +
-      '  </bpmndi:BPMNDiagram>\n' +
-      '</definitions>\n';
-
-    const taskCount = els.filter((e) => e.type === 'task').length;
-    const gwCount = els.filter((e) => e.type === 'exclusiveGateway' && e.name).length;
-    let summary = 'MAPEAMENTO BPMN GERADO (com raias)\n\nRaias: ' + actors.join(', ') + '\n\nInício\n';
-    for (const n of nodes) {
-      if (n.type === 'decision') {
-        summary += '  <> [' + (n.actor || '?') + '] ' + n.name + '\n';
-        summary += '        Sim: ' + ((n.sim && n.sim.length) ? n.sim.map((t) => t.name + ' [' + (t.actor || '?') + ']').join(' -> ') : '(segue)') + '\n';
-        summary += '        Não: ' + ((n.nao && n.nao.length) ? n.nao.map((t) => t.name + ' [' + (t.actor || '?') + ']').join(' -> ') : '(segue)') + '\n';
-      } else {
-        summary += '  -> [' + (n.actor || '?') + '] ' + n.name + '\n';
-      }
-    }
-    summary += '  -> Fim\n\n';
-    summary += actors.length + ' raia(s), ' + taskCount + ' atividade(s), ' + gwCount + ' decisão(ões).\n';
-    summary += 'Clique em "Baixar arquivo .bpmn" — abre no bpmn.io, Camunda e Bizagi.';
-    return { xml, summary };
+  // ─── Desenho do grafo (bpmn-layout.js, carregado sob demanda) ───────────────
+  ensureLayout() {
+    return window.AriBpmn ? Promise.resolve() : this.loadScript('./bpmn-layout.js');
   }
 
   downloadBpmn = () => {
     const xml = this.state.bpmnXml;
     if (!xml) return;
-    const blob = new Blob([xml], { type: 'application/bpmn+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'mapeamento-ari.bpmn';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.downloadBlob(new Blob([xml], { type: 'application/bpmn+xml' }), 'mapeamento-ari.bpmn');
+  };
+
+  // ─── Imagem PNG do mapeamento ───────────────────────────────────────────────
+  // O bpmn-js exporta o diagrama em SVG; o navegador rasteriza num canvas com
+  // fundo branco. A escala é limitada para diagramas enormes caberem no canvas.
+  downloadPng = async () => {
+    if (!this.viewer || !this.state.bpmnXml || this.state.pngBusy) return;
+    this.setState({ pngBusy: true });
+    try {
+      const { svg } = await this.viewer.saveSVG();
+      const blob = await this.svgToPng(svg);
+      this.downloadBlob(blob, 'mapeamento-ari.png');
+      this.setState({ pngBusy: false });
+    } catch (e) {
+      console.error('[ARI] PNG do mapeamento:', e);
+      this.setState({ pngBusy: false, notice: 'Não consegui gerar a imagem PNG. O arquivo .bpmn continua disponível para download.' });
+    }
+  };
+  svgToPng(svg) {
+    return new Promise((resolve, reject) => {
+      const vb = svg.match(/viewBox="\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)\s*"/);
+      const w = vb ? parseFloat(vb[1]) : 1200, h = vb ? parseFloat(vb[2]) : 800;
+      // 2x para nitidez; menos quando o diagrama é grande (limite de ~16 mil px e ~120 Mpx).
+      const k = Math.max(0.2, Math.min(2, 16000 / Math.max(w, h), Math.sqrt(120e6 / (w * h))));
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas');
+          c.width = Math.ceil(w * k); c.height = Math.ceil(h * k);
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob((b) => (b ? resolve(b) : reject(new Error('png vazio'))), 'image/png');
+        } catch (e) { reject(e); }
+      };
+      img.onerror = () => reject(new Error('svg inválido'));
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    });
+  }
+
+  // ─── Edição manual (bpmn-js Modeler em tela cheia) ──────────────────────────
+  setEditorEl = (el) => { this.editorEl = el; };
+  openEditor = async () => {
+    if (!this.state.bpmnXml || this.state.loading || this.state.editing || this.state.editorLoading) return;
+    this.setState({ editorLoading: true, editorErr: '' });
+    try { await this.loadBpmnModeler(); }
+    catch (_) { this.setState({ editorLoading: false, notice: 'Não consegui carregar o editor do diagrama. Verifique a conexão e tente de novo.' }); return; }
+    if (this.state.screen !== 'bpmn') { this.setState({ editorLoading: false }); return; }
+    this.setState({ editorLoading: false, bpmnEditing: true, editorDirty: false }, () => this.mountEditor(0));
+  };
+  async mountEditor(tries) {
+    if (!this.state.bpmnEditing) return;
+    if (!this.editorEl) { if (tries < 40) setTimeout(() => this.mountEditor(tries + 1), 50); return; }
+    this.destroyModeler();
+    const modeler = new this.ModelerCls({ container: this.editorEl, keyboard: { bindTo: document } });
+    this.modeler = modeler;
+    try {
+      await modeler.importXML(this.state.bpmnXml);
+      if (this.modeler !== modeler) return;
+      modeler.get('canvas').zoom('fit-viewport', 'auto');
+      modeler.on('commandStack.changed', () => {
+        const dirty = modeler.get('commandStack').canUndo();
+        if (dirty !== this.state.editorDirty) this.setState({ editorDirty: dirty });
+      });
+      const t = document.getElementById('ari-editor-title');
+      if (t) t.focus({ preventScroll: true });
+    } catch (e) {
+      console.error('[ARI] editor do mapeamento:', e);
+      this.setState({ editorErr: 'Não consegui abrir este diagrama no editor.' });
+    }
+  }
+  destroyModeler() {
+    if (this.modeler) { try { this.modeler.destroy(); } catch (_) {} this.modeler = null; }
+  }
+  editorCmd(fn) { if (this.modeler) { try { fn(this.modeler); } catch (_) {} } }
+  editorUndo = () => this.editorCmd((m) => m.get('commandStack').undo());
+  editorRedo = () => this.editorCmd((m) => m.get('commandStack').redo());
+  editorFit = () => this.editorCmd((m) => m.get('canvas').zoom('fit-viewport', 'auto'));
+  cancelEditor = () => {
+    if (this.state.editorDirty && !window.confirm('Descartar as edições feitas no mapeamento?')) return;
+    this.closeEditor();
+  };
+  closeEditor(extra) {
+    this.destroyModeler();
+    this.setState(Object.assign({ bpmnEditing: false, editorDirty: false, editorErr: '' }, extra || {}), () => {
+      if (extra && extra.bpmnXml) this.renderPreview();
+    });
+  }
+  // Salva o XML editado (posições, setas, nomes) e atualiza o grafo a partir
+  // dele, para que os ajustes por texto partam do diagrama editado.
+  saveEditor = async () => {
+    const m = this.modeler;
+    if (!m) return;
+    if (!this.state.editorDirty) { this.closeEditor(); return; }
+    let xml;
+    try { ({ xml } = await m.saveXML({ format: true })); }
+    catch (e) { this.setState({ editorErr: 'Não consegui salvar as edições. Desfaça a última alteração e tente de novo.' }); return; }
+    let notice = '', result = this.state.result;
+    try {
+      const G = await import(new URL('bpmn-graph.js', document.baseURI).href);
+      const graph = G.normalizeGraph(window.AriBpmn.xmlToGraph(m.getDefinitions()));
+      if (graph.nodes.length) {
+        this.bpmnGraph = graph;
+        notice = this.structureNotice(G.validateGraph(graph).errors);
+        const sum = G.summarizeGraph(graph);
+        result = 'Mapeamento editado à mão: ' + sum.activities + ' atividade(s), ' + sum.decisions + ' decisão(ões), ' + sum.parallels + ' gateway(s) paralelo(s), ' + sum.ends + ' fim(ns), ' + sum.lanes + ' raia(s).';
+      }
+    } catch (e) { console.error('[ARI] leitura do diagrama editado:', e); }
+    this.bpmnManualXml = xml;
+    this.saveBpmn();
+    this.closeEditor({ bpmnXml: xml, bpmnManual: true, notice, result });
   };
 
   generate = async () => {
+    if (this.state.loading || this.state.editing) return;
     const screen = this.state.screen;
     const text = (this.textEl && this.textEl.value || '').trim();
     if (!text) { this.setState({ err: 'Descreva o que você precisa para a ARI gerar.' }); return; }
-    this.setState({ loading: true, result: '', err: '', bpmnXml: '', popReady: false, popConfirm: false });
+    const run = this.startRun();
+    this.setState({ loading: true, loadingMsg: '', result: '', err: '', editErr: '', notice: '', bpmnXml: '', popReady: false, popConfirm: false, copied: false, routeInfo: '', reviewNotes: '', bpmnAsk: false });
 
-    // Funcionalidade 01: a IA lê o texto e extrai a estrutura do processo; o JS
-    // monta um arquivo .bpmn 2.0 válido e baixável a partir dessa estrutura.
+    // Funcionalidade 01: o servidor conduz a IA (complexidade, perguntas, grafo,
+    // reparo e revisão) e o navegador desenha o grafo em BPMN 2.0.
     if (screen === 'bpmn') {
-      try {
-        let nodes = null;
-        try { nodes = await this.aiExtractNodes(text); }
-        catch (_) { nodes = null; } // se a IA falhar, cai no fallback offline
-        if (!nodes || !nodes.length) nodes = this.parseStepsFromText(text);
-        this.bpmnNodes = nodes; // guarda a estrutura para edições posteriores
-        const actColor = this.PALETTE[this.state.actColorIdx || 0];
-        const built = this.buildBpmnFromNodes(nodes, actColor);
-        this.setState({ loading: false, result: built.summary, bpmnXml: built.xml, err: '' });
-        this._previewTries = 0;
-        setTimeout(this.renderPreview, 80);
-      } catch (e) {
-        this.setState({ loading: false, err: 'Não consegui montar o BPMN. Tente descrever o processo com um pouco mais de detalhe.' });
+      this.bpmnQuestions = null; this.bpmnAnswers = null; this.bpmnAnalysis = null;
+      try { await this.startBpmn(text, run); }
+      catch (e) {
+        if (this.isStale(run) || e.code === 'cancelled') return;
+        await this.fallbackBpmn(text, e);
       }
       return;
     }
@@ -890,10 +1110,12 @@ class Component extends DCLogic {
     // .pptx e o site mostra a PRÉ-VISUALIZAÇÃO + botão de download explícito
     // (download automático pós-fetch é bloqueado por navegadores).
     if (screen === 'pop') {
-      let parsed;
-      try { parsed = await this.aiPreparePop(text); }
-      catch (_) { parsed = null; }
-      if (!parsed) { this.setState({ loading: false, err: 'Não consegui interpretar as informações. Detalhe o processo, o setor e as etapas com suas descrições.' }); return; }
+      this.popImage = null;
+      let parsed = null, failure = null;
+      try { parsed = await this.aiPreparePop(text, run); }
+      catch (e) { failure = e; }
+      if (this.isStale(run)) return;
+      if (!parsed) { this.setState({ loading: false, err: this.friendlyError(failure, 'Não consegui interpretar as informações. Detalhe o processo, o setor e as etapas com suas descrições.') }); return; }
       if (parsed.status === 'questions') {
         const qs = (parsed.questions || []).map((q, i) => (i + 1) + '. ' + q).join('\n');
         this.setState({ loading: false, result: 'Antes de gerar o POP, a ARI precisa esclarecer:\n\n' + qs + '\n\nComplete essas informações no campo ao lado e clique em gerar novamente.' });
@@ -901,9 +1123,8 @@ class Component extends DCLogic {
       }
       // etapas estruturadas: o usuário escolhe quais terão print antes de gerar
       this.popData = parsed.data;
-      this.setState({ loading: false, popConfirm: true, result: 'A ARI estruturou o POP. Nem toda etapa precisa de print de comprovação — desmarque abaixo as que não precisam e clique em "Gerar POP".' });
       this._popStepsTries = 0;
-      setTimeout(this.renderPopStepPicker, 80);
+      this.setState({ loading: false, popConfirm: true, result: 'A ARI estruturou o POP. Nem toda etapa precisa de print de comprovação — desmarque abaixo as que não precisam e clique em "Gerar POP".' }, this.renderPopStepPicker);
       return;
     }
 
@@ -911,12 +1132,48 @@ class Component extends DCLogic {
     const plain = ' Responda em português, em texto simples e bem organizado: sem markdown, sem usar # ou * ou ** ou emojis. Use apenas títulos em MAIÚSCULAS, números (1, 2, 3) e hífens (-) para listas, e quebras de linha para separar as seções.';
     const manualPrompt = 'Você é a ARI, assistente de processos. Gere um manual em modelo padrão contendo: título e objetivo, sumário e seções numeradas com instruções passo a passo. Baseie-se na descrição abaixo.' + plain + '\n\nDescrição do manual:\n"' + text + '"';
     try {
-      const out = (await this.complete(manualPrompt) || '').trim();
-      this.setState({ loading: false, result: out || this.mock('manual', text) });
+      const out = await this.completeRaw(manualPrompt, run);
+      if (this.isStale(run)) return;
+      const result = (out.text || '').trim();
+      if (!result) { this.setState({ loading: false, err: 'A ARI devolveu uma resposta vazia. Tente de novo.' }); return; }
+      this.store('manual', result);
+      this.setState({ loading: false, result, notice: out.truncated ? 'O manual ficou longo demais e foi cortado no final. Peça um escopo menor (ou divida em partes) para receber o texto completo.' : '' });
     } catch (e) {
-      this.setState({ loading: false, result: this.mock('manual', text) });
+      if (this.isStale(run)) return;
+      this.setState({ loading: false, err: this.friendlyError(e, 'Não consegui gerar o manual. Tente novamente.') });
     }
   };
+
+  // Ações do manual: copiar e baixar o texto.
+  copyManual = async () => {
+    const text = this.state.result || '';
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (_) {
+      // Fallback para navegadores sem a Clipboard API (ou fora de HTTPS).
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (__) {}
+      document.body.removeChild(ta);
+    }
+    this.setState({ copied: true });
+    clearTimeout(this._copiedTimer);
+    this._copiedTimer = setTimeout(() => this.setState({ copied: false }), 2000);
+  };
+  downloadManual = () => {
+    const text = this.state.result || '';
+    if (!text) return;
+    this.downloadBlob(new Blob([text], { type: 'text/plain;charset=utf-8' }), 'manual-ari.txt');
+  };
+
+  downloadBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
 
   // Lê um arquivo como dataURL (base64) para enviar a imagem do fluxograma.
   readFileDataURL(file) {
@@ -926,6 +1183,266 @@ class Component extends DCLogic {
       r.onerror = reject;
       r.readAsDataURL(file);
     });
+  }
+
+  // ─── POP: modelo de design, logo da empresa e paleta ───────────────────────
+  // O layout dos três modelos (pop-layout.js) e as cores (pop-theme.js) são os
+  // mesmos módulos que o servidor usa para montar o .pptx.
+  POP_MODELS = { 1: 'Clássico', 2: 'Faixas', 3: 'Lateral' };
+  MAX_LOGO_BYTES = 8 * 1024 * 1024;
+  thumbEls = {};
+
+  ensurePopLib() {
+    if (!this._popLib) {
+      const url = (f) => new URL(f, document.baseURI).href;
+      this._popLib = Promise.all([import(url('pop-layout.js')), import(url('pop-theme.js'))]).then(async ([layout, theme]) => {
+        // Logo da consultoria: entra sozinha na capa.
+        const logo = await this.loadImageInfo(url('modelo-pop/logo%20empresa.png')).catch(() => null);
+        return { layout, theme, logo };
+      });
+      this._popLib.catch(() => { this._popLib = null; });
+    }
+    return this._popLib;
+  }
+  loadImageInfo(src) {
+    return new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve({ data: src, w: i.naturalWidth, h: i.naturalHeight });
+      i.onerror = reject;
+      i.src = src;
+    });
+  }
+  popModelName(n = this.state.popModel) { return this.POP_MODELS[n] || this.POP_MODELS[1]; }
+  popStyleKey() { return JSON.stringify([this.state.popModel, this.state.popPalette, this.popLogo ? this.popLogo.data.length + ':' + this.popLogo.data.slice(-32) : '']); }
+
+  // Paleta válida ({ primary, accent } em hex sem '#') ou null.
+  cleanPalette(p) {
+    const hex = (v) => (typeof v === 'string' && /^[0-9A-F]{6}$/i.test(v) ? v.toUpperCase() : null);
+    return p && hex(p.primary) && hex(p.accent) ? { primary: hex(p.primary), accent: hex(p.accent) } : null;
+  }
+  // Recupera modelo, logo e paleta salvos no navegador (uma vez por sessão).
+  initPopStyle() {
+    if (this._popStyleInit) return {};
+    this._popStyleInit = true;
+    const saved = this.load('popStyle') || {};
+    const logo = saved.logo;
+    this.popLogo = logo && typeof logo.data === 'string' && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(logo.data) && logo.w > 0 && logo.h > 0
+      ? { data: logo.data, w: +logo.w, h: +logo.h, name: String(logo.name || 'logo') } : null;
+    this.popPaletteAuto = this.cleanPalette(saved.paletteAuto);
+    return { popModel: [1, 2, 3].includes(saved.model) ? saved.model : 1, popPalette: this.cleanPalette(saved.palette), logoName: this.popLogo ? this.popLogo.name : '' };
+  }
+  savePopStyle() {
+    this.store('popStyle', { model: this.state.popModel, palette: this.state.popPalette, paletteAuto: this.popPaletteAuto, logo: this.popLogo });
+  }
+
+  // Navegação entre a escolha do modelo, a da logo e o formulário.
+  pickModel(n) {
+    const first = !this.popSetupDone;
+    this.setState({ popModel: n, popSetup: first ? 'logo' : null }, () => {
+      this.savePopStyle();
+      this.afterSetupChange(first ? 'logo' : null);
+    });
+  }
+  pickModel1 = () => this.pickModel(1);
+  pickModel2 = () => this.pickModel(2);
+  pickModel3 = () => this.pickModel(3);
+  editModel = () => this.setState({ popSetup: 'model' }, () => this.focusSetup('model'));
+  editLogo = () => this.setState({ popSetup: 'logo' }, () => this.focusSetup('logo'));
+  backToModels = () => this.setState({ popSetup: 'model' }, () => this.focusSetup('model'));
+  finishSetup = () => {
+    this.popSetupDone = true;
+    this.setState({ popSetup: null, logoErr: '' }, () => this.afterSetupChange(null));
+  };
+  afterSetupChange(stage) {
+    if (stage) { this.focusSetup(stage); return; }
+    this.refreshPopChips();
+    if (this.textEl) this.textEl.focus({ preventScroll: true });
+    // POP já gerado: refaz o arquivo no novo visual (sem chamar a IA de novo).
+    if (this.state.popReady && this.popData && this._popBuiltStyle !== this.popStyleKey()) this.confirmPop();
+  }
+  focusSetup(stage) {
+    setTimeout(() => {
+      const h = document.getElementById(stage === 'model' ? 'ari-pop-step-model' : 'ari-pop-step-logo');
+      if (h) h.focus({ preventScroll: true });
+      if (this.overlayEl) this.overlayEl.scrollTop = 0;
+    }, 40);
+  }
+
+  // Capa em miniatura de um modelo, com a paleta e a logo atuais.
+  async renderCover(el, model) {
+    if (!el) return;
+    try {
+      const lib = await this.ensurePopLib();
+      if (!el.isConnected) return;
+      const d = this.popData || {};
+      const surface = lib.layout.svgSurface();
+      lib.layout.renderPop(surface, { processName: d.processName || 'Nome do processo', sector: d.sector || 'Comercial' },
+        { logo: lib.logo, clientLogo: this.popLogo }, { model, palette: this.state.popPalette, coverOnly: true });
+      el.innerHTML = surface.svg(0);
+    } catch (e) { console.error('[ARI] miniatura do POP:', e); }
+  }
+  setThumb1 = (el) => { this.thumbEls[1] = el; this.renderCover(el, 1); };
+  setThumb2 = (el) => { this.thumbEls[2] = el; this.renderCover(el, 2); };
+  setThumb3 = (el) => { this.thumbEls[3] = el; this.renderCover(el, 3); };
+
+  // Resumo no formulário: modelo escolhido e logo anexada (cada um abre a sua tela).
+  setChipThumb = (el) => { this.chipThumbEl = el; if (el) this.refreshPopChips(); };
+  setChipLogo = (el) => { this.chipLogoEl = el; if (el) this.refreshPopChips(); };
+  setChipSwatches = (el) => { this.chipSwatchesEl = el; if (el) this.refreshPopChips(); };
+  refreshPopChips() {
+    if (this.chipThumbEl) this.renderCover(this.chipThumbEl, this.state.popModel);
+    if (this.chipLogoEl) {
+      this.chipLogoEl.innerHTML = this.popLogo
+        ? '<img src="' + this.popLogo.data + '" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:block;">'
+        : '<span style="font-size:22px;color:#94a3b8;line-height:1;">+</span>';
+    }
+    if (this.chipSwatchesEl) {
+      const el = this.chipSwatchesEl;
+      this.ensurePopLib().then((lib) => {
+        const t = lib.theme.buildTheme(this.state.popPalette);
+        const dot = (c) => '<span style="width:14px;height:14px;border-radius:4px;background:#' + c + ';box-shadow:inset 0 0 0 1px rgba(10,31,68,.15);"></span>';
+        el.innerHTML = dot(t.primary) + dot(t.accent) + '<span style="font-size:12.5px;font-weight:500;color:#1c5cff;margin-left:4px;">' + (this.popLogo ? 'Trocar' : 'Anexar') + '</span>';
+      }).catch(() => {});
+    }
+  }
+
+  // ── tela da logo ──
+  setLogoFile = (el) => { this.logoFileEl = el; };
+  setLogoView = (el) => { this.logoViewEl = el; if (el) this.renderLogoView(); };
+  setPaletteView = (el) => { this.paletteEl = el; if (el) this.renderPaletteView(); };
+  setLogoDrop = (el) => {
+    if (!el || el.dataset.dropWired) return;
+    el.dataset.dropWired = '1';
+    const hl = (on) => {
+      el.style.borderColor = on ? '#1c5cff' : 'rgba(28,92,255,.4)';
+      el.style.background = on ? 'rgba(28,92,255,.12)' : 'rgba(28,92,255,.04)';
+    };
+    el.addEventListener('dragover', (e) => { e.preventDefault(); hl(true); });
+    el.addEventListener('dragleave', () => hl(false));
+    el.addEventListener('drop', (e) => {
+      e.preventDefault(); hl(false);
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) this.acceptLogo(f);
+    });
+  };
+  onLogoFile = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) this.acceptLogo(f);
+    if (this.logoFileEl) this.logoFileEl.value = '';
+  };
+  renderLogoView() {
+    if (!this.logoViewEl) return;
+    this.logoViewEl.innerHTML = this.popLogo
+      ? '<img src="' + this.popLogo.data + '" alt="Logo da empresa" style="max-width:100%;max-height:150px;object-fit:contain;display:block;">'
+      : '<div style="width:46px;height:46px;border-radius:12px;background:rgba(28,92,255,.12);display:flex;align-items:center;justify-content:center;color:#1c5cff;font-size:24px;line-height:1;">+</div>';
+  }
+  async acceptLogo(f) {
+    const okType = /^image\/(png|jpeg|webp|svg\+xml)$/.test(f.type || '') || /\.(png|jpe?g|webp|svg)$/i.test(f.name || '');
+    if (!okType) { this.setState({ logoErr: 'Formato não suportado — use .png, .jpg, .webp ou .svg.' }); return; }
+    if (f.size > this.MAX_LOGO_BYTES) { this.setState({ logoErr: 'A logo tem ' + (f.size / 1048576).toFixed(1) + ' MB — o limite é 8 MB.' }); return; }
+    try {
+      const { logo, pixels } = await this.rasterizeLogo(f);
+      const lib = await this.ensurePopLib();
+      this.popLogo = Object.assign(logo, { name: f.name || 'logo' });
+      this.popPaletteAuto = lib.theme.paletteFromPixels(pixels);
+      this.setState({ logoErr: '', logoName: this.popLogo.name, popPalette: this.popPaletteAuto }, () => {
+        this.savePopStyle();
+        this.renderLogoView();
+        this.renderPaletteView();
+      });
+    } catch (e) {
+      this.setState({ logoErr: 'Não consegui ler essa imagem. Tente outro arquivo (.png ou .jpg).' });
+    }
+  }
+  // Desenha a logo num canvas (no máximo 640 px): vira PNG leve para o .pptx e
+  // fornece os pixels para extrair as cores.
+  rasterizeLogo(f) {
+    return new Promise((resolve, reject) => {
+      const src = URL.createObjectURL(f);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          let w = img.naturalWidth || 600, h = img.naturalHeight || 600;
+          const k = Math.min(1, 640 / Math.max(w, h));
+          w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k));
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve({ logo: { data: c.toDataURL('image/png'), w, h }, pixels: ctx.getImageData(0, 0, w, h).data });
+        } catch (e) { reject(e); } finally { URL.revokeObjectURL(src); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(src); reject(new Error('imagem inválida')); };
+      img.src = src;
+    });
+  }
+  removeLogo = () => {
+    this.popLogo = null;
+    this.popPaletteAuto = null;
+    this.setState({ logoName: '', logoErr: '', popPalette: null }, () => {
+      this.savePopStyle();
+      this.renderLogoView();
+      this.renderPaletteView();
+    });
+  };
+
+  // Cores do POP (extraídas da logo, ajustáveis) + capa do modelo escolhido.
+  async renderPaletteView() {
+    const el = this.paletteEl;
+    if (!el) return;
+    const lib = await this.ensurePopLib().catch(() => null);
+    if (!lib || el !== this.paletteEl) return;
+    const pal = this.state.popPalette || lib.theme.DEFAULT_PALETTE;
+    const auto = this.popPaletteAuto;
+    const note = !this.popLogo ? 'Sem logo, o POP usa as cores padrão do modelo. Você também pode escolher as cores aqui.'
+      : auto ? 'Cores extraídas da logo. Ajuste se quiser; tons claros demais são escurecidos para o texto continuar legível.'
+        : 'A logo não tem cores marcantes (preto, branco ou cinza), então o POP usa as cores padrão do modelo. Você pode escolher outras aqui.';
+    const same = (a, b) => a && b && a.primary === b.primary && a.accent === b.accent;
+    const reset = auto && !same(this.state.popPalette, auto) ? '<button type="button" data-pal-reset="auto" style="margin-top:4px;background:none;border:none;padding:4px 0;font:500 13.5px \'IBM Plex Sans\',sans-serif;color:#1c5cff;cursor:pointer;text-decoration:underline;">Usar as cores da logo</button>'
+      : !auto && this.state.popPalette ? '<button type="button" data-pal-reset="default" style="margin-top:4px;background:none;border:none;padding:4px 0;font:500 13.5px \'IBM Plex Sans\',sans-serif;color:#1c5cff;cursor:pointer;text-decoration:underline;">Voltar às cores padrão</button>' : '';
+    const row = (key, label, hint) =>
+      '<label style="display:flex;align-items:center;gap:12px;padding:8px 0;cursor:pointer;">' +
+        '<input type="color" data-pal="' + key + '" value="#' + pal[key].toLowerCase() + '" style="width:42px;height:34px;border:1px solid rgba(10,31,68,.15);border-radius:8px;padding:2px;background:#fff;cursor:pointer;flex:none;">' +
+        '<span style="display:flex;flex-direction:column;"><span style="font-weight:600;font-size:14px;color:#0a1f44;">' + label + '</span><span style="font-size:12.5px;color:#64748b;">' + hint + '</span></span>' +
+      '</label>';
+    el.innerHTML =
+      '<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">' +
+        '<div style="flex:1 1 200px;min-width:0;">' +
+          '<div style="font-family:\'Space Grotesk\';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:6px;">Cores do POP</div>' +
+          '<p style="font-size:13px;line-height:1.5;color:#64748b;margin:0 0 6px;">' + note + '</p>' +
+          row('primary', 'Cor principal', 'títulos, tabelas e faixas') +
+          row('accent', 'Cor de destaque', 'números, marcadores e detalhes') +
+          reset +
+        '</div>' +
+        '<div style="flex:0 0 150px;">' +
+          '<div style="font-family:\'Space Grotesk\';font-weight:600;font-size:11px;letter-spacing:1.2px;color:#64748b;margin-bottom:8px;">CAPA · MODELO ' + this.state.popModel + '</div>' +
+          '<div data-pal-preview style="width:150px;aspect-ratio:595/842;border-radius:4px;overflow:hidden;background:#f1f4f8;box-shadow:0 8px 20px -12px rgba(10,31,68,.45);"></div>' +
+        '</div>' +
+      '</div>';
+    this.renderCover(el.querySelector('[data-pal-preview]'), this.state.popModel);
+    if (!el.dataset.palWired) {
+      el.dataset.palWired = '1';
+      el.addEventListener('input', (e) => {
+        const key = e.target && e.target.getAttribute && e.target.getAttribute('data-pal');
+        if (!key) return;
+        const base = this.state.popPalette || lib.theme.DEFAULT_PALETTE;
+        const popPalette = Object.assign({}, base, { [key]: e.target.value.replace('#', '').toUpperCase() });
+        this.setState({ popPalette }, () => {
+          clearTimeout(this._palTimer);
+          this._palTimer = setTimeout(() => {
+            this.savePopStyle();
+            this.renderCover(el.querySelector('[data-pal-preview]'), this.state.popModel);
+          }, 120);
+        });
+      });
+      el.addEventListener('change', (e) => { if (e.target && e.target.getAttribute && e.target.getAttribute('data-pal')) this.renderPaletteView(); });
+      el.addEventListener('click', (e) => {
+        const btn = e.target && e.target.closest && e.target.closest('[data-pal-reset]');
+        if (!btn) return;
+        const popPalette = btn.getAttribute('data-pal-reset') === 'auto' ? this.popPaletteAuto : null;
+        this.setState({ popPalette }, () => { this.savePopStyle(); this.renderPaletteView(); });
+      });
+    }
   }
 
   // ─── Seleção de etapas com print (antes de gerar) ──────────────────────────
@@ -942,40 +1459,42 @@ class Component extends DCLogic {
     const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     this.popStepsEl.innerHTML = (this.popData.steps || []).map((s, i) =>
       '<label style="display:flex;gap:10px;align-items:flex-start;padding:8px 2px;border-bottom:1px solid #eff2f5;cursor:pointer;">' +
-        '<input type="checkbox" checked data-pop-step="' + i + '" style="margin-top:2px;accent-color:#1c5cff;width:16px;height:16px;flex:none;cursor:pointer;">' +
+        '<input type="checkbox"' + (s.hasPrint === false ? '' : ' checked') + ' data-pop-step="' + i + '" style="margin-top:2px;accent-color:#1c5cff;width:16px;height:16px;flex:none;cursor:pointer;">' +
         '<span style="font-size:14px;line-height:1.4;color:#0a1f44;"><b>' + (i + 1) + '.</b> ' + esc(s.title) + '</span>' +
       '</label>').join('');
   };
 
   confirmPop = async () => {
-    if (!this.popData) return;
+    if (!this.popData || this.state.loading) return;
     if (this.popStepsEl) {
       this.popStepsEl.querySelectorAll('input[data-pop-step]').forEach((b) => {
         const i = +b.getAttribute('data-pop-step');
         if (this.popData.steps[i]) this.popData.steps[i].hasPrint = b.checked;
       });
     }
+    const run = this.startRun();
     this.setState({ loading: true, popConfirm: false, err: '', result: '' });
     try {
-      let imageBase64 = null;
-      const imgFile = (this.fileEl && this.fileEl.files[0]) || this.droppedFile;
-      if (imgFile) {
-        try { imageBase64 = await this.readFileDataURL(imgFile); } catch (_) { imageBase64 = null; }
+      let imageBase64 = this.popImage || null;
+      if (this.imageFile) {
+        try { imageBase64 = await this.readFileDataURL(this.imageFile); } catch (_) { /* mantém a anterior */ }
       }
-      const res = await fetch('/api/pop-pptx', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: this.popData, imageBase64 })
-      });
-      if (!res.ok) throw new Error('pop ' + res.status);
-      this.popBlob = await res.blob();
+      const data = Object.assign({ author: this.brand.author, reviewCycle: this.brand.reviewCycle }, this.popData);
+      const style = { model: this.state.popModel, palette: this.state.popPalette };
+      const res = await this.fetchApi('/api/pop-pptx', { data, imageBase64, style, clientLogo: this.popLogo ? this.popLogo.data : null }, run);
+      const blob = await res.blob();
+      if (this.isStale(run)) return;
+      this.popBlob = blob;
       this.popImage = imageBase64;
       this.popFileName = 'POP-' + (this.popData.processName || 'processo').replace(/[^\wÀ-ſ]+/g, '-') + '.pptx';
+      this._popBuiltStyle = this.popStyleKey();
       const semImg = imageBase64 ? '' : ' Obs.: sem imagem do fluxograma — o espaço ficou como placeholder; anexe a imagem e gere de novo para incluí-la.';
-      this.setState({ loading: false, popReady: true, result: 'POP pronto! Confira a pré-visualização abaixo e clique em "Baixar POP (.pptx)". No Canva: Criar um design > Importar arquivo > selecione o .pptx — cada texto vira uma caixa editável.' + semImg });
       this._popTries = 0;
-      setTimeout(this.renderPopPreview, 80);
+      this.setState({ loading: false, popReady: true, result: 'POP pronto no modelo ' + this.popModelName() + '! Confira a pré-visualização abaixo e clique em "Baixar POP (.pptx)". No Canva: Criar um design > Importar arquivo > selecione o .pptx — cada texto vira uma caixa editável.' + semImg }, this.renderPopPreview);
     } catch (e) {
-      this.setState({ loading: false, err: 'Não consegui gerar o POP. Tente novamente.' });
+      if (this.isStale(run)) return;
+      // Volta para a seleção de etapas para o usuário poder tentar de novo.
+      this.setState({ loading: false, popConfirm: true, err: this.friendlyError(e, 'Não consegui gerar o POP. Tente novamente.') }, this.renderPopStepPicker);
     }
   };
 
@@ -983,15 +1502,10 @@ class Component extends DCLogic {
   setPopPreview = (el) => { this.popPreviewEl = el; };
 
   downloadPop = () => {
-    if (!this.popBlob) return;
-    const url = URL.createObjectURL(this.popBlob);
-    const a = document.createElement('a');
-    a.href = url; a.download = this.popFileName || 'POP.pptx';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    if (this.popBlob) this.downloadBlob(this.popBlob, this.popFileName || 'POP.pptx');
   };
 
-  renderPopPreview = () => {
+  renderPopPreview = async () => {
     if (!this.popData) return;
     if (!this.popPreviewEl) {
       this._popTries = (this._popTries || 0) + 1;
@@ -999,136 +1513,27 @@ class Component extends DCLogic {
       return;
     }
     this._popTries = 0;
-    this.popPreviewEl.innerHTML = this.buildPopPreviewHTML(this.popData, this.popImage);
+    const el = this.popPreviewEl;
+    try {
+      const lib = await this.ensurePopLib();
+      const flow = this.popImage ? await this.loadImageInfo(this.popImage).catch(() => null) : null;
+      const surface = lib.layout.svgSurface();
+      const data = Object.assign({ author: this.brand.author, reviewCycle: this.brand.reviewCycle }, this.popData);
+      lib.layout.renderPop(surface, data, { flowchart: flow, logo: lib.logo, clientLogo: this.popLogo }, { model: this.state.popModel, palette: this.state.popPalette });
+      if (el !== this.popPreviewEl) return;
+      el.innerHTML = surface.pages.map((_, i) =>
+        '<div style="background:#fff;border-radius:4px;box-shadow:0 8px 22px -14px rgba(10,31,46,.45);margin-bottom:14px;overflow:hidden;">' + surface.svg(i) + '</div>').join('') +
+        '<div style="font:12px \'IBM Plex Sans\',sans-serif;color:#64748b;text-align:center;padding:2px 6px 4px;">Prévia do arquivo: no PowerPoint e no Canva as linhas podem quebrar em pontos um pouco diferentes.</div>';
+    } catch (e) {
+      console.error('[ARI] prévia do POP:', e);
+      el.textContent = '';
+      this.setState({ notice: 'Não consegui montar a pré-visualização, mas o arquivo .pptx foi gerado e pode ser baixado.' });
+    }
   };
-
-  // Monta o HTML da pré-visualização replicando o visual do modelo do POP
-  // (mesmas cores/hierarquia do .pptx: navy #0A1F2E, teal #2BA8BC).
-  buildPopPreviewHTML(d, img) {
-    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const today = new Date().toLocaleDateString('pt-BR');
-    const ab = (d.sector || 'XX').normalize('NFD').replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase() || 'XX';
-    const code = d.code || ('POP-' + ab + '-001');
-    const emission = d.emission || today;
-    const steps = Array.isArray(d.steps) ? d.steps : [];
-
-    const page = (inner) => '<div style="background:#fff;border:1px solid #E4E9ED;border-radius:10px;box-shadow:0 8px 22px -14px rgba(10,31,46,.3);padding:26px 28px;margin-bottom:14px;">' + inner + '</div>';
-    const secHead = (n, t) => '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#0A1F2E;color:#fff;font:700 12px Arial;">' + n + '</span><span style="font:700 16px Arial;color:#0A1F2E;">' + t + '</span></div><div style="height:1px;background:#E4E9ED;margin-bottom:2px;"></div><div style="width:44px;height:3px;background:#2BA8BC;margin-bottom:14px;"></div>';
-    const lbl = (t) => '<div style="font:700 8.5px Arial;letter-spacing:.8px;color:#8A98A5;margin-bottom:3px;">' + t + '</div>';
-    const val = (t) => '<div style="font:700 12px Arial;color:#0A1F2E;">' + esc(t) + '</div>';
-    const cell = (l, v) => '<div style="border:1px solid #E4E9ED;padding:9px 12px;background:#fff;">' + lbl(l) + val(v) + '</div>';
-
-    // capa
-    let html = page(
-      '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E4E9ED;padding-bottom:10px;margin-bottom:34px;">' +
-        '<span style="font:700 11px Arial;color:#0A1F2E;">' + esc(d.consultancy || '[ Nome da sua consultoria ]') + '</span>' +
-        '<span style="font:700 8.5px Arial;letter-spacing:1.4px;color:#8A98A5;">DOCUMENTO INTERNO</span>' +
-      '</div>' +
-      '<div style="font:700 10px Arial;letter-spacing:2px;color:#2BA8BC;margin-bottom:8px;">PROCEDIMENTO OPERACIONAL PADRÃO</div>' +
-      '<div style="font:800 64px Arial;color:#0A1F2E;line-height:1;">POP</div>' +
-      '<div style="width:56px;height:5px;background:#2BA8BC;margin:14px 0 18px;"></div>' +
-      '<div style="display:inline-block;background:#DCF1F4;border-radius:9px;padding:9px 16px;font:700 17px Arial;color:#2BA8BC;margin-bottom:12px;">' + esc(d.processName) + '</div>' +
-      '<div style="font:italic 12px Georgia;color:#8A98A5;margin-bottom:34px;">' + esc(d.oneLineDesc) + '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(4,1fr);">' + cell('CÓDIGO', code) + cell('VERSÃO', d.version || '001') + cell('EMISSÃO', emission) + cell('ÁREA', d.sector) + '</div>'
-    );
-    // identificação
-    html += page(
-      secHead('i', 'Identificação do documento') +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;">' +
-        cell('TÍTULO / ATIVIDADE', d.processName) + cell('CÓDIGO', code) +
-        cell('ÁREA / SETOR', d.sector) + cell('RESPONSÁVEL(IS)', d.responsible || ('Equipe de ' + (d.sector || ''))) +
-        cell('DATA DE EMISSÃO', emission) + cell('ÚLTIMA REVISÃO', d.lastRevision || emission) +
-        cell('VERSÃO', d.version || '001') + cell('MATERIAIS NECESSÁRIOS', d.materials || '—') +
-      '</div>'
-    );
-    // páginas fixas (nota)
-    html += '<div style="display:flex;gap:8px;align-items:center;background:#F4F6F8;border:1px dashed #cdd6dd;border-radius:9px;padding:10px 14px;margin-bottom:14px;font:11px Arial;color:#8A98A5;">O arquivo inclui também as páginas fixas do modelo: <b style="color:#2A3540;">Introdução + Mapeamento de processos</b> (1 página) · <b style="color:#2A3540;">Legenda BPMN</b></div>';
-    // processo & fluxograma
-    const imgBlock = img
-      ? '<img src="' + img + '" style="width:100%;display:block;border-radius:6px;background:#fff;" alt="fluxograma">' +
-        '<div style="font:italic 10px Georgia;color:#8A98A5;margin-top:6px;text-align:center;">Fluxogramas largos ganham também uma página ampliada (girada 90°) no arquivo, para leitura melhor.</div>'
-      : '<div style="display:flex;align-items:center;justify-content:center;height:150px;font:italic 11px Georgia;color:#8A98A5;">[ Cole aqui o fluxograma do processo ]</div>';
-    html += page(
-      secHead('4', 'O processo &amp; fluxograma') +
-      '<div style="font:700 12.5px Arial;color:#0A1F2E;margin-bottom:8px;">Descrição do processo</div>' +
-      '<div style="background:#F4F6F8;border-radius:8px;padding:13px 15px;font:12px Georgia;color:#2A3540;line-height:1.6;white-space:pre-wrap;margin-bottom:16px;">' + esc(d.processText) + '</div>' +
-      '<div style="font:700 12.5px Arial;color:#0A1F2E;margin-bottom:8px;">Fluxograma</div>' +
-      '<div style="border:1.5px dashed #cdd6dd;border-radius:9px;padding:10px;">' + imgBlock + '</div>'
-    );
-    // descrição das etapas
-    html += page(
-      secHead('5', 'Descrição das etapas') +
-      steps.map((s, i) =>
-        '<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #EFF2F5;">' +
-          '<span style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#DCF1F4;color:#2BA8BC;font:700 12px Arial;">' + (i + 1) + '</span>' +
-          '<span style="font:12.5px Georgia;color:#2A3540;">' + esc(s.title) + '</span>' +
-        '</div>').join('')
-    );
-    // POP detalhado — tópico 6 no formato de tabela do modelo (POP-RH-003)
-    const TB = '#3A4550'; // linha da tabela (escura, como o modelo impresso)
-    const trow = (cells, first) => '<div style="display:flex;' + (first ? '' : 'border-top:1px solid ' + TB + ';') + '">' + cells + '</div>';
-    const tcell = (content, o) => { o = o || {}; return '<div style="' + (o.first ? '' : 'border-left:1px solid ' + TB + ';') + 'flex:' + (o.flex || '1 1 0') + ';min-width:0;padding:' + (o.pad || '7px 10px') + ';' + (o.style || '') + '">' + content + '</div>'; };
-    const lv = (l, v) => '<span style="font:700 10.5px Arial;color:#0A1F2E;">' + l + ' </span><span style="font:10.5px Arial;color:#2A3540;word-break:break-word;">' + esc(v) + '</span>';
-    const metaC = (l, v) => '<div style="font:7.5px Arial;color:#2A3540;">' + l + '</div><div style="font:700 9.5px Arial;color:#0A1F2E;margin-top:2px;word-break:break-word;">' + esc(v) + '</div>';
-    const bar = (t) => trow(tcell('<div style="font:700 9.5px Arial;color:#fff;letter-spacing:1px;text-align:center;">' + t + '</div>', { first: true, style: 'background:#0A1F2E;' }));
-    const logoMark = '<div style="display:inline-flex;align-items:flex-end;gap:2px;height:26px;">' +
-      '<span style="width:5px;height:16px;background:#2BA8BC;border-radius:2px;"></span>' +
-      '<span style="width:5px;height:24px;background:#0A1F2E;border-radius:2px;"></span>' +
-      '<span style="width:5px;height:13px;background:#2BA8BC;border-radius:2px;"></span></div>';
-    const obs = (d.processText && d.processText.trim()) ? d.processText : d.oneLineDesc;
-    const centerCell = 'display:flex;align-items:center;justify-content:center;';
-    const procRows = steps.map((s, i) => {
-      const hasPrint = s.hasPrint !== false;
-      return trow(tcell(
-        '<div style="font:700 11px Arial;color:#0A1F2E;margin-bottom:6px;">' + (i + 1) + '. ' + esc(s.title) + '</div>' +
-        '<div style="display:flex;gap:8px;font:10.5px Georgia;color:#2A3540;line-height:1.5;' + (hasPrint ? 'margin-bottom:10px;' : '') + '"><span style="color:#2BA8BC;flex:none;">•</span><span style="word-break:break-word;">' + esc(s.description) + '</span></div>' +
-        (hasPrint ? '<div style="border:1.5px dashed #cdd6dd;border-radius:6px;min-height:88px;display:flex;align-items:center;justify-content:center;font:italic 10px Georgia;color:#8A98A5;">[ Cole o print da tela ]</div>' : ''),
-        { first: true }));
-    }).join('');
-    html += page(
-      secHead('6', 'POP — procedimento detalhado') +
-      '<div style="border:1px solid ' + TB + ';font-family:Arial;color:#0A1F2E;">' +
-        trow(
-          tcell(logoMark, { first: true, flex: '0 0 92px', style: centerCell }) +
-          tcell('<div style="font:700 12px Arial;text-align:center;">PROCEDIMENTO OPERACIONAL PADRÃO - POP</div>', { flex: '1 1 0', style: centerCell }) +
-          tcell('<div style="font:8.5px Arial;color:#2A3540;text-align:center;">Página 1 de 1</div>', { flex: '0 0 78px', style: centerCell }),
-          true) +
-        trow(
-          tcell(metaC('Data de emissão:', emission), { first: true }) +
-          tcell(metaC('Data da Revisão:', d.lastRevision || emission)) +
-          tcell(metaC('Área:', d.sector)) +
-          tcell(metaC('Versão nº', d.version || '001'))) +
-        trow(
-          tcell(lv('Código:', code), { first: true, flex: '0 0 40%' }) +
-          tcell(lv('Atividade:', String(d.processName || '').toUpperCase()))) +
-        trow(tcell(lv('Responsável:', d.responsible || ('Equipe de ' + (d.sector || ''))), { first: true })) +
-        trow(tcell(lv('Materiais necessários:', d.materials || '—'), { first: true })) +
-        bar('OBSERVAÇÕES') +
-        trow(tcell('<div style="font:10px Georgia;color:#2A3540;line-height:1.55;white-space:pre-wrap;">' + esc(obs) + '</div>', { first: true })) +
-        bar('PROCEDIMENTO') +
-        procRows +
-        trow(tcell(lv('Referência complementar:', '') + '<span style="font:italic 9.5px Georgia;color:#8A98A5;">[ preencha se houver ]</span>', { first: true })) +
-        trow(
-          tcell(lv('Elaborado por:', 'Produtiva Junior'), { first: true, flex: '0 0 60%' }) +
-          tcell(lv('Revisão:', 'Trimestral'))) +
-      '</div>'
-    );
-    // página final — logo + crédito
-    html += page(
-      '<div style="text-align:center;padding:44px 0 36px;">' +
-        '<img src="/logo%20empresa.png" style="width:92px;height:auto;display:block;margin:0 auto 18px;" alt="logo" onerror="this.style.display=\'none\'">' +
-        '<div style="font:italic 12px Georgia;color:#8A98A5;margin-bottom:6px;">Feito por</div>' +
-        '<div style="font:800 18px Arial;color:#0A1F2E;letter-spacing:1.5px;">PRODUTIVA JUNIOR</div>' +
-        '<div style="width:44px;height:3px;background:#2BA8BC;margin:14px auto 12px;"></div>' +
-        '<div style="font:10px Arial;color:#8A98A5;">' + code + ' · v' + (d.version || '001') + '</div>' +
-      '</div>'
-    );
-    return html;
-  }
 
   // A IA valida e estrutura os dados do POP. Retorna {status:'ok',data} ou
   // {status:'questions',questions:[...]} quando algo está mal detalhado.
-  async aiPreparePop(text) {
+  async aiPreparePop(text, run) {
     const prompt =
       'Você é a ARI, consultora sênior de processos. O usuário quer gerar um POP (Procedimento Operacional Padrão) no modelo da consultoria a partir das informações abaixo.\n\n' +
       'EXTRAIA E REDIJA (em português profissional):\n' +
@@ -1138,54 +1543,34 @@ class Component extends DCLogic {
       '- "processText": 2 parágrafos — 1º: objetivo do processo e o gatilho que o inicia; 2º: visão geral das etapas em ordem e como o processo é concluído.\n' +
       '- "responsible": cargo/equipe responsável (se não informado, infira: "Equipe de [setor]").\n' +
       '- "materials": sistemas/materiais usados, separados por vírgula (infira dos detalhes: ERP, planilha, e-mail, chat...).\n' +
-      '- "steps": TODAS as etapas na ordem de execução. Cada uma com: "title" curto começando com verbo no infinitivo (ex.: "Conferir os itens recebidos") e "description" EXECUTÁVEL com 2 a 4 frases — o que fazer, onde/em qual sistema, e o critério de conclusão. Enriqueça a redação profissionalmente, mas NÃO invente etapas, sistemas ou regras que o usuário não mencionou.\n\n' +
+      '- "steps": TODAS as etapas na ordem de execução. Cada uma com: "title" curto começando com verbo no infinitivo (ex.: "Conferir os itens recebidos") e "description" EXECUTÁVEL com 2 a 4 frases — o que fazer, onde/em qual sistema, e o critério de conclusão. Enriqueça a redação profissionalmente, mas NÃO invente etapas, sistemas ou regras que o usuário não mencionou.\n' +
+      '  Se a etapa for uma DECISÃO (ex.: "Verificar se há estoque"), inclua também "ifYes" e "ifNo": o que acontece em cada caso, em uma frase curta (ex.: "Seguir para a separação." / "Avisar o cliente e encerrar."). Nas demais etapas, omita esses dois campos.\n' +
+      '- "conclusion": uma frase dizendo como o processo termina (ex.: "Pedido aprovado e cliente notificado.").\n\n' +
       'SEJA ASSERTIVA: se der para identificar o processo, o setor e as etapas, GERE (status "ok") — infira o resto com confiança a partir do contexto. Use "questions" APENAS se faltar algo essencial: nome do processo indecifrável, setor ausente, nenhuma etapa reconhecível, ou etapa incompreensível a ponto de impedir a redação. Máximo de 3 perguntas, específicas e objetivas. NUNCA pergunte sobre responsável, materiais, datas, código ou versão — esses são inferidos ou preenchidos com padrão.\n\n' +
       'Responda SOMENTE com um objeto JSON válido (sem markdown, sem crases, sem texto extra):\n' +
       'Faltando essencial: {"status":"questions","questions":["pergunta 1","pergunta 2"]}\n' +
-      'Completo: {"status":"ok","data":{"processName":"...","sector":"...","oneLineDesc":"...","processText":"...","responsible":"...","materials":"...","steps":[{"title":"...","description":"..."}]}}\n\n' +
+      'Completo: {"status":"ok","data":{"processName":"...","sector":"...","oneLineDesc":"...","processText":"...","responsible":"...","materials":"...","conclusion":"...","steps":[{"title":"...","description":"..."},{"title":"Verificar ...","description":"...","ifYes":"...","ifNo":"..."}]}}\n\n' +
       'Informações fornecidas pelo usuário:\n"' + text + '"';
-    const raw = await this.complete(prompt);
-    if (!raw) throw new Error('sem resposta');
-    let s = String(raw).trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-    const a = s.indexOf('{'), b = s.lastIndexOf('}');
-    if (a === -1 || b === -1) throw new Error('json não encontrado');
-    const data = JSON.parse(s.slice(a, b + 1));
-    if (data.status === 'questions' && Array.isArray(data.questions) && data.questions.length) return data;
-    if (data.status === 'ok' && data.data && data.data.processName) {
-      // saneamento mínimo
+    const data = this.parseAiJson(await this.complete(prompt, run));
+    if (data.status === 'questions' && Array.isArray(data.questions) && data.questions.length) {
+      data.questions = data.questions.map((q) => String(q == null ? '' : q)).filter(Boolean);
+      return data;
+    }
+    if (data.status === 'ok' && data.data && typeof data.data === 'object' && data.data.processName) {
+      // Os campos de texto precisam ser strings (um número ou objeto quebrava a prévia).
       const d = data.data;
-      d.steps = (Array.isArray(d.steps) ? d.steps : []).map((x) => ({ title: (x && x.title || '').toString(), description: (x && x.description || '').toString() })).filter((x) => x.title);
+      ['processName', 'sector', 'oneLineDesc', 'processText', 'responsible', 'materials', 'conclusion', 'code', 'version', 'consultancy', 'emission', 'lastRevision'].forEach((k) => {
+        if (d[k] != null && typeof d[k] !== 'string') d[k] = Array.isArray(d[k]) ? d[k].join(', ') : (typeof d[k] === 'object' ? '' : String(d[k]));
+      });
+      const str = (v) => (v == null || typeof v === 'object' ? '' : String(v)).trim();
+      d.steps = (Array.isArray(d.steps) ? d.steps : []).filter((x) => x && typeof x === 'object')
+        .map((x) => ({ title: str(x.title), description: str(x.description), ifYes: str(x.ifYes), ifNo: str(x.ifNo) })).filter((x) => x.title);
       if (!d.steps.length) return { status: 'questions', questions: ['Liste as etapas do processo, cada uma com uma breve descrição do que deve ser feito.'] };
       return data;
     }
     throw new Error('resposta inesperada');
   }
 
-  findScroller() {
-    let n = this.rootEl ? this.rootEl.parentElement : null;
-    while (n && n !== document.documentElement) {
-      const cs = getComputedStyle(n);
-      if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && n.scrollHeight > n.clientHeight + 4) return n;
-      n = n.parentElement;
-    }
-    if (document.body.scrollHeight > document.body.clientHeight + 4 &&
-        ['auto', 'scroll'].includes(getComputedStyle(document.body).overflowY)) return document.body;
-    return window;
-  }
-  metrics() {
-    // Pick whichever container actually scrolls (host setups vary: window, html, or body).
-    const cands = [document.scrollingElement, document.documentElement, document.body].filter(Boolean);
-    let best = { top: 0, max: 0, el: null };
-    for (const el of cands) {
-      const max = el.scrollHeight - el.clientHeight;
-      if (max > best.max) best = { top: el.scrollTop, max, el };
-    }
-    const winMax = document.documentElement.scrollHeight - window.innerHeight;
-    if (window.scrollY > 0 || winMax > best.max) {
-      if (winMax >= best.max) best = { top: window.scrollY, max: winMax, el: window };
-    }
-    return best;
-  }
   go0 = () => this.goTo(0);
   go1 = () => this.goTo(1);
   go2 = () => this.goTo(2);
@@ -1264,8 +1649,9 @@ class Component extends DCLogic {
       this._unlockTimer = setTimeout(fire, idle);
     };
     this._onWheel = (e) => {
-      // Let the generator overlay scroll natively when it's open.
-      if (this.state.screen) return;
+      // Let the generator overlay scroll natively when it's open; ctrl+wheel is
+      // pinch-zoom on trackpads and must reach the browser.
+      if (this.state.screen || e.ctrlKey) return;
       e.preventDefault();
       if (this._locked) { this._armUnlock(60); return; } // swallow momentum tail
       const dir = e.deltaY > 0 ? 1 : (e.deltaY < 0 ? -1 : 0);
@@ -1278,7 +1664,14 @@ class Component extends DCLogic {
       this._armUnlock(60);
     };
     this._onKey = (e) => {
-      if (this.state.screen) return;
+      if (this.state.screen) {
+        if (e.key === 'Escape' && !this.state.bpmnEditing) { e.preventDefault(); this.closeScreen(); }
+        return;
+      }
+      // Espaço/setas num controle focado (botão, campo) mantêm o comportamento nativo.
+      const t = e.target;
+      if (t && t.closest && t.closest('button, a, input, textarea, select, [contenteditable]')) return;
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
       const down = ['ArrowDown', 'PageDown', ' ', 'Spacebar'].includes(e.key);
       const up = ['ArrowUp', 'PageUp'].includes(e.key);
       if (!down && !up) return;
@@ -1302,17 +1695,29 @@ class Component extends DCLogic {
     window.addEventListener('keydown', this._onKey);
     this._onScroll();
 
-    this.POSES = [
-      { rotY: 0.00, tilt: 0.00, armR: -1.15, armL: 0.18 },
-      { rotY: 0.20, tilt: 0.11, armR: -0.20, armL: 1.42 },
-      { rotY: -0.14, tilt: -0.07, armR: -0.85, armL: 1.00 },
-      { rotY: 0.12, tilt: 0.09, armR: -0.25, armL: 1.58 }
-    ];
+    this.initThree();
+    this.syncInert();
 
-    this.waitThree();
+    // Autoria configurada no servidor (opcional; mantém o padrão se falhar).
+    if (!(window.claude && window.claude.complete)) {
+      fetch('/api/config').then((r) => (r.ok ? r.json() : null)).then((cfg) => {
+        if (cfg && cfg.author) this.brand = { author: String(cfg.author), reviewCycle: String(cfg.reviewCycle || this.brand.reviewCycle) };
+      }).catch(() => {});
+    }
+  }
+
+  componentDidUpdate() { this.syncInert(); }
+
+  // Com o diálogo aberto, a página de fundo fica inerte: sai do Tab e do leitor
+  // de tela, prendendo o foco dentro do diálogo.
+  syncInert() {
+    const open = !!this.state.screen;
+    [this.navEl, this.stageEl].forEach((el) => { if (el && el.inert !== open) el.inert = open; });
+    if (this.overlayEl && this.overlayEl.inert === open) this.overlayEl.inert = !open;
   }
 
   componentWillUnmount() {
+    this._unmounted = true;
     document.removeEventListener('scroll', this._onScroll, { capture: true });
     window.removeEventListener('scroll', this._onScroll);
     window.removeEventListener('resize', this._onResize);
@@ -1321,120 +1726,124 @@ class Component extends DCLogic {
     window.removeEventListener('keydown', this._onKey);
     if (this._rmQuery && this._rmQuery.removeEventListener) this._rmQuery.removeEventListener('change', this._onRM);
     if (this._unlockTimer) clearTimeout(this._unlockTimer);
+    if (this._copiedTimer) clearTimeout(this._copiedTimer);
+    this.cancelRun();
     if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
     if (this.raf) cancelAnimationFrame(this.raf);
     if (this.renderer) this.renderer.dispose();
   }
 
-  waitThree() {
-    if (window.THREE && this.canvasEl) { this.initThree(); }
-    else { setTimeout(() => this.waitThree(), 60); }
-  }
+  // three.js e complementos (mesma versão, r128), carregados aqui em ordem e uma
+  // única vez. No <helmet> o navegador executava o three.min.js duas vezes (no
+  // parse do HTML e na injeção do runtime) e os complementos caíam na cópia errada.
+  THREE_SCRIPTS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js'
+  ];
+  ROBOT_URL = './desk-robot.glb';
 
-  initThree() {
+  async initThree() {
+    try { for (const src of this.THREE_SCRIPTS) await this.loadScript(src); }
+    catch (_) { return; } // sem o three.js a página segue sem o robô
+    if (this._unmounted || !this.canvasEl) return;
     const THREE = window.THREE;
+
     const scene = new THREE.Scene();
     this.scene = scene;
 
     const renderer = new THREE.WebGLRenderer({ canvas: this.canvasEl, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    // O modelo é PBR (glTF): saída em sRGB e tone mapping para as cores baterem.
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
     this.renderer = renderer;
+
+    // Ambiente neutro para os reflexos dos metais e cromados do modelo.
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
 
     const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
     camera.position.set(0, 0.3, 7);
     this.camera = camera;
 
-    // lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.78));
-    const key = new THREE.DirectionalLight(0xffffff, 0.85);
+    // lights (o ambiente já ilumina; estas dão recorte e o brilho azul da marca)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+    const key = new THREE.DirectionalLight(0xffffff, 1.1);
     key.position.set(3, 5, 4); scene.add(key);
-    const rim = new THREE.PointLight(0x1c5cff, 0.9, 30);
+    const rim = new THREE.PointLight(0x1c5cff, 1.2, 30);
     rim.position.set(-4, 1, 2); scene.add(rim);
-    const fill = new THREE.DirectionalLight(0xdfe8ff, 0.4);
-    fill.position.set(-2, -1, 3); scene.add(fill);
-
-    // materials
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf3f6fc, roughness: 0.42, metalness: 0.12 });
-    const shellMat = new THREE.MeshStandardMaterial({ color: 0xe6ecf7, roughness: 0.5, metalness: 0.1 });
-    const accentMat = new THREE.MeshStandardMaterial({ color: 0x1c5cff, roughness: 0.32, metalness: 0.35 });
-    const darkMat = new THREE.MeshStandardMaterial({ color: 0x0a1426, roughness: 0.45, metalness: 0.2 });
-    const glowMat = new THREE.MeshStandardMaterial({ color: 0x6db0ff, emissive: 0x1c5cff, emissiveIntensity: 1.5, roughness: 0.3 });
-
-    const robot = new THREE.Group();
-    this.robot = robot;
-
-    // body
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.55, 1.0), bodyMat);
-    robot.add(body);
-    // belt
-    const belt = new THREE.Mesh(new THREE.BoxGeometry(1.54, 0.16, 1.04), accentMat);
-    belt.position.y = -0.55; robot.add(belt);
-    // chest panel
-    const chest = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.5, 0.08), darkMat);
-    chest.position.set(0, 0.12, 0.51); robot.add(chest);
-    const chestDot = new THREE.Mesh(new THREE.CircleGeometry(0.09, 24), glowMat);
-    chestDot.position.set(0, 0.12, 0.56); robot.add(chestDot);
-
-    // neck
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.24, 0.22, 20), shellMat);
-    neck.position.y = 0.88; robot.add(neck);
-
-    // head group
-    const head = new THREE.Group();
-    head.position.y = 1.34;
-    const headMesh = new THREE.Mesh(new THREE.BoxGeometry(1.42, 1.12, 1.05), bodyMat);
-    head.add(headMesh);
-    // face screen
-    const face = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.78, 0.1), darkMat);
-    face.position.z = 0.52; head.add(face);
-    // eyes
-    const eyes = new THREE.Group();
-    const eyeGeo = new THREE.SphereGeometry(0.12, 20, 20);
-    const eyeL = new THREE.Mesh(eyeGeo, glowMat); eyeL.position.set(-0.26, 0.05, 0.58);
-    const eyeR = new THREE.Mesh(eyeGeo, glowMat); eyeR.position.set(0.26, 0.05, 0.58);
-    eyes.add(eyeL); eyes.add(eyeR);
-    head.add(eyes);
-    this.eyes = eyes;
-    // smile
-    const smile = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.025, 12, 24, Math.PI), glowMat);
-    smile.position.set(0, -0.2, 0.58); smile.rotation.z = Math.PI; head.add(smile);
-    // ears
-    const earGeo = new THREE.CylinderGeometry(0.13, 0.13, 0.14, 20);
-    const earL = new THREE.Mesh(earGeo, accentMat); earL.rotation.z = Math.PI / 2; earL.position.set(-0.78, 0, 0); head.add(earL);
-    const earR = new THREE.Mesh(earGeo, accentMat); earR.rotation.z = Math.PI / 2; earR.position.set(0.78, 0, 0); head.add(earR);
-    // antenna
-    const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.42, 12), shellMat);
-    stalk.position.y = 0.78; head.add(stalk);
-    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.1, 18, 18), glowMat);
-    ball.position.y = 1.02; head.add(ball);
-    this.antennaBall = ball;
-    robot.add(head);
-    this.head = head;
-
-    // arms (pivot at shoulder, parts hang down)
-    const makeArm = (sx) => {
-      const g = new THREE.Group();
-      const up = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.62, 16), accentMat);
-      up.position.y = -0.31; g.add(up);
-      const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.155, 16, 16), shellMat);
-      elbow.position.y = -0.62; g.add(elbow);
-      const fore = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.115, 0.55, 16), accentMat);
-      fore.position.y = -0.92; g.add(fore);
-      const hand = new THREE.Mesh(new THREE.SphereGeometry(0.185, 18, 18), bodyMat);
-      hand.position.y = -1.24; g.add(hand);
-      g.position.set(sx * 1.04, 0.52, 0.14);
-      return g;
-    };
-    const armR = makeArm(1); robot.add(armR); this.armR = armR;
-    const armL = makeArm(-1); robot.add(armL); this.armL = armL;
-
-    robot.position.x = 1.9;
-    robot.position.y = 0;
-    scene.add(robot);
 
     this.t0 = performance.now();
     this.resize();
+
+    let gltf = null;
+    try { gltf = await new Promise((resolve, reject) => new THREE.GLTFLoader().load(this.ROBOT_URL, resolve, undefined, reject)); }
+    catch (e) { console.error('[ARI] não consegui carregar o robô 3D:', e); return; }
+    if (this._unmounted || !this.renderer) return;
+    this.setupRobot(gltf);
     this.animate();
+  }
+
+  // O .glb vem com todas as peças soltas sob "desk_robot". Agrupa cabeça e
+  // braços em pivôs (pescoço e ombros) para animá-los como antes.
+  setupRobot(gltf) {
+    const THREE = window.THREE;
+    const model = gltf.scene;
+    const root = model.getObjectByName('desk_robot') || model;
+
+    // three r128 ignora KHR_materials_emissive_strength: aplica a intensidade à mão.
+    const strength = {};
+    ((gltf.parser && gltf.parser.json && gltf.parser.json.materials) || []).forEach((m) => {
+      const ext = m.extensions && m.extensions.KHR_materials_emissive_strength;
+      if (ext) strength[m.name] = ext.emissiveStrength;
+    });
+    model.traverse((o) => {
+      if (o.isMesh && o.material && strength[o.material.name] != null) o.material.emissiveIntensity = strength[o.material.name];
+    });
+
+    const HEAD = ['head', 'screen_bezel', 'screen', 'ear', 'ear_cap', 'antenna_base', 'antenna_neck', 'antenna_strut', 'antenna_cup', 'antenna_bulb'];
+    const ARM = ['shoulder_mount', 'shoulder_ball', 'shoulder_hub', 'upper_arm_cuff', 'upper_arm', 'elbow_gear', 'elbow_joint', 'elbow_collar', 'forearm', 'wrist', 'hand', 'hand_seam', 'cable'];
+    model.updateMatrixWorld(true);
+    const pivot = (x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); root.add(g); g.updateMatrixWorld(true); return g; };
+    const head = pivot(0, 0.1565, 0);       // pescoço
+    const armR = pivot(0.099, 0.13, 0.004); // ombro direito (+x, lado direito da tela)
+    const armL = pivot(-0.099, 0.13, 0.004);
+    const box = new THREE.Box3(), center = new THREE.Vector3();
+    [...root.children].forEach((c) => {
+      if (c === head || c === armR || c === armL) return;
+      // O GLTFLoader torna nomes repetidos únicos ("ear_1", "elbow_gear_2"...).
+      const base = c.name.replace(/_\d+$/, '');
+      if (HEAD.includes(base)) head.attach(c);
+      else if (ARM.includes(base)) {
+        box.setFromObject(c).getCenter(center);
+        (center.x > 0 ? armR : armL).attach(c);
+      }
+    });
+
+    // O modelo mede ~0,32 de altura: escala para o tamanho do robô anterior,
+    // com o pé no mesmo ponto da cena.
+    model.scale.setScalar(10.5);
+    model.position.y = -0.9;
+
+    const robot = new THREE.Group();
+    robot.add(model);
+    robot.position.x = 1.9;
+    this.scene.add(robot);
+    this.robot = robot;
+    this.head = head;
+    this.armR = armR;
+    this.armL = armL;
+
+    // Piscar = a tela do rosto apaga por um instante; a antena "respira".
+    const screen = root.getObjectByName('screen');
+    const bulb = root.getObjectByName('antenna_bulb');
+    this.faceMat = screen && screen.material;
+    this.faceGlow = this.faceMat ? this.faceMat.emissiveIntensity : 1;
+    this.bulbMat = bulb && bulb.material;
+    this.bulbGlow = this.bulbMat ? this.bulbMat.emissiveIntensity : 1;
   }
 
   resize() {
@@ -1449,6 +1858,8 @@ class Component extends DCLogic {
   }
 
   animate = () => {
+    // Pausa enquanto o diálogo opaco cobre a cena (closeScreen retoma).
+    if (this.state.screen) { this.raf = null; return; }
     this.raf = requestAnimationFrame(this.animate);
     const T = window.THREE;
     const t = (performance.now() - this.t0) / 1000;
@@ -1460,13 +1871,15 @@ class Component extends DCLogic {
     this.mouse.x = lerp(this.mouse.x, rm ? 0 : this.tMouse.x, 0.05);
     this.mouse.y = lerp(this.mouse.y, rm ? 0 : this.tMouse.y, 0.05);
 
-    // pose blend from scroll. armR>0 raises the right arm outward-right;
-    // armL<0 raises the left arm outward-left -> arms always swing AWAY from the body.
+    // pose blend from scroll. The model ships with the right arm raised and the
+    // left one down; armR/armL are rotations ON TOP of that (ARM_SWAP lowers the
+    // right arm and raises the left, both swinging away from the body).
+    const ARM_SWAP = -2.1;
     const POSES = [
-      { rotY:  0.00, tilt:  0.00, armR:  1.98, armL: -0.24 },
-      { rotY:  0.16, tilt:  0.10, armR:  0.30, armL: -1.95 },
-      { rotY: -0.18, tilt: -0.06, armR:  1.95, armL: -0.28 },
-      { rotY:  0.14, tilt:  0.09, armR:  0.30, armL: -2.00 }
+      { rotY:  0.00, tilt:  0.00, armR: 0, armL: 0 },
+      { rotY:  0.16, tilt:  0.10, armR: ARM_SWAP, armL: ARM_SWAP },
+      { rotY: -0.18, tilt: -0.06, armR: 0, armL: 0 },
+      { rotY:  0.14, tilt:  0.09, armR: ARM_SWAP, armL: ARM_SWAP }
     ];
     const s = this.scrollProgress * 3;
     const i = Math.min(2, Math.floor(s));
@@ -1502,14 +1915,16 @@ class Component extends DCLogic {
     this.armR.rotation.z = lerp(this.armR.rotation.z, tArmR + wave, 0.1);
     this.armL.rotation.z = lerp(this.armL.rotation.z, tArmL, 0.1);
     // raised arm reaches slightly forward (toward the viewer)
-    this.armR.rotation.x = lerp(this.armR.rotation.x, tArmR > 0.8 ? -0.22 : 0, 0.1);
-    this.armL.rotation.x = lerp(this.armL.rotation.x, tArmL < -0.8 ? -0.22 : 0, 0.1);
+    this.armR.rotation.x = lerp(this.armR.rotation.x, tArmR > -1 ? 0.18 : 0, 0.1);
+    this.armL.rotation.x = lerp(this.armL.rotation.x, tArmL < -1 ? 0.18 : 0, 0.1);
 
-    // antenna bob + blink (frozen under reduced motion)
-    this.antennaBall.position.y = 1.02 + (rm ? 0 : Math.sin(t * 2.4) * 0.04);
-    const ph = t % 3.6;
-    const blink = (!rm && ph > 3.42) ? 0.12 : 1;
-    this.eyes.scale.y = lerp(this.eyes.scale.y, blink, 0.45);
+    // antenna glow "breathes" + face screen blinks (frozen under reduced motion)
+    if (this.bulbMat) this.bulbMat.emissiveIntensity = this.bulbGlow * (rm ? 1 : 0.75 + 0.5 * (0.5 + 0.5 * Math.sin(t * 2.4)));
+    if (this.faceMat) {
+      const ph = t % 3.6;
+      const target = (!rm && ph > 3.42) ? this.faceGlow * 0.12 : this.faceGlow;
+      this.faceMat.emissiveIntensity = lerp(this.faceMat.emissiveIntensity, target, 0.45);
+    }
 
     this.renderer.render(this.scene, this.camera);
   };
@@ -1557,23 +1972,42 @@ class Component extends DCLogic {
     // visibility is delayed until after the fade/slide finishes when closing, so the
     // "voltar" transition actually plays instead of the overlay vanishing instantly.
     const overlay = 'position:fixed;inset:0;z-index:200;overflow-y:auto;background:#f5f8fc;transition:opacity .42s ease, transform .5s ' + ease + ', visibility 0s linear ' + (open ? '0s' : '.5s') + ';'
-      + (open ? 'opacity:1;transform:translateY(0);pointer-events:auto;visibility:visible;'
+      + (open ? 'opacity:1;transform:none;pointer-events:auto;visibility:visible;'
               : 'opacity:0;transform:translateY(40px);pointer-events:none;visibility:hidden;');
     const G = {
       bpmn: { e: 'FUNCIONALIDADE 01', t: 'Gerar mapeamento em BPMN', s: 'Descreva a tarefa em linguagem natural e a ARI desenha o fluxo completo em notação BPMN.', l: 'Descrição da tarefa', p: 'Ex.: Quando um pedido chega, o comercial confere o estoque. Se houver, emite a nota e envia para a expedição; se não, avisa o cliente e encerra.' },
-      pop: { e: 'FUNCIONALIDADE 02', t: 'Gerar POP (PowerPoint para o Canva)', s: 'Anexe a imagem do fluxograma e descreva o processo. A ARI valida as informações e, se algo faltar, pergunta antes de gerar. O arquivo sai em .pptx — ao importar no Canva, cada texto vira uma caixa editável, sem embaralhar.', l: 'Informações do processo', p: 'Inclua: nome do processo, setor responsável, uma breve descrição e a lista de etapas — cada etapa com uma descrição do que fazer.\n\nEx.: Processo: Aprovação de pedidos. Setor: Comercial. Descrição: análise e aprovação de pedidos de clientes. Etapas:\n1) Receber a solicitação — registrar o pedido no sistema conferindo os campos.\n2) Validar crédito — consultar o ERP e verificar limite/pendências.\n3) Confirmar estoque — checar disponibilidade e reservar itens.\n4) Aprovar e emitir a ordem — registrar a aprovação e notificar cliente e logística.' },
+      pop: { e: 'FUNCIONALIDADE 02', t: 'Gerar POP (PowerPoint para o Canva)', s: 'Escolha o modelo, anexe a logo da empresa e a imagem do fluxograma e descreva o processo. A ARI valida as informações e, se algo faltar, pergunta antes de gerar. O arquivo sai em .pptx — ao importar no Canva, cada texto vira uma caixa editável, sem embaralhar.', l: 'Informações do processo', p: 'Inclua: nome do processo, setor responsável, uma breve descrição e a lista de etapas — cada etapa com uma descrição do que fazer.\n\nEx.: Processo: Aprovação de pedidos. Setor: Comercial. Descrição: análise e aprovação de pedidos de clientes. Etapas:\n1) Receber a solicitação — registrar o pedido no sistema conferindo os campos.\n2) Validar crédito — consultar o ERP e verificar limite/pendências.\n3) Confirmar estoque — checar disponibilidade e reservar itens.\n4) Aprovar e emitir a ordem — registrar a aprovação e notificar cliente e logística.' },
       manual: { e: 'FUNCIONALIDADE 03', t: 'Gerar manual em modelo padrão', s: 'Descreva o que o manual precisa cobrir e a ARI estrutura o documento inteiro em um modelo padronizado.', l: 'O que o manual deve cobrir', p: 'Ex.: Manual de uso do sistema de chamados para novos colaboradores, do login à abertura e acompanhamento de tickets.' }
     };
     const g = G[screen] || { e: '', t: '', s: '', l: '', p: '' };
     const loading = this.state.loading;
+    const busy = loading || !!this.state.editing;
     const genBtnStyle = 'margin-top:24px;width:100%;font-family:IBM Plex Sans,sans-serif;font-size:16px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:15px;border-radius:12px;box-shadow:0 12px 26px -10px rgba(28,92,255,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);'
-      + (loading ? 'opacity:.6;cursor:wait;' : 'cursor:pointer;');
+      + (busy ? 'opacity:.6;cursor:wait;' : 'cursor:pointer;');
 
     // Swatches da paleta de cor das atividades (com anel de seleção).
     const ci = this.state.actColorIdx || 0;
-    const sw = (i) => { const p = this.PALETTE[i]; return 'width:30px;height:30px;border-radius:8px;cursor:pointer;background:' + p.fill + ';border:3px solid ' + (i === ci ? p.stroke : 'transparent') + ';box-shadow:0 1px 3px rgba(10,31,68,.12);transition:border .15s;'; };
+    const sw = (i) => { const p = this.PALETTE[i]; return 'appearance:none;padding:0;width:30px;height:30px;border-radius:8px;cursor:pointer;background:' + p.fill + ';border:3px solid ' + (i === ci ? p.stroke : 'transparent') + ';box-shadow:0 1px 3px rgba(10,31,68,.12);transition:border .15s;'; };
     const editing = !!this.state.editing;
-    const editBtnStyle = 'margin-top:12px;width:100%;font-family:IBM Plex Sans,sans-serif;font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:12px;border-radius:11px;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);' + (editing ? 'opacity:.6;cursor:wait;' : 'cursor:pointer;');
+    const editBtnStyle = 'margin-top:12px;width:100%;font-family:IBM Plex Sans,sans-serif;font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:12px;border-radius:11px;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);' + (busy ? 'opacity:.6;cursor:wait;' : 'cursor:pointer;');
+
+    const swl = (i) => 'Cor das atividades: ' + this.PALETTE[i].name;
+    // POP: escolha do modelo e da logo (a grade do formulário some enquanto isso).
+    const popSetup = screen === 'pop' ? this.state.popSetup : null;
+    const pm = this.state.popModel || 1;
+    const mcard = (n) => 'appearance:none;display:block;width:100%;text-align:left;background:#fff;border-radius:14px;padding:14px;cursor:pointer;font-family:inherit;'
+      + 'border:2px solid ' + (n === pm ? '#1c5cff' : 'rgba(10,31,68,.1)') + ';box-shadow:' + (n === pm ? '0 14px 30px -16px rgba(28,92,255,.55)' : 'none') + ';transition:border-color .15s,box-shadow .15s;';
+    const chipStyle = 'appearance:none;display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fbfcfe;border:1px solid rgba(10,31,68,.12);border-radius:12px;padding:10px 12px;cursor:pointer;font-family:inherit;min-width:0;';
+    const logoLabel = this.state.logoName || 'Nenhuma logo';
+    // Mapeamento: PNG e edição manual.
+    const outlineBtn = (color, bg, border, wait) => 'display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:IBM Plex Sans,sans-serif;font-size:15px;font-weight:600;color:' + color + ';background:' + bg + ';border:1px solid ' + border + ';padding:12px 20px;border-radius:11px;' + (wait ? 'opacity:.6;cursor:wait;' : 'cursor:pointer;');
+    const toolBtn = 'font-family:IBM Plex Sans,sans-serif;font-size:14px;font-weight:500;color:#0a1f44;background:#fff;border:1px solid rgba(10,31,68,.16);padding:9px 14px;border-radius:10px;cursor:pointer;';
+    const swp = (i) => (i === ci ? 'true' : 'false');
+    // Anúncio curto para leitores de tela (o resultado completo é longo demais).
+    const statusMsg = loading ? 'A ARI está gerando…' : editing ? 'Aplicando alteração…'
+      : this.state.err ? '' : this.state.popReady ? 'POP pronto para baixar.' : this.state.bpmnXml ? 'Mapeamento BPMN pronto.'
+      : this.state.bpmnAsk ? 'Responda às perguntas para a ARI gerar o mapeamento.'
+      : this.state.popConfirm ? 'Escolha as etapas com print e gere o POP.' : this.state.result ? 'Resultado pronto.' : '';
 
     return {
       setCanvas: this.setCanvas, setProgress: this.setProgress,
@@ -1585,9 +2019,17 @@ class Component extends DCLogic {
       openBpmn: this.openBpmn, openPop: this.openPop, openManual: this.openManual,
       closeScreen: this.closeScreen, generate: this.generate,
       setText: this.setText, setFile: this.setFile, onFile: this.onFile, setDrop: this.setDrop,
+      overlay, overlayHidden: open ? 'false' : 'true', setOverlay: this.setOverlay, setNav: this.setNav, setStage: this.setStage,
+      hid0: active === 0 ? 'false' : 'true', hid1: active === 1 ? 'false' : 'true', hid2: active === 2 ? 'false' : 'true', hid3: active === 3 ? 'false' : 'true',
+      tab1: active === 1 ? 0 : -1, tab2: active === 2 ? 0 : -1, tab3: active === 3 ? 0 : -1,
+      onTextInput: this.onTextInput, notice: this.state.notice, routeInfo: this.state.routeInfo, reviewNotes: this.state.reviewNotes, previewHint: this.state.previewHint,
+      loadingMsg: this.state.loadingMsg || 'A ARI está gerando...', bpmnAsk: !!this.state.bpmnAsk && !loading,
+      setQuestions: this.setQuestions, confirmQuestions: this.confirmQuestions, editErr: this.state.editErr, statusMsg,
+      showManualActions: screen === 'manual' && !loading && !!this.state.result,
+      copyManual: this.copyManual, downloadManual: this.downloadManual, copyLabel: this.state.copied ? 'Copiado ✓' : 'Copiar texto',
       overlay, showPop: screen === 'pop', showBpmn: screen === 'bpmn',
       genEyebrow: g.e, genTitle: g.t, genSubtitle: g.s, genInputLabel: g.l, genPlaceholder: g.p,
-      loading, hasResult: !!this.state.result,
+      loading, busy,
       showText: !!this.state.result && !this.state.bpmnXml,
       showEmpty: !loading && !this.state.result && !this.state.bpmnXml,
       result: this.state.result, fileLabel: this.state.fileName || 'Clique ou arraste a imagem aqui (.png, .jpg)',
@@ -1595,10 +2037,40 @@ class Component extends DCLogic {
       hasBpmn: !!this.state.bpmnXml, downloadBpmn: this.downloadBpmn, setPreview: this.setPreview,
       c0: this.c0, c1: this.c1, c2: this.c2, c3: this.c3, c4: this.c4, c5: this.c5,
       sw0: sw(0), sw1: sw(1), sw2: sw(2), sw3: sw(3), sw4: sw(4), sw5: sw(5),
+      swl0: swl(0), swl1: swl(1), swl2: swl(2), swl3: swl(3), swl4: swl(4), swl5: swl(5),
+      swp0: swp(0), swp1: swp(1), swp2: swp(2), swp3: swp(3), swp4: swp(4), swp5: swp(5),
       setEditText: this.setEditText, applyEdit: this.applyEdit, editing,
       editBtnLabel: editing ? 'Aplicando...' : 'Aplicar alteração', editBtnStyle,
       hasPop: !!this.state.popReady, downloadPop: this.downloadPop, setPopPreview: this.setPopPreview,
-      popConfirm: !!this.state.popConfirm, setPopSteps: this.setPopSteps, confirmPop: this.confirmPop
+      popConfirm: !!this.state.popConfirm, setPopSteps: this.setPopSteps, confirmPop: this.confirmPop,
+      genGrid: 'display:' + (popSetup ? 'none' : 'grid') + ';grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:26px;align-items:start;',
+      popSetupModel: popSetup === 'model', popSetupLogo: popSetup === 'logo',
+      setupStepModel: this.popSetupDone ? 'MODELO DO POP' : 'PASSO 1 DE 2',
+      setupStepLogo: this.popSetupDone ? 'LOGO DA EMPRESA' : 'PASSO 2 DE 2',
+      pickModel1: this.pickModel1, pickModel2: this.pickModel2, pickModel3: this.pickModel3,
+      setThumb1: this.setThumb1, setThumb2: this.setThumb2, setThumb3: this.setThumb3,
+      mcard1: mcard(1), mcard2: mcard(2), mcard3: mcard(3),
+      mp1: pm === 1 ? 'true' : 'false', mp2: pm === 2 ? 'true' : 'false', mp3: pm === 3 ? 'true' : 'false',
+      msel1: pm === 1 ? '✓ Selecionado' : '', msel2: pm === 2 ? '✓ Selecionado' : '', msel3: pm === 3 ? '✓ Selecionado' : '',
+      setLogoDrop: this.setLogoDrop, setLogoFile: this.setLogoFile, onLogoFile: this.onLogoFile,
+      setLogoView: this.setLogoView, setPaletteView: this.setPaletteView,
+      logoDropLabel: this.popLogo ? 'Anexar outra imagem (substitui a logo atual)' : 'Clique ou arraste a logo aqui (.png, .jpg, .svg)',
+      hasLogo: !!this.popLogo, removeLogo: this.removeLogo, logoErr: this.state.logoErr,
+      backToModels: this.backToModels, finishSetup: this.finishSetup,
+      finishLabel: this.popSetupDone ? 'Concluir' : this.popLogo ? 'Continuar' : 'Continuar sem logo',
+      editModel: this.editModel, editLogo: this.editLogo, chipStyle,
+      setChipThumb: this.setChipThumb, setChipLogo: this.setChipLogo, setChipSwatches: this.setChipSwatches,
+      modelChipName: 'Modelo ' + pm + ' · ' + this.popModelName(pm), modelChipAria: 'Modelo do POP: ' + pm + ', ' + this.popModelName(pm) + '. Trocar o modelo',
+      logoChipName: logoLabel, logoChipAria: 'Logo da empresa: ' + logoLabel + '. Ver ou trocar a logo',
+      downloadPng: this.downloadPng, pngBusy: !!this.state.pngBusy,
+      pngBtnLabel: this.state.pngBusy ? 'Gerando imagem...' : 'Baixar imagem .png',
+      pngBtnStyle: outlineBtn('#15803d', '#f0fdf4', 'rgba(22,163,74,.35)', this.state.pngBusy),
+      openEditor: this.openEditor,
+      manualBtnLabel: this.state.editorLoading ? 'Abrindo o editor...' : 'Editar manualmente',
+      manualBtnStyle: outlineBtn('#1c5cff', 'rgba(28,92,255,.06)', 'rgba(28,92,255,.3)', busy || this.state.editorLoading),
+      bpmnEditing: !!this.state.bpmnEditing && screen === 'bpmn', bpmnManual: !!this.state.bpmnManual,
+      setEditorEl: this.setEditorEl, editorUndo: this.editorUndo, editorRedo: this.editorRedo, editorFit: this.editorFit,
+      cancelEditor: this.cancelEditor, saveEditor: this.saveEditor, editorErr: this.state.editorErr, toolBtn
     };
   }
 }
