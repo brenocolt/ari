@@ -21,7 +21,34 @@
   var ACTIVITIES = { task: 1, subProcess: 1 };
   var COL_W = 180, ROW_H = 140, LANE_LABEL_W = 30, POOL_X = 160, POOL_Y = 80, PAD_LEFT = 100, PAD_RIGHT = 80;
   var TRACKS = [0, 8, -8, 16, -16, 24, -24, 32, -32];
-  var TASK_TAG = { user: 'userTask', service: 'serviceTask', manual: 'manualTask', send: 'sendTask', receive: 'receiveTask' };
+  var TASK_TAG = { user: 'userTask', service: 'serviceTask', manual: 'manualTask', send: 'sendTask', receive: 'receiveTask', script: 'scriptTask', businessRule: 'businessRuleTask' };
+  // Tipos de início, fim e atividade (mesmos valores de bpmn-graph.js), com o
+  // nome mostrado no painel "Tipos dos elementos".
+  var TYPE_OPTIONS = {
+    start: [['none', 'Simples (nenhum)'], ['message', 'Mensagem'], ['timer', 'Temporizador'], ['signal', 'Sinal'], ['conditional', 'Condicional']],
+    end: [['none', 'Simples (nenhum)'], ['message', 'Mensagem'], ['terminate', 'Terminar'], ['error', 'Erro'], ['signal', 'Sinal'], ['escalation', 'Escalonamento']],
+    task: [['user', 'Usuário'], ['manual', 'Manual'], ['service', 'Serviço'], ['send', 'Envio'], ['receive', 'Recebimento'], ['script', 'Script'], ['businessRule', 'Regra de negócio'], ['none', 'Genérica']]
+  };
+  var EVENT_DEF = {
+    message: 'messageEventDefinition', timer: 'timerEventDefinition', signal: 'signalEventDefinition', conditional: 'conditionalEventDefinition',
+    terminate: 'terminateEventDefinition', error: 'errorEventDefinition', escalation: 'escalationEventDefinition'
+  };
+  var allowed = function (list, v) { return list.some(function (o) { return o[0] === v; }); };
+  // Tipo do evento de início/fim; aceita o formato antigo ("terminate": true).
+  function eventTypeOf(n) {
+    if (!n || (n.type !== 'startEvent' && n.type !== 'endEvent')) return 'none';
+    var list = n.type === 'startEvent' ? TYPE_OPTIONS.start : TYPE_OPTIONS.end;
+    if (allowed(list, n.eventType)) return n.eventType;
+    return n.type === 'endEvent' && n.terminate === true ? 'terminate' : 'none';
+  }
+  // Filhos de um evento com definição. O evento condicional exige a condição
+  // (vazia aqui) para abrir no bpmn-js, Camunda e Bizagi.
+  function eventDefXml(type, id) {
+    var tag = EVENT_DEF[type];
+    if (!tag) return '';
+    if (type === 'conditional') return '<' + tag + ' id="' + id + '_def"><condition xsi:type="tFormalExpression"/></' + tag + '>';
+    return '<' + tag + ' id="' + id + '_def"/>';
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -216,8 +243,11 @@
     var elTag = function (n) {
       var id = ids[n.id], name = ' name="' + esc(n.name) + '"';
       switch (n.type) {
-        case 'startEvent': return '    <startEvent id="' + id + '"' + name + '/>';
-        case 'endEvent': return n.terminate ? '    <endEvent id="' + id + '"' + name + '><terminateEventDefinition id="' + id + '_def"/></endEvent>' : '    <endEvent id="' + id + '"' + name + '/>';
+        case 'startEvent':
+        case 'endEvent': {
+          var def = eventDefXml(eventTypeOf(n), id);
+          return '    <' + n.type + ' id="' + id + '"' + name + (def ? '>' + def + '</' + n.type + '>' : '/>');
+        }
         case 'timerEvent': return '    <intermediateCatchEvent id="' + id + '"' + name + '><timerEventDefinition id="' + id + '_def"/></intermediateCatchEvent>';
         case 'boundaryTimer': return '    <boundaryEvent id="' + id + '"' + name + ' attachedToRef="' + ids[n.attachedTo] + '"' + (n.interrupting === false ? ' cancelActivity="false"' : '') + '><timerEventDefinition id="' + id + '_def"/></boundaryEvent>';
         case 'subProcess': return '    <subProcess id="' + id + '"' + name + '/>';
@@ -270,7 +300,7 @@
   function legacyToGraph(list) {
     var nodes = [], flows = [], lanes = [], k = 0;
     var lane = function (a) { a = String(a || '').trim() || 'Processo'; if (lanes.indexOf(a) < 0) lanes.push(a); return a; };
-    var add = function (type, name, actor) { var n = { id: type.charAt(0) + '_' + (++k), type: type, name: name || '', lane: lane(actor), taskType: 'none', attachedTo: '', interrupting: false, terminate: false }; nodes.push(n); return n; };
+    var add = function (type, name, actor) { var n = { id: type.charAt(0) + '_' + (++k), type: type, name: name || '', lane: lane(actor), taskType: 'none', eventType: 'none', attachedTo: '', interrupting: false }; nodes.push(n); return n; };
     var link = function (exits, to) { exits.forEach(function (e) { flows.push({ from: e.id, to: to.id, label: e.label || '' }); }); };
     var merge = function (exits) {
       var out = [];
@@ -309,7 +339,12 @@
   // posições ficam só no XML editado.
   var TASK_OF = {
     'bpmn:Task': 'none', 'bpmn:UserTask': 'user', 'bpmn:ServiceTask': 'service', 'bpmn:ManualTask': 'manual',
-    'bpmn:SendTask': 'send', 'bpmn:ReceiveTask': 'receive', 'bpmn:ScriptTask': 'service', 'bpmn:BusinessRuleTask': 'service'
+    'bpmn:SendTask': 'send', 'bpmn:ReceiveTask': 'receive', 'bpmn:ScriptTask': 'script', 'bpmn:BusinessRuleTask': 'businessRule'
+  };
+  var EVENT_OF = {
+    'bpmn:MessageEventDefinition': 'message', 'bpmn:TimerEventDefinition': 'timer', 'bpmn:SignalEventDefinition': 'signal',
+    'bpmn:ConditionalEventDefinition': 'conditional', 'bpmn:TerminateEventDefinition': 'terminate',
+    'bpmn:ErrorEventDefinition': 'error', 'bpmn:EscalationEventDefinition': 'escalation'
   };
   function xmlToGraph(defs) {
     var roots = (defs && defs.rootElements) || [];
@@ -329,6 +364,12 @@
     };
     procs.forEach(function (p) { walkLanes(p.laneSets); });
     var hasDef = function (el, t) { return (el.eventDefinitions || []).some(function (d) { return d.$type === t; }); };
+    // Primeira definição reconhecida que vale para o evento (início ou fim).
+    var eventOf = function (el, list) {
+      var defs = el.eventDefinitions || [];
+      for (var i = 0; i < defs.length; i++) { var v = EVENT_OF[defs[i] && defs[i].$type]; if (v && allowed(list, v)) return v; }
+      return 'none';
+    };
     var nodes = [], flows = [];
     procs.forEach(function (p) {
       (p.flowElements || []).forEach(function (el) {
@@ -338,8 +379,8 @@
           return;
         }
         var n = null;
-        if (t === 'bpmn:StartEvent') n = { type: 'startEvent' };
-        else if (t === 'bpmn:EndEvent') n = { type: 'endEvent', terminate: hasDef(el, 'bpmn:TerminateEventDefinition') };
+        if (t === 'bpmn:StartEvent') n = { type: 'startEvent', eventType: eventOf(el, TYPE_OPTIONS.start) };
+        else if (t === 'bpmn:EndEvent') n = { type: 'endEvent', eventType: eventOf(el, TYPE_OPTIONS.end) };
         else if (TASK_OF[t]) n = { type: 'task', taskType: TASK_OF[t] };
         else if (t === 'bpmn:SubProcess' || t === 'bpmn:CallActivity' || t === 'bpmn:Transaction' || t === 'bpmn:AdHocSubProcess') n = { type: 'subProcess' };
         else if (t === 'bpmn:ParallelGateway') n = { type: 'parallelGateway' };
@@ -353,12 +394,104 @@
         if (!n) return; // objetos de dados, anotações etc.
         nodes.push({
           id: el.id, type: n.type, name: String(el.name || '').trim(), lane: laneOf[el.id] || '',
-          taskType: n.taskType || 'none', attachedTo: n.attachedTo || '', interrupting: !!n.interrupting, terminate: !!n.terminate
+          taskType: n.taskType || 'none', eventType: n.eventType || 'none', attachedTo: n.attachedTo || '', interrupting: !!n.interrupting
         });
       });
     });
     return { processName: String(part && part.name || procs[0] && procs[0].name || 'Processo').trim(), lanes: lanes.length ? lanes : ['Processo'], nodes: nodes, flows: flows };
   }
 
-  root.AriBpmn = { layoutGraph: layoutGraph, buildXml: buildXml, legacyToGraph: legacyToGraph, xmlToGraph: xmlToGraph };
+  // Troca o tipo de um elemento num XML editado à mão sem refazer o desenho: o
+  // DI (posições, tamanhos e dobras das setas) e o id ficam iguais. Início/fim
+  // (value = eventType) trocam a definição do evento; atividades (value =
+  // taskType) trocam a tag (userTask, scriptTask…). Devolve o XML novo, ou null
+  // se o elemento não existe ou não é de um tipo que dá para trocar aqui (ex.:
+  // evento intermediário que o grafo trata como atividade). dom = { DOMParser,
+  // XMLSerializer } (padrão: os do navegador).
+  var BPMN_NS = 'http://www.omg.org/spec/BPMN/20100524/MODEL', XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance', XMLNS_NS = 'http://www.w3.org/2000/xmlns/';
+  var TASK_LOCAL = { task: 1, userTask: 1, serviceTask: 1, manualTask: 1, sendTask: 1, receiveTask: 1, scriptTask: 1, businessRuleTask: 1 };
+  // Atributos e filhos que só valem para um tipo de atividade (somem na troca).
+  var TASK_ONLY_ATTRS = { scriptFormat: 1, messageRef: 1, instantiate: 1, implementation: 1, operationRef: 1 };
+  function retypeXml(xml, id, value, dom) {
+    dom = dom || root;
+    if (!dom.DOMParser || !dom.XMLSerializer) return null;
+    var doc = new dom.DOMParser().parseFromString(String(xml || ''), 'application/xml');
+    if (!doc || !doc.documentElement || doc.getElementsByTagName('parsererror').length) return null;
+    var all = doc.getElementsByTagNameNS(BPMN_NS, '*'), el = null, ids = {};
+    for (var i = 0; i < all.length; i++) {
+      var aid = all[i].getAttribute('id');
+      if (aid) ids[aid] = 1;
+      if (!el && aid === id) el = all[i];
+    }
+    if (!el) return null;
+    var prefix = el.prefix, local = el.localName;
+    var qn = function (name) { return prefix ? prefix + ':' + name : name; };
+    var isBlank = function (c) { return c && c.nodeType === 3 && !/\S/.test(c.nodeValue); };
+    var drop = function (c) { if (isBlank(c.previousSibling)) c.parentNode.removeChild(c.previousSibling); c.parentNode.removeChild(c); };
+    if (local === 'startEvent' || local === 'endEvent') {
+      if (!allowed(local === 'startEvent' ? TYPE_OPTIONS.start : TYPE_OPTIONS.end, value)) return null;
+      Array.prototype.slice.call(el.childNodes).forEach(function (c) {
+        if (c.nodeType === 1 && c.namespaceURI === BPMN_NS && /EventDefinition(Ref)?$/.test(c.localName)) { delete ids[c.getAttribute('id')]; drop(c); }
+      });
+      if (EVENT_DEF[value]) {
+        var defId = id + '_def', k = 1;
+        while (ids[defId]) defId = id + '_def' + (++k);
+        var def = doc.createElementNS(BPMN_NS, qn(EVENT_DEF[value]));
+        def.setAttribute('id', defId);
+        if (value === 'conditional') {
+          var rootEl = doc.documentElement;
+          if (!rootEl.getAttribute('xmlns:xsi')) rootEl.setAttributeNS(XMLNS_NS, 'xmlns:xsi', XSI_NS);
+          var cond = doc.createElementNS(BPMN_NS, qn('condition'));
+          cond.setAttributeNS(XSI_NS, 'xsi:type', qn('tFormalExpression'));
+          def.appendChild(cond);
+        }
+        // Mantém a indentação do XML formatado (definição depois de incoming/outgoing).
+        var firstEl = null;
+        for (var c = el.firstChild; c; c = c.nextSibling) if (c.nodeType === 1) { firstEl = c; break; }
+        var indent = firstEl && isBlank(firstEl.previousSibling) ? firstEl.previousSibling.nodeValue : null;
+        if (indent && isBlank(el.lastChild)) {
+          el.insertBefore(doc.createTextNode(indent), el.lastChild);
+          el.insertBefore(def, el.lastChild);
+        } else el.appendChild(def);
+      }
+    } else if (TASK_LOCAL[local]) {
+      if (value !== 'none' && !TASK_TAG[value]) return null;
+      var tag = TASK_TAG[value] || 'task';
+      if (tag !== local) {
+        var nu = doc.createElementNS(BPMN_NS, qn(tag));
+        Array.prototype.slice.call(el.attributes).forEach(function (a) {
+          if (!a.namespaceURI && TASK_ONLY_ATTRS[a.localName || a.name]) return;
+          if (a.namespaceURI) nu.setAttributeNS(a.namespaceURI, a.name, a.value);
+          else nu.setAttribute(a.name, a.value);
+        });
+        Array.prototype.slice.call(el.childNodes).forEach(function (ch) {
+          if (ch.nodeType === 1 && ch.namespaceURI === BPMN_NS && ch.localName === 'script') return;
+          nu.appendChild(ch);
+        });
+        el.parentNode.replaceChild(nu, el);
+      }
+    } else return null;
+    var out = new dom.XMLSerializer().serializeToString(doc);
+    if (/^\s*<\?xml/.test(xml) && !/^\s*<\?xml/.test(out)) out = '<?xml version="1.0" encoding="UTF-8"?>\n' + out;
+    return out;
+  }
+
+  // Ids dos eventos intermediários de um XML editado à mão. Os de mensagem,
+  // sinal etc. entram no grafo como atividade de envio/recebimento, mas
+  // retypeXml não os troca: o painel mostra esses itens desabilitados.
+  function intermediateIds(xml, dom) {
+    dom = dom || root;
+    var out = {};
+    if (!dom.DOMParser) return out;
+    var doc = null;
+    try { doc = new dom.DOMParser().parseFromString(String(xml || ''), 'application/xml'); } catch (_) { return out; } // xmldom lança em XML inválido
+    if (!doc || !doc.documentElement || doc.getElementsByTagName('parsererror').length) return out;
+    ['intermediateCatchEvent', 'intermediateThrowEvent'].forEach(function (tag) {
+      var list = doc.getElementsByTagNameNS(BPMN_NS, tag);
+      for (var i = 0; i < list.length; i++) { var id = list[i].getAttribute('id'); if (id) out[id] = 1; }
+    });
+    return out;
+  }
+
+  root.AriBpmn = { layoutGraph: layoutGraph, buildXml: buildXml, legacyToGraph: legacyToGraph, xmlToGraph: xmlToGraph, retypeXml: retypeXml, intermediateIds: intermediateIds, eventTypeOf: eventTypeOf, TYPE_OPTIONS: TYPE_OPTIONS };
 })(typeof window !== 'undefined' ? window : globalThis);

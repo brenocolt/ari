@@ -145,6 +145,8 @@ const isMain = (() => {
 
 if (isMain) {
   (async () => {
+    const { default: assert } = await import('node:assert/strict');
+    const { prepareData, svgSurface } = await import('./pop-layout.js');
     const fs = await import('node:fs/promises');
     const os = await import('node:os');
     const path = await import('node:path');
@@ -158,12 +160,35 @@ if (isMain) {
       conclusion: 'Ordem de venda emitida e cliente notificado.',
       steps: [
         { title: 'Receber a solicitação do cliente', description: 'Acessar a caixa de entrada do canal comercial e registrar o pedido no sistema de gestão, conferindo os campos obrigatórios.' },
-        { title: 'Validar o crédito do cliente', description: 'Consultar o cadastro no ERP e verificar o limite de crédito disponível e as pendências financeiras.', ifYes: 'Seguir para a confirmação de estoque.', ifNo: 'Encaminhar ao Financeiro e aguardar a liberação.' },
+        { title: 'Validar o crédito do cliente', description: 'Consultar o cadastro no ERP e verificar o limite de crédito disponível e as pendências financeiras.', hasPrint: true, ifYes: 'Seguir para a confirmação de estoque.', ifNo: 'Encaminhar ao Financeiro e aguardar a liberação.' },
         { title: 'Confirmar disponibilidade de estoque', description: 'Verificar no sistema a quantidade disponível e reservar os produtos.', hasPrint: false },
         { title: 'Aprovar e emitir a ordem de venda', description: 'Registrar a aprovação, gerar a ordem de venda e notificar o cliente e a logística.' },
       ],
     };
+    assert.deepEqual(prepareData(sample).steps.map((step) => step.hasPrint), [false, true, false, false]);
+    assert.deepEqual(prepareData({ steps: [{}, { hasPrint: 'false' }, { hasPrint: null }] }).steps.map((step) => step.hasPrint), [false, false, false]);
     for (const model of [1, 2, 3]) {
+      // A prévia e o PPTX compartilham a geometria: sem print, a descrição usa
+      // toda a largura; só a escolha explícita reserva a coluna de evidência.
+      const surface = svgSurface();
+      const descriptions = new Map();
+      const addPage = surface.addPage.bind(surface);
+      surface.addPage = () => {
+        const page = addPage(), text = page.text.bind(page);
+        page.text = (x, y, w, h, content, style) => {
+          if (sample.steps.some((step) => step.description === content)) descriptions.set(content, w);
+          text(x, y, w, h, content, style);
+        };
+        return page;
+      };
+      renderPop(surface, sample, {}, { model });
+      const svg = surface.pages.map((_, i) => surface.svg(i)).join('');
+      assert.equal(svg.split('PRINT / EVIDÊNCIA DA TELA').length - 1, 1);
+      assert(descriptions.get(sample.steps[0].description) > descriptions.get(sample.steps[1].description) * 1.8);
+      const withoutPrints = svgSurface();
+      renderPop(withoutPrints, { ...sample, steps: sample.steps.map((step) => ({ ...step, hasPrint: false })) }, {}, { model });
+      assert(!withoutPrints.pages.map((_, i) => withoutPrints.svg(i)).join('').includes('PRINT / EVIDÊNCIA DA TELA'));
+      assert(withoutPrints.pages.length <= surface.pages.length);
       const buf = await buildPopPptx(sample, { model });
       const out = path.join(os.tmpdir(), `pop-modelo-${model}.pptx`);
       await fs.writeFile(out, buf);

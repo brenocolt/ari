@@ -83,7 +83,7 @@ export function prepareData(raw = {}) {
   d.steps = (Array.isArray(d.steps) ? d.steps : []).filter((x) => x && typeof x === 'object').map((x) => ({
     title: s(x.title) || '[ Etapa ]',
     description: s(x.description),
-    hasPrint: x.hasPrint !== false,
+    hasPrint: x.hasPrint === true,
     ifYes: s(x.ifYes),
     ifNo: s(x.ifNo),
   }));

@@ -9,13 +9,18 @@ export const NODE_TYPES = [
   "exclusiveGateway", "parallelGateway", "inclusiveGateway",
   "timerEvent", "boundaryTimer",
 ];
-export const TASK_TYPES = ["user", "service", "manual", "send", "receive", "none"];
+export const TASK_TYPES = ["user", "service", "manual", "send", "receive", "script", "businessRule", "none"];
+// Tipo (definição) dos eventos de início e de fim. "none" = evento simples.
+// Grafos antigos marcavam o fim com "terminate": true; normalizeGraph converte.
+export const START_EVENT_TYPES = ["none", "message", "timer", "signal", "conditional"];
+export const END_EVENT_TYPES = ["none", "message", "terminate", "error", "signal", "escalation"];
+export const EVENT_TYPES = [...new Set([...START_EVENT_TYPES, ...END_EVENT_TYPES])];
 
 const GATEWAYS = new Set(["exclusiveGateway", "parallelGateway", "inclusiveGateway"]);
 const ACTIVITIES = new Set(["task", "subProcess"]);
 
 // Schema para as saídas estruturadas da API (todos os campos obrigatórios;
-// "" / false quando não se aplicam).
+// "" / false / "none" quando não se aplicam).
 export const GRAPH_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -28,16 +33,16 @@ export const GRAPH_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["id", "type", "name", "lane", "taskType", "attachedTo", "interrupting", "terminate"],
+        required: ["id", "type", "name", "lane", "taskType", "eventType", "attachedTo", "interrupting"],
         properties: {
           id: { type: "string" },
           type: { type: "string", enum: NODE_TYPES },
           name: { type: "string" },
           lane: { type: "string" },
           taskType: { type: "string", enum: TASK_TYPES },
+          eventType: { type: "string", enum: EVENT_TYPES },
           attachedTo: { type: "string" },
           interrupting: { type: "boolean" },
-          terminate: { type: "boolean" },
         },
       },
     },
@@ -59,6 +64,33 @@ export const GRAPH_SCHEMA = {
 
 const str = (v) => (v == null ? "" : String(v)).trim();
 
+// Tipo do evento de início/fim, aceitando o formato antigo ("terminate": true).
+export function eventTypeOf(n) {
+  if (!n || (n.type !== "startEvent" && n.type !== "endEvent")) return "none";
+  const allowed = n.type === "startEvent" ? START_EVENT_TYPES : END_EVENT_TYPES;
+  if (allowed.includes(n.eventType)) return n.eventType;
+  return n.type === "endEvent" && n.terminate === true ? "terminate" : "none";
+}
+
+// Preferência do usuário no formulário ("Tipo de início"/"Tipo de fim"):
+// vale para todos os inícios / todos os fins. "" = a ARI decide.
+export function cleanEventPrefs(p) {
+  const o = p && typeof p === "object" ? p : {};
+  return {
+    start: START_EVENT_TYPES.includes(o.start) ? o.start : "",
+    end: END_EVENT_TYPES.includes(o.end) ? o.end : "",
+  };
+}
+export function applyEventPrefs(g, prefs) {
+  const p = cleanEventPrefs(prefs);
+  if (!p.start && !p.end) return g;
+  return {
+    ...g,
+    nodes: g.nodes.map((n) => (n.type === "startEvent" && p.start ? { ...n, eventType: p.start }
+      : n.type === "endEvent" && p.end ? { ...n, eventType: p.end } : n)),
+  };
+}
+
 // Limpa o grafo vindo da IA: tipos, textos e raias. Não "conserta" a lógica —
 // problemas de lógica viram erros de validate() para a IA corrigir.
 export function normalizeGraph(raw) {
@@ -76,9 +108,9 @@ export function normalizeGraph(raw) {
       name: str(n.name),
       lane,
       taskType: ACTIVITIES.has(type) && TASK_TYPES.includes(n.taskType) ? n.taskType : "none",
+      eventType: eventTypeOf({ ...n, type }),
       attachedTo: type === "boundaryTimer" ? str(n.attachedTo) : "",
       interrupting: type === "boundaryTimer" ? n.interrupting !== false : false,
-      terminate: type === "endEvent" ? !!n.terminate : false,
     };
   });
   const flows = (Array.isArray(g.flows) ? g.flows : []).filter((f) => f && typeof f === "object")
@@ -119,6 +151,8 @@ export function validateGraph(g) {
     if (n.type === "startEvent") {
       if (i) errors.push(`O início ${name} recebe fluxos; início não pode ter entrada.`);
       if (!o) errors.push(`O início ${name} não tem saída.`);
+      const et = eventTypeOf(n);
+      if (!n.name && (et === "timer" || et === "conditional")) warnings.push(`O início ${n.id} é ${et === "timer" ? "temporizador" : "condicional"} mas não diz ${et === "timer" ? "quando ocorre (ex.: \"Todo dia 1º\")" : "a condição (ex.: \"Estoque abaixo do mínimo\")"}.`);
     } else if (n.type === "endEvent") {
       if (o) errors.push(`O fim ${name} tem saída; um evento de fim encerra o caminho e não continua.`);
       if (!i) errors.push(`O fim ${name} não recebe nenhum fluxo.`);

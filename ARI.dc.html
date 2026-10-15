@@ -46,6 +46,8 @@
   /* Keyboard focus rings — buttons use appearance:none and textareas set
      outline:none inline, so both need an explicit visible focus state. */
   button:focus-visible{outline:2px solid #1c5cff;outline-offset:3px;}
+  /* Telas estreitas: o mock decorativo (cards) cobriria o botão "Fazer agora". */
+  @media (max-width:899px){[data-home-style="cardsWrap"]{display:none!important;}}
   /* Texto só para leitores de tela (status ao vivo). */
   .ari-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   /* A área de upload é um <label>; o input fica visualmente oculto mas focável. */
@@ -54,9 +56,9 @@
   textarea:focus-visible{border-color:#1c5cff!important;box-shadow:0 0 0 3px rgba(28,92,255,.22);}
   /* Accessibility: honor reduced-motion. Kill the looping/idle CSS motion and
      collapse entrance movement to a gentle fade. The 3D idle motion, pointer
-     parallax and panel blur/slide are gated separately in JS via matchMedia. */
+     parallax and panel slide are gated separately in JS via matchMedia. */
   @media (prefers-reduced-motion: reduce){
-    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;}
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;transition-delay:0s!important;}
   }
 </style>
 <link rel="stylesheet" href="./bpmn-diagram.css">
@@ -66,15 +68,15 @@
 
   <!-- progress bar -->
   <div style="position:fixed;top:0;left:0;width:100%;height:3px;background:rgba(10,31,68,.06);z-index:60;">
-    <div ref="{{ setProgress }}" style="height:100%;width:0%;background:#1c5cff;box-shadow:0 0 12px rgba(28,92,255,.6);"></div>
+    <div ref="{{ setProgress }}" style="height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:#1c5cff;box-shadow:0 0 12px rgba(28,92,255,.6);"></div>
   </div>
 
   <!-- nav dots -->
   <nav ref="{{ setNav }}" aria-label="Navegação por seções" style="position:fixed;right:clamp(18px,2.4vw,34px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:50;align-items:center;">
-    <button onClick="{{ go0 }}" aria-label="Ir para: início" style="{{ dot0 }}"></button>
-    <button onClick="{{ go1 }}" aria-label="Ir para: mapeamentos" style="{{ dot1 }}"></button>
-    <button onClick="{{ go2 }}" aria-label="Ir para: POPs" style="{{ dot2 }}"></button>
-    <button onClick="{{ go3 }}" aria-label="Ir para: manuais" style="{{ dot3 }}"></button>
+    <button onClick="{{ go0 }}" aria-label="Ir para: início" data-home-style="dot0" style="{{ dot0 }}"></button>
+    <button onClick="{{ go1 }}" aria-label="Ir para: mapeamentos" data-home-style="dot1" style="{{ dot1 }}"></button>
+    <button onClick="{{ go2 }}" aria-label="Ir para: POPs" data-home-style="dot2" style="{{ dot2 }}"></button>
+    <button onClick="{{ go3 }}" aria-label="Ir para: manuais" data-home-style="dot3" style="{{ dot3 }}"></button>
   </nav>
 
   <!-- scroll spacer (drives the pinned scroll) -->
@@ -93,7 +95,7 @@
       <div style="position:absolute;inset:0;z-index:3;pointer-events:none;">
 
         <!-- panel 0: hero -->
-        <div aria-hidden="{{ hid0 }}" style="{{ panel0 }}">
+        <div aria-hidden="{{ hid0 }}" data-home-style="panel0" style="{{ panel0 }}">
           <div style="width:min(92%,520px);">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:22px;">ASSISTENTE DE ROTINAS INTELIGENTES</div>
           <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(40px,5vw,70px);line-height:1.02;letter-spacing:-0.03em;color:#0a1f44;margin:0 0 22px;">Olá, eu sou<br>a <span style="color:#1c5cff;">ARI</span>.</h1>
@@ -107,7 +109,7 @@
         </div>
 
         <!-- panel 1: mapeamentos -->
-        <div aria-hidden="{{ hid1 }}" style="{{ panel1 }}">
+        <div aria-hidden="{{ hid1 }}" data-home-style="panel1" style="{{ panel1 }}">
           <div style="width:min(92%,520px);">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 01</div>
           <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">Mapeamentos automáticos em BPMN</h2>
@@ -122,7 +124,7 @@
         </div>
 
         <!-- panel 2: POPs -->
-        <div aria-hidden="{{ hid2 }}" style="{{ panel2 }}">
+        <div aria-hidden="{{ hid2 }}" data-home-style="panel2" style="{{ panel2 }}">
           <div style="width:min(92%,520px);">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 02</div>
           <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">POPs gerados a partir do mapeamento</h2>
@@ -137,7 +139,7 @@
         </div>
 
         <!-- panel 3: manuais -->
-        <div aria-hidden="{{ hid3 }}" style="{{ panel3 }}">
+        <div aria-hidden="{{ hid3 }}" data-home-style="panel3" style="{{ panel3 }}">
           <div style="width:min(92%,520px);">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:2.4px;color:#1c5cff;margin-bottom:18px;">FUNCIONALIDADE 03</div>
           <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(32px,3.9vw,52px);line-height:1.06;letter-spacing:-0.025em;color:#0a1f44;margin:0 0 20px;">Manuais em modelo padrão</h2>
@@ -153,10 +155,10 @@
       </div>
 
       <!-- RIGHT: floating output mock cards -->
-      <div aria-hidden="true" style="{{ cardsWrap }}">
+      <div aria-hidden="true" data-home-style="cardsWrap" style="{{ cardsWrap }}">
 
         <!-- card 1: BPMN -->
-        <div style="{{ card1 }}">
+        <div data-home-style="card1" style="{{ card1 }}">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.6px;color:#1c5cff;margin-bottom:16px;">BPMN GERADO</div>
           <div style="display:flex;align-items:center;gap:7px;">
             <div style="width:18px;height:18px;border-radius:50%;border:2px solid #16a34a;flex:none;"></div>
@@ -173,7 +175,7 @@
         </div>
 
         <!-- card 2: POP -->
-        <div style="{{ card2 }}">
+        <div data-home-style="card2" style="{{ card2 }}">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
             <div style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.6px;color:#1c5cff;">POP — 0042</div>
             <div style="font-size:10px;color:#64748b;font-weight:500;">v1.0</div>
@@ -186,7 +188,7 @@
         </div>
 
         <!-- card 3: manual -->
-        <div style="{{ card3 }}">
+        <div data-home-style="card3" style="{{ card3 }}">
           <div style="font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.6px;color:#1c5cff;margin-bottom:14px;">MANUAL</div>
           <div style="height:10px;width:60%;background:#0a1f44;border-radius:4px;margin-bottom:8px;"></div>
           <div style="height:6px;width:40%;background:#cbd5e1;border-radius:4px;margin-bottom:16px;"></div>
@@ -200,7 +202,7 @@
       </div>
 
       <!-- scroll hint -->
-      <div aria-hidden="true" style="{{ hint }}">
+      <div aria-hidden="true" data-home-style="hint" style="{{ hint }}">
         <div style="width:24px;height:38px;border:2px solid rgba(10,31,68,.35);border-radius:13px;display:flex;justify-content:center;padding-top:6px;">
           <div style="width:4px;height:8px;border-radius:2px;background:#1c5cff;animation:ariBob 1.4s ease-in-out infinite;"></div>
         </div>
@@ -305,6 +307,31 @@
           <label for="ari-gen-text" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:10px;">{{ genInputLabel }}</label>
           <textarea id="ari-gen-text" ref="{{ setText }}" onInput="{{ onTextInput }}" placeholder="{{ genPlaceholder }}" style="width:100%;min-height:200px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:13px;padding:16px;font-family:'IBM Plex Sans';font-size:15.5px;line-height:1.55;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
           <sc-if value="{{ showBpmn }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:18px;">
+              <div>
+                <label for="ari-start-pref" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipo de início</label>
+                <select id="ari-start-pref" ref="{{ setStartPref }}" onChange="{{ onPrefChange }}" style="width:100%;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:10px 12px;font-family:'IBM Plex Sans';font-size:14.5px;color:#0a1f44;background:#fbfcfe;outline:none;cursor:pointer;">
+                  <option value="">Deixar a ARI decidir</option>
+                  <option value="none">Simples (nenhum)</option>
+                  <option value="message">Mensagem</option>
+                  <option value="timer">Temporizador</option>
+                  <option value="signal">Sinal</option>
+                  <option value="conditional">Condicional</option>
+                </select>
+              </div>
+              <div>
+                <label for="ari-end-pref" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipo de fim</label>
+                <select id="ari-end-pref" ref="{{ setEndPref }}" onChange="{{ onPrefChange }}" style="width:100%;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:10px 12px;font-family:'IBM Plex Sans';font-size:14.5px;color:#0a1f44;background:#fbfcfe;outline:none;cursor:pointer;">
+                  <option value="">Deixar a ARI decidir</option>
+                  <option value="none">Simples (nenhum)</option>
+                  <option value="message">Mensagem</option>
+                  <option value="terminate">Terminar</option>
+                  <option value="error">Erro</option>
+                  <option value="signal">Sinal</option>
+                  <option value="escalation">Escalonamento</option>
+                </select>
+              </div>
+            </div>
             <div id="ari-color-label" style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin:18px 0 10px;">Cor das atividades</div>
             <div role="group" aria-labelledby="ari-color-label" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
               <button type="button" onClick="{{ c0 }}" aria-label="{{ swl0 }}" aria-pressed="{{ swp0 }}" style="{{ sw0 }}"></button>
@@ -371,6 +398,11 @@
               <div style="margin-top:10px;font-size:12.5px;line-height:1.55;color:#475569;white-space:pre-wrap;background:#f8fafc;border:1px solid rgba(10,31,68,.08);border-radius:10px;padding:10px 12px;max-height:200px;overflow:auto;">{{ reviewNotes }}</div>
             </sc-if>
             <div style="margin-top:20px;border-top:1px solid rgba(10,31,68,.08);padding-top:16px;">
+              <div id="ari-types-title" style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipos dos elementos</div>
+              <p style="font-size:13px;color:#64748b;margin:0 0 10px;">Escolha o tipo de cada início, fim e atividade. O diagrama muda na hora, sem chamar a IA e sem mexer nas posições.</p>
+              <div ref="{{ setTypesPanel }}" role="group" aria-labelledby="ari-types-title" style="border:1px solid rgba(10,31,68,.1);border-radius:11px;padding:2px 12px;background:#fbfcfe;max-height:340px;overflow:auto;"></div>
+            </div>
+            <div style="margin-top:20px;border-top:1px solid rgba(10,31,68,.08);padding-top:16px;">
               <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Ajustar o mapeamento</div>
               <p style="font-size:13px;color:#64748b;margin:0 0 10px;">Peça uma alteração em linguagem natural — a ARI muda só o que você pedir.</p>
               <sc-if value="{{ bpmnManual }}" hint-placeholder-val="{{ false }}">
@@ -384,8 +416,19 @@
             </div>
           </sc-if>
           <sc-if value="{{ popConfirm }}" hint-placeholder-val="{{ false }}">
-            <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin:16px 0 4px;">Etapas com print de evidência</div>
-            <div ref="{{ setPopSteps }}" style="border:1px solid rgba(10,31,68,.1);border-radius:11px;padding:4px 12px;background:#fbfcfe;max-height:260px;overflow:auto;"></div>
+            <h3 id="ari-pop-prints" tabIndex="-1" style="font-family:'Space Grotesk';font-weight:600;font-size:16px;color:#0a1f44;margin:16px 0 8px;">Etapas com print de comprovação</h3>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+              <button type="button" onClick="{{ selectAllPopSteps }}" style="{{ toolBtn }}">Marcar todas</button>
+              <button type="button" onClick="{{ clearPopSteps }}" style="{{ toolBtn }}">Desmarcar todas</button>
+            </div>
+            <div role="group" aria-labelledby="ari-pop-prints" style="border:1px solid rgba(10,31,68,.1);border-radius:11px;padding:4px 12px;background:#fbfcfe;max-height:320px;overflow:auto;">
+              <sc-for list="{{ popSteps }}" as="step">
+                <label style="display:flex;gap:10px;align-items:flex-start;padding:12px 2px;border-bottom:1px solid #eff2f5;cursor:pointer;">
+                  <input type="checkbox" checked="{{ step.hasPrint }}" data-pop-step="{{ step.index }}" onChange="{{ togglePopStep }}" style="margin-top:3px;accent-color:#1c5cff;width:18px;height:18px;flex:none;cursor:pointer;">
+                  <span style="font-size:14px;line-height:1.5;color:#0a1f44;"><strong>{{ step.number }}. {{ step.title }}</strong><br>Incluir print de comprovação (ao lado)</span>
+                </label>
+              </sc-for>
+            </div>
             <button onClick="{{ confirmPop }}" style="margin-top:14px;width:100%;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);">Gerar POP</button>
           </sc-if>
           <sc-if value="{{ hasPop }}" hint-placeholder-val="{{ false }}">
@@ -426,7 +469,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { active: 0, screen: null, loading: false, result: '', fileName: '', err: '', editErr: '', notice: '', bpmnXml: '', actColorIdx: 0, popReady: false, popConfirm: false, editing: false, copied: false, routeInfo: '', reviewNotes: '', loadingMsg: '', bpmnAsk: false, popModel: 1, popPalette: null, popSetup: null, logoErr: '', logoName: '', bpmnEditing: false, editorLoading: false, editorDirty: false, editorErr: '', bpmnManual: false, pngBusy: false };
+  state = { screen: null, loading: false, result: '', fileName: '', err: '', editErr: '', notice: '', bpmnXml: '', actColorIdx: 0, popReady: false, popConfirm: false, editing: false, copied: false, routeInfo: '', reviewNotes: '', loadingMsg: '', bpmnAsk: false, popModel: 1, popPalette: null, popSetup: null, logoErr: '', logoName: '', bpmnEditing: false, editorLoading: false, editorDirty: false, editorErr: '', bpmnManual: false, pngBusy: false };
 
   // Paleta para a cor das atividades (início/fim/gateway têm cor fixa).
   PALETTE = [
@@ -521,6 +564,11 @@ class Component extends DCLogic {
   saveBpmn(colorIdx = this.state.actColorIdx || 0, routeInfo = this.state.routeInfo, reviewNotes = this.state.reviewNotes) {
     this.store('bpmn', this.bpmnGraph ? { graph: this.bpmnGraph, colorIdx, tier: this.bpmnTier || null, routeInfo: routeInfo || '', reviewNotes: reviewNotes || '', xml: this.bpmnManualXml || undefined } : null);
   }
+  // Guarda a lista de etapas do POP e as escolhas de print (sem a imagem do
+  // fluxograma, que pode ser grande). O .pptx é refeito pelo botão "Gerar POP".
+  savePop(ready = this.state.popReady) {
+    this.store('pop', this.popData ? { data: this.popData, ready: !!ready, image: !!(this.popImage || this.imageFile) } : null);
+  }
   c0 = () => this.pickColor(0);
   c1 = () => this.pickColor(1);
   c2 = () => this.pickColor(2);
@@ -555,6 +603,17 @@ class Component extends DCLogic {
       if (xml) return { state: { actColorIdx: idx, routeInfo: saved.routeInfo || '', reviewNotes: saved.reviewNotes || '', bpmnXml: xml, bpmnManual: true }, inst: { bpmnGraph: graph, bpmnTier: tier, bpmnManualXml: xml } };
       return { state: { actColorIdx: idx, routeInfo: saved.routeInfo || '', reviewNotes: saved.reviewNotes || '' }, inst: { bpmnGraph: graph, bpmnTier: tier } };
     }
+    if (screen === 'pop') {
+      // Volta para a lista de etapas com as escolhas de print; "Gerar POP" refaz o arquivo sem a IA.
+      const saved = this.load('pop');
+      const data = saved && saved.data;
+      if (!data || !Array.isArray(data.steps) || !data.steps.length) return null;
+      const steps = data.steps.map((step) => Object.assign({}, step, { hasPrint: step.hasPrint === true }));
+      const result = saved.ready
+        ? 'POP recuperado da sua última sessão, com as etapas e as escolhas de print. Clique em "Gerar POP" para refazer o arquivo (sem chamar a IA de novo).' + (saved.image ? ' A imagem do fluxograma não fica guardada: anexe-a de novo antes, se quiser incluí-la.' : '')
+        : this.POP_CONFIRM_MSG;
+      return { state: { popConfirm: true, result }, inst: { popData: Object.assign({}, data, { steps }) } };
+    }
     if (screen === 'manual') {
       const text = this.load('manual');
       return typeof text === 'string' && text ? { state: { result: text }, inst: {} } : null;
@@ -562,12 +621,26 @@ class Component extends DCLogic {
     return null;
   }
 
-  openBpmn = () => this.openScreen('bpmn');
-  openPop = () => this.openScreen('pop');
-  openManual = () => this.openScreen('manual');
-  openScreen(s) {
+  openBpmn = (e) => this.openScreen('bpmn', e);
+  openPop = (e) => this.openScreen('pop', e);
+  openManual = (e) => this.openScreen('manual', e);
+  openScreen(s, e) {
     this.cancelRun();
-    this._opener = document.activeElement;
+    // Botão que abriu (o Safari não foca botões no clique): o foco volta para ele ao fechar.
+    const btn = e && e.currentTarget;
+    this._opener = btn && btn.focus ? btn : document.activeElement;
+    if (this._scrollRaf) {
+      cancelAnimationFrame(this._scrollRaf);
+      this._scrollRaf = null;
+      const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+      window.scrollTo(0, this._lastSetActive / 3 * max);
+    }
+    this._wheelGesture = null;
+    this._touch = null;
+    this._openSection = this._lastSetActive;
+    // O html tem overflow-x:clip, então o overflow do body não chega à janela:
+    // trava os dois, senão PageDown/Espaço no fim do diálogo rolam a home por trás.
+    document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     if (s === 'bpmn') { this.loadBpmnViewer().catch(() => {}); this.ensureLayout().catch(() => {}); } // aquece os downloads
     const snap = (this._snaps && this._snaps[s]) || this.storedSnapshot(s) || { state: {}, inst: {} };
@@ -585,7 +658,7 @@ class Component extends DCLogic {
       if (next.bpmnXml) this.renderPreview();
       else if (s === 'bpmn' && this.bpmnGraph) this.redrawSaved();
       if (next.bpmnAsk) this.renderQuestions();
-      if (next.popConfirm) this.renderPopStepPicker();
+      if (next.popConfirm && !next.popSetup) { this.focusPopSteps(); return; }
       if (next.popReady) this.renderPopPreview();
       if (next.popSetup) { this.focusSetup(next.popSetup); return; }
       // Foco vai para o campo principal do diálogo (após o overlay ficar visível).
@@ -604,11 +677,19 @@ class Component extends DCLogic {
     if (!this.state.screen) return;
     this.saveSnapshot(this.state.screen);
     this.cancelRun();
+    document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
+    // Volta exatamente à seção de onde o diálogo foi aberto.
+    const sec = this._openSection != null ? this._openSection : this._lastSetActive;
+    if (sec !== this._lastSetActive) this.updateHome(sec);
+    const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+    window.scrollTo(0, sec / 3 * max);
+    this._wheelGesture = null;
     this.destroyViewer();
     this.destroyModeler();
     this.setState({ screen: null, loading: false, editing: false, bpmnEditing: false, editorDirty: false }, () => {
-      if (this.robot && !this.raf) this.animate(); // retoma a animação pausada
+      this.resumeScene();
+      this.syncInert(); // o fundo precisa deixar de ser inerte antes de receber o foco
       const op = this._opener;
       if (op && op.focus && document.contains(op)) op.focus({ preventScroll: true });
     });
@@ -657,6 +738,13 @@ class Component extends DCLogic {
   renderPreview = async () => {
     const xml = this.state.bpmnXml;
     if (!xml) return;
+    this.renderTypesPanel();
+    // Troca de tipo pelo painel: mantém o zoom e a posição em que o usuário estava.
+    let keepView = null;
+    if (this._keepView && this.viewer && this.viewerEl === this.previewEl) {
+      try { const v = this.viewer.get('canvas').viewbox(); keepView = { x: v.x, y: v.y, width: v.width, height: v.height }; } catch (_) {}
+    }
+    this._keepView = false;
     try { await this.loadBpmnViewer(); }
     catch (_) { this.setState({ notice: 'Não consegui carregar o visualizador do diagrama. O arquivo .bpmn continua disponível para download.' }); return; }
     if (!this.previewEl) {
@@ -672,6 +760,7 @@ class Component extends DCLogic {
         // Diagramas grandes ficariam ilegíveis "ajustados à tela": abre no
         // início do processo em escala de leitura (arraste e role para navegar).
         const canvas = this.viewer.get('canvas');
+        if (keepView) { canvas.viewbox(keepView); return; }
         canvas.zoom('fit-viewport', 'auto');
         if (canvas.zoom() < 0.45 && this.previewEl) {
           const k = 0.7;
@@ -797,10 +886,11 @@ class Component extends DCLogic {
 
   // Etapa 1: complexidade (Jev) e, se o modelo for o complexo, perguntas.
   async startBpmn(text, run) {
+    const prefs = this.eventPrefs();
     this.setState({ loadingMsg: 'Avaliando a complexidade do processo…' });
     const an = await this.postJson('/api/bpmn/analyze', { text }, run, this.BPMN_TIMEOUT_MS);
     if (this.isStale(run)) return;
-    this.bpmnAnalysis = { text, tier: an.tier || null, label: an.label || null, model: an.model || '' };
+    this.bpmnAnalysis = { text, tier: an.tier || null, label: an.label || null, model: an.model || '', prefs };
     const questions = Array.isArray(an.questions) ? an.questions : [];
     if (questions.length) {
       this.bpmnQuestions = questions;
@@ -819,7 +909,7 @@ class Component extends DCLogic {
     const complex = an.tier === 'complex';
     const who = an.model ? ' com ' + this.modelName(an.model) : '';
     this.setState({ loading: true, bpmnAsk: false, loadingMsg: 'Desenhando o mapeamento' + who + (complex ? ' — processos complexos levam alguns minutos…' : '…') });
-    const payload = { text: an.text, answers, tier: an.tier };
+    const payload = { text: an.text, answers, tier: an.tier, prefs: an.prefs || null };
     const gen = await this.postJson('/api/bpmn/generate', payload, run, this.BPMN_TIMEOUT_MS);
     if (this.isStale(run)) return;
     let graph = gen.graph, errors = gen.errors, fixes = null, notes = '';
@@ -858,6 +948,8 @@ class Component extends DCLogic {
     try {
       await this.ensureLayout();
       this.bpmnGraph = window.AriBpmn.legacyToGraph(this.parseStepsFromText(text));
+      const p = this.eventPrefs(); // tipo de início/fim escolhido no formulário
+      this.bpmnGraph.nodes.forEach((n) => { if (n.type === 'startEvent' && p.start) n.eventType = p.start; if (n.type === 'endEvent' && p.end) n.eventType = p.end; });
       this.bpmnTier = null;
       await this.showBpmn({
         notice: 'A IA não respondeu (' + this.friendlyError(e, 'erro inesperado').replace(/\.$/, '').toLowerCase() + '). Este diagrama foi montado por uma leitura automática simples do texto — revise com atenção ou gere de novo.',
@@ -866,6 +958,103 @@ class Component extends DCLogic {
     } catch (_) {
       this.setState({ loading: false, err: 'Não consegui montar o BPMN. Tente descrever o processo com um pouco mais de detalhe.' });
     }
+  }
+
+  // Tipo de início/fim pedido no formulário ("" = a ARI decide). O navegador
+  // lembra a última escolha.
+  setStartPref = (el) => { this.startPrefEl = el; this.restorePref(el, 'start'); };
+  setEndPref = (el) => { this.endPrefEl = el; this.restorePref(el, 'end'); };
+  restorePref(el, key) {
+    const p = el && this.load('bpmnPrefs');
+    if (p && p[key] && Array.prototype.some.call(el.options, (o) => o.value === p[key])) el.value = p[key];
+  }
+  eventPrefs() { return { start: this.startPrefEl ? this.startPrefEl.value : '', end: this.endPrefEl ? this.endPrefEl.value : '' }; }
+  onPrefChange = () => { const p = this.eventPrefs(); this.store('bpmnPrefs', p.start || p.end ? p : null); };
+
+  // Painel "Tipos dos elementos": um select por início, fim e atividade. A lista
+  // só é refeita quando os elementos mudam (trocar um tipo não tira o foco do select).
+  setTypesPanel = (el) => { this.typesEl = el; };
+  renderTypesPanel = () => {
+    const g = this.bpmnGraph, A = window.AriBpmn;
+    if (!g || !Array.isArray(g.nodes)) return;
+    // Diagrama editado à mão volta do navegador sem passar pelo layout: carrega o script aqui.
+    if (!A) { this.ensureLayout().then(this.renderTypesPanel, () => {}); return; }
+    if (!this.typesEl) {
+      this._tTries = (this._tTries || 0) + 1;
+      if (this._tTries < 40) setTimeout(this.renderTypesPanel, 100);
+      return;
+    }
+    this._tTries = 0;
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const groups = [
+      { key: 'start', title: 'INÍCIO', type: 'startEvent', unnamed: 'Início sem nome' },
+      { key: 'end', title: 'FIM', type: 'endEvent', unnamed: 'Fim sem nome' },
+      { key: 'task', title: 'ATIVIDADES', type: 'task', unnamed: 'Atividade sem nome' }
+    ].map((gr) => Object.assign(gr, { nodes: g.nodes.filter((n) => n.type === gr.type) })).filter((gr) => gr.nodes.length);
+    const showLane = (g.lanes || []).length > 1;
+    // Eventos intermediários do editor manual (mensagem, sinal…) aparecem entre as
+    // atividades, mas o tipo deles só muda no editor: ficam desabilitados.
+    if (this._lockedXml !== this.bpmnManualXml) {
+      this._lockedXml = this.bpmnManualXml;
+      this._lockedIds = this.bpmnManualXml && A.intermediateIds ? A.intermediateIds(this.bpmnManualXml) : {};
+    }
+    const locked = (n) => n.type === 'task' && !!(this._lockedIds && this._lockedIds[n.id]);
+    let k = 0;
+    const html = groups.length ? groups.map((gr, gi) =>
+      '<div role="group" aria-labelledby="ari-tg-' + gi + '" style="padding:10px 0;' + (gi ? 'border-top:1px solid #eff2f5;' : '') + '">' +
+        '<div id="ari-tg-' + gi + '" style="font-family:\'Space Grotesk\';font-weight:600;font-size:11px;letter-spacing:1.2px;color:#64748b;margin-bottom:4px;">' + gr.title + '</div>' +
+        gr.nodes.map((n) => {
+          const i = k++;
+          return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:5px 0;">' +
+            '<label for="ari-type-' + i + '" style="flex:1 1 160px;min-width:0;font-size:13.5px;line-height:1.4;color:#0a1f44;overflow-wrap:anywhere;">' + esc(n.name || gr.unnamed) +
+              (showLane && n.lane ? '<span style="display:block;font-size:12px;color:#64748b;">' + esc(n.lane) + '</span>' : '') + '</label>' +
+            (locked(n)
+              ? '<select id="ari-type-' + i + '" disabled aria-describedby="ari-type-note-' + i + '" style="flex:0 1 190px;min-width:150px;border:1px solid rgba(10,31,68,.1);border-radius:9px;padding:7px 9px;font-family:\'IBM Plex Sans\';font-size:13.5px;color:#64748b;background:#f1f4f8;outline:none;"><option>Evento intermediário</option></select>' +
+                '<span id="ari-type-note-' + i + '" style="flex:1 0 100%;font-size:12px;color:#64748b;">Trocar pelo editor manual (botão "Editar manualmente").</span>'
+              : '<select id="ari-type-' + i + '" data-ari-node="' + esc(n.id) + '" style="flex:0 1 190px;min-width:150px;border:1px solid rgba(10,31,68,.14);border-radius:9px;padding:7px 9px;font-family:\'IBM Plex Sans\';font-size:13.5px;color:#0a1f44;background:#fff;outline:none;cursor:pointer;">' +
+                A.TYPE_OPTIONS[gr.key].map((o) => '<option value="' + o[0] + '">' + esc(o[1]) + '</option>').join('') +
+              '</select>') + '</div>';
+        }).join('') + '</div>').join('')
+      : '<p style="font-size:13px;color:#64748b;margin:10px 0;">Este mapeamento não tem início, fim ou atividade para ajustar.</p>';
+    if (html !== this._typesHtml || this._typesElDone !== this.typesEl) {
+      this.typesEl.innerHTML = html;
+      this._typesHtml = html; this._typesElDone = this.typesEl;
+      this.typesEl.querySelectorAll('select[data-ari-node]').forEach((sel) => sel.addEventListener('change', () => this.onTypeChange(sel)));
+    }
+    const byId = new Map(g.nodes.map((n) => [n.id, n]));
+    this.typesEl.querySelectorAll('select[data-ari-node]').forEach((sel) => {
+      const n = byId.get(sel.getAttribute('data-ari-node'));
+      if (n) sel.value = n.type === 'task' ? (n.taskType || 'none') : A.eventTypeOf(n);
+    });
+  };
+  // Troca o tipo sem chamar a IA. Diagrama gerado: refaz o XML (o layout não
+  // depende do tipo, então as posições ficam iguais). Editado à mão: troca só a
+  // tag/definição do elemento no XML editado, preservando o desenho manual.
+  onTypeChange(sel) {
+    const A = window.AriBpmn, g = this.bpmnGraph;
+    const id = sel.getAttribute('data-ari-node'), value = sel.value;
+    const n = g && g.nodes.find((x) => x.id === id);
+    if (!n || !A || this.state.loading || this.state.editing) { this.renderTypesPanel(); return; }
+    const patch = n.type === 'task' ? { taskType: value } : { eventType: value };
+    const graph = Object.assign({}, g, { nodes: g.nodes.map((x) => { if (x !== n) return x; const y = Object.assign({}, x, patch); delete y.terminate; return y; }) });
+    if (this.bpmnManualXml) {
+      const xml = A.retypeXml(this.bpmnManualXml, id, value);
+      if (!xml) {
+        this.setState({ notice: 'Não consegui trocar o tipo de "' + (n.name || id) + '" no diagrama editado à mão. Use "Editar manualmente" para trocá-lo.' });
+        this.renderTypesPanel();
+        return;
+      }
+      this.bpmnGraph = graph;
+      this.bpmnManualXml = xml;
+      this._keepView = true;
+      this.setState({ bpmnXml: xml }, () => { this.saveBpmn(); this.renderPreview(); });
+      return;
+    }
+    this.bpmnGraph = graph;
+    const built = A.buildXml(graph, this.PALETTE[this.state.actColorIdx || 0]);
+    this._keepView = true;
+    this.setState({ bpmnXml: built.xml }, this.renderPreview);
+    this.saveBpmn();
   }
 
   // Bateria de perguntas (processos complexos).
@@ -1122,9 +1311,9 @@ class Component extends DCLogic {
         return;
       }
       // etapas estruturadas: o usuário escolhe quais terão print antes de gerar
-      this.popData = parsed.data;
-      this._popStepsTries = 0;
-      this.setState({ loading: false, popConfirm: true, result: 'A ARI estruturou o POP. Nem toda etapa precisa de print de comprovação — desmarque abaixo as que não precisam e clique em "Gerar POP".' }, this.renderPopStepPicker);
+      this.popData = { ...parsed.data, steps: parsed.data.steps.map((step) => ({ ...step, hasPrint: false })) };
+      this.savePop(false);
+      this.setState({ loading: false, popConfirm: true, result: this.POP_CONFIRM_MSG }, this.focusPopSteps);
       return;
     }
 
@@ -1446,34 +1635,36 @@ class Component extends DCLogic {
   }
 
   // ─── Seleção de etapas com print (antes de gerar) ──────────────────────────
-  setPopSteps = (el) => { this.popStepsEl = el; };
-
-  renderPopStepPicker = () => {
+  POP_CONFIRM_MSG = 'A ARI estruturou o POP. Nem toda etapa precisa de print de comprovação — marque as etapas que precisam de print e clique em "Gerar POP".';
+  // A seleção pertence aos dados, não ao DOM: sobrevive a renders, snapshots e troca de modelo/logo.
+  togglePopStep = (e) => {
+    const index = Number(e.currentTarget.getAttribute('data-pop-step'));
+    if (!this.popData || !this.popData.steps[index]) return;
+    this.popData.steps[index].hasPrint = e.currentTarget.checked;
+    this.savePop();
+    this.setState({});
+  };
+  setAllPopSteps(value) {
     if (!this.popData) return;
-    if (!this.popStepsEl) {
-      this._popStepsTries = (this._popStepsTries || 0) + 1;
-      if (this._popStepsTries < 40) setTimeout(this.renderPopStepPicker, 100);
-      return;
+    this.popData.steps.forEach((step) => { step.hasPrint = value; });
+    this.savePop();
+    this.setState({});
+  }
+  selectAllPopSteps = () => this.setAllPopSteps(true);
+  clearPopSteps = () => this.setAllPopSteps(false);
+  focusPopSteps = () => {
+    if (this.state.screen !== 'pop' || !this.state.popConfirm || this.state.popSetup) return;
+    const title = document.getElementById('ari-pop-prints');
+    if (title) {
+      title.focus({ preventScroll: true });
+      title.scrollIntoView({ block: 'start', behavior: 'auto' });
     }
-    this._popStepsTries = 0;
-    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    this.popStepsEl.innerHTML = (this.popData.steps || []).map((s, i) =>
-      '<label style="display:flex;gap:10px;align-items:flex-start;padding:8px 2px;border-bottom:1px solid #eff2f5;cursor:pointer;">' +
-        '<input type="checkbox"' + (s.hasPrint === false ? '' : ' checked') + ' data-pop-step="' + i + '" style="margin-top:2px;accent-color:#1c5cff;width:16px;height:16px;flex:none;cursor:pointer;">' +
-        '<span style="font-size:14px;line-height:1.4;color:#0a1f44;"><b>' + (i + 1) + '.</b> ' + esc(s.title) + '</span>' +
-      '</label>').join('');
   };
 
   confirmPop = async () => {
     if (!this.popData || this.state.loading) return;
-    if (this.popStepsEl) {
-      this.popStepsEl.querySelectorAll('input[data-pop-step]').forEach((b) => {
-        const i = +b.getAttribute('data-pop-step');
-        if (this.popData.steps[i]) this.popData.steps[i].hasPrint = b.checked;
-      });
-    }
     const run = this.startRun();
-    this.setState({ loading: true, popConfirm: false, err: '', result: '' });
+    this.setState({ loading: true, popReady: false, popConfirm: false, err: '', result: '' });
     try {
       let imageBase64 = this.popImage || null;
       if (this.imageFile) {
@@ -1488,13 +1679,14 @@ class Component extends DCLogic {
       this.popImage = imageBase64;
       this.popFileName = 'POP-' + (this.popData.processName || 'processo').replace(/[^\wÀ-ſ]+/g, '-') + '.pptx';
       this._popBuiltStyle = this.popStyleKey();
+      this.savePop(true);
       const semImg = imageBase64 ? '' : ' Obs.: sem imagem do fluxograma — o espaço ficou como placeholder; anexe a imagem e gere de novo para incluí-la.';
       this._popTries = 0;
       this.setState({ loading: false, popReady: true, result: 'POP pronto no modelo ' + this.popModelName() + '! Confira a pré-visualização abaixo e clique em "Baixar POP (.pptx)". No Canva: Criar um design > Importar arquivo > selecione o .pptx — cada texto vira uma caixa editável.' + semImg }, this.renderPopPreview);
     } catch (e) {
       if (this.isStale(run)) return;
       // Volta para a seleção de etapas para o usuário poder tentar de novo.
-      this.setState({ loading: false, popConfirm: true, err: this.friendlyError(e, 'Não consegui gerar o POP. Tente novamente.') }, this.renderPopStepPicker);
+      this.setState({ loading: false, popConfirm: true, err: this.friendlyError(e, 'Não consegui gerar o POP. Tente novamente.') }, this.focusPopSteps);
     }
   };
 
@@ -1577,27 +1769,28 @@ class Component extends DCLogic {
   go3 = () => this.goTo(3);
 
   goTo(i) {
+    i = Math.min(3, Math.max(0, i));
     const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
-    const target = (i / 3) * max;
-    this.animateScrollTo(target, 240);
+    this.updateHome(i); // destino imediato: um novo gesto nunca usa uma seção intermediária
+    this.animateScrollTo((i / 3) * max, 480);
   }
 
-  // Custom rAF scroll — fast and with controllable duration (native 'smooth'
-  // is slow over the long per-section distance and feels stuck).
   animateScrollTo(target, duration) {
     if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
-    const start = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    this._scrollRaf = null;
+    const start = window.scrollY || 0;
     const dist = target - start;
-    if (Math.abs(dist) < 1) return;
-    // Reduced motion: jump straight to the section instead of animating the scroll.
-    if (this.reduceMotion) { window.scrollTo(0, target); return; }
+    if (this.reduceMotion || Math.abs(dist) < 1) {
+      window.scrollTo(0, target);
+      this._onScroll();
+      return;
+    }
     const t0 = performance.now();
-    const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2); // easeInOutCubic
-    const step = () => {
-      const k = Math.min(1, (performance.now() - t0) / duration);
-      window.scrollTo(0, start + dist * ease(k));
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / duration);
+      window.scrollTo(0, start + dist * (1 - Math.pow(1 - k, 3)));
       if (k < 1) this._scrollRaf = requestAnimationFrame(step);
-      else this._scrollRaf = null;
+      else { this._scrollRaf = null; this._onScroll(); }
     };
     this._scrollRaf = requestAnimationFrame(step);
   }
@@ -1612,7 +1805,12 @@ class Component extends DCLogic {
     // parallax, wave or blink) and opacity-only panel/card transitions.
     this._rmQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
     this.reduceMotion = !!(this._rmQuery && this._rmQuery.matches);
-    this._onRM = () => { this.reduceMotion = !!(this._rmQuery && this._rmQuery.matches); this.setState({}); };
+    this._onRM = () => {
+      this.reduceMotion = !!(this._rmQuery && this._rmQuery.matches);
+      this.updateHome(this._lastSetActive);
+      if (this.reduceMotion) this.goTo(this._lastSetActive);
+      this.resumeScene();
+    };
     if (this._rmQuery && this._rmQuery.addEventListener) this._rmQuery.addEventListener('change', this._onRM);
 
     this._onScroll = () => {
@@ -1621,78 +1819,138 @@ class Component extends DCLogic {
       const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
       const p = max > 0 ? Math.min(1, Math.max(0, top / max)) : 0;
       this.scrollProgress = p;
-      if (this.progressEl) this.progressEl.style.width = (p * 100) + '%';
-      // Compare against _lastSetActive, not this.state.active, to avoid stale async state.
+      if (this.progressEl) this.progressEl.style.transform = 'scaleX(' + p + ')';
+      // Scroll externo (restauração do navegador, por exemplo) também atualiza a home.
       const active = Math.min(3, Math.max(0, Math.round(p * 3)));
-      if (active !== this._lastSetActive) {
-        this._lastSetActive = active;
-        this.setState({ active });
-      }
+      if (!this._scrollRaf && active !== this._lastSetActive) this.updateHome(active);
+      if (this.reduceMotion) this.resumeScene();
     };
-    this._onResize = () => { this.resize(); };
+    this._onResize = () => {
+      this.resize();
+      if (!this.state.screen) {
+        const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+        this.animateScrollTo(this._lastSetActive / 3 * max, 1);
+      }
+      this.resumeScene();
+    };
     this._onMove = (e) => {
       this.tMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.tMouse.y = (e.clientY / window.innerHeight) * 2 - 1;
     };
 
-    // --- Snap scroll: one wheel/trackpad gesture = exactly one section ---
-    this._locked = false;
-    this._unlockTimer = null;
-    this._minUnlockAt = 0;
-    this._armUnlock = (idle) => {
-      if (this._unlockTimer) clearTimeout(this._unlockTimer);
-      const fire = () => {
-        const remaining = this._minUnlockAt - performance.now();
-        if (remaining > 0) { this._unlockTimer = setTimeout(fire, remaining); }
-        else { this._locked = false; this._unlockTimer = null; }
-      };
-      this._unlockTimer = setTimeout(fire, idle);
-    };
+    // WheelEvent não informa o fim físico do gesto. Agrupa a cauda por silêncio,
+    // direção e impulso renovado após desaceleração, sem uma trava ligada à animação.
+    // O impulso é medido por quadro: quando o navegador atrasa e junta eventos
+    // (3×7 → 21), o delta é dividido pelo intervalo, então a cauda não parece um
+    // gesto novo. Gesto novo no meio da cauda = taxa acima de 1,2× o maior valor
+    // dos últimos quadros por 5 eventos seguidos (ruído isolado não basta).
+    this._wheelGesture = null;
     this._onWheel = (e) => {
-      // Let the generator overlay scroll natively when it's open; ctrl+wheel is
-      // pinch-zoom on trackpads and must reach the browser.
-      if (this.state.screen || e.ctrlKey) return;
+      if (this.state.screen || e.ctrlKey || e.metaKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      if (!e.deltaY) return;
       e.preventDefault();
-      if (this._locked) { this._armUnlock(60); return; } // swallow momentum tail
-      const dir = e.deltaY > 0 ? 1 : (e.deltaY < 0 ? -1 : 0);
-      if (!dir) return;
-      const target = Math.min(3, Math.max(0, this._lastSetActive + dir));
-      if (target === this._lastSetActive) return; // at an edge — do nothing
-      this._locked = true;
-      this._minUnlockAt = performance.now() + 250; // hold through the scroll animation
-      this.goTo(target);
-      this._armUnlock(60);
+      const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1);
+      const amount = Math.abs(delta), dir = Math.sign(delta);
+      const now = e.timeStamp > 0 ? e.timeStamp : performance.now(); // hora do evento, não da entrega
+      let g = this._wheelGesture;
+      const dt = g ? now - g.lastAt : Infinity;
+      // Intervalo típico entre quadros do gesto; intervalo bem maior = eventos juntados.
+      let rate = amount, paced = true;
+      if (g && dt <= 180) {
+        if (!g.frame) g.frame = Math.min(17, Math.max(6, dt));
+        paced = dt <= g.frame * 1.5;
+        if (paced) g.frame = g.frame * .7 + dt * .3;
+        else rate = amount * g.frame / dt;
+      }
+      let renewed = false;
+      if (g && dt <= 180 && dir === g.dir) {
+        // Só depois de mover e de a cauda começar a cair; a referência fica parada durante a subida.
+        const rising = g.consumed && g.fell && rate >= 12 && rate >= Math.max(...g.recent) * 1.2;
+        g.rise = rising ? g.rise + (paced ? 1 : Math.round(dt / g.frame)) : 0; // evento juntado vale vários quadros
+        renewed = g.rise >= 5;
+      }
+      const reversed = g && dir !== g.dir && amount >= 12;
+      if (!g || dt > 180 || renewed || reversed) {
+        g = this._wheelGesture = { dir, sum: 0, consumed: false, frame: g && dt <= 180 ? g.frame : 0, peak: 0, fell: false, rise: 0, recent: [rate, rate, rate] };
+      }
+      g.lastAt = now;
+      if (paced) {
+        g.peak = Math.max(g.peak, rate);
+        if (rate <= g.peak * .7) g.fell = true;
+        if (!g.rise) { g.recent.shift(); g.recent.push(rate); }
+      }
+      if (g.consumed || dir !== g.dir) return;
+      g.sum += amount;
+      if (g.sum < 12) return;
+      g.consumed = true; // também consome na borda, para não reaproveitar momentum
+      this.goTo(this._lastSetActive + dir);
+    };
+    this._onTouchStart = (e) => {
+      this._touch = !this.state.screen && e.touches.length === 1
+        ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+    };
+    this._onTouchMove = (e) => {
+      if (this.state.screen || e.touches.length !== 1) { this._touch = null; return; }
+      const t = this._touch;
+      if (!t) return;
+      const dx = e.touches[0].clientX - t.x, dy = e.touches[0].clientY - t.y;
+      if (Math.abs(dy) > Math.abs(dx) && e.cancelable) e.preventDefault();
+    };
+    this._onTouchEnd = (e) => {
+      const start = this._touch;
+      this._touch = null;
+      if (!start || this.state.screen || e.touches.length || !e.changedTouches.length) return;
+      const dx = e.changedTouches[0].clientX - start.x, dy = e.changedTouches[0].clientY - start.y;
+      if (Math.abs(dy) >= 48 && Math.abs(dy) > Math.abs(dx) * 1.2) this.goTo(this._lastSetActive + (dy < 0 ? 1 : -1));
+    };
+    this._onTouchCancel = () => { this._touch = null; };
+    this._onVisibility = () => {
+      this._wheelGesture = null;
+      this._touch = null;
+      if (document.hidden) {
+        if (this.raf) cancelAnimationFrame(this.raf);
+        this.raf = null;
+        if (this._scrollRaf) {
+          cancelAnimationFrame(this._scrollRaf);
+          this._scrollRaf = null;
+          const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+          window.scrollTo(0, this._lastSetActive / 3 * max);
+        }
+      } else this.resumeScene();
     };
     this._onKey = (e) => {
       if (this.state.screen) {
         if (e.key === 'Escape' && !this.state.bpmnEditing) { e.preventDefault(); this.closeScreen(); }
         return;
       }
-      // Espaço/setas num controle focado (botão, campo) mantêm o comportamento nativo.
+      // Campos (texto, select) mantêm o comportamento nativo de todas as teclas.
+      // Num botão ou link só Espaço é nativo (ativa); setas e PageUp/PageDown trocam de seção.
       const t = e.target;
-      if (t && t.closest && t.closest('button, a, input, textarea, select, [contenteditable]')) return;
+      if (t && t.closest && t.closest('input, textarea, select, [contenteditable]')) return;
+      if ((e.key === ' ' || e.key === 'Spacebar') && t && t.closest && t.closest('button, a')) return;
       if (e.altKey || e.ctrlKey || e.metaKey) return;
       const down = ['ArrowDown', 'PageDown', ' ', 'Spacebar'].includes(e.key);
       const up = ['ArrowUp', 'PageUp'].includes(e.key);
       if (!down && !up) return;
       e.preventDefault();
-      if (this._locked) return;
+      if (e.repeat) return;
       const dir = down ? 1 : -1;
       const target = Math.min(3, Math.max(0, this._lastSetActive + dir));
       if (target === this._lastSetActive) return;
-      this._locked = true;
-      this._minUnlockAt = performance.now() + 250;
       this.goTo(target);
-      this._armUnlock(60);
     };
 
-    // capture: true catches scroll on any inner container the host may create
-    document.addEventListener('scroll', this._onScroll, { capture: true, passive: true });
     window.addEventListener('scroll', this._onScroll, { passive: true });
     window.addEventListener('resize', this._onResize);
     window.addEventListener('pointermove', this._onMove);
     window.addEventListener('wheel', this._onWheel, { passive: false });
     window.addEventListener('keydown', this._onKey);
+    window.addEventListener('touchstart', this._onTouchStart, { passive: true });
+    window.addEventListener('touchmove', this._onTouchMove, { passive: false });
+    window.addEventListener('touchend', this._onTouchEnd);
+    window.addEventListener('touchcancel', this._onTouchCancel);
+    document.addEventListener('visibilitychange', this._onVisibility);
+    this.updateHome(0);
     this._onScroll();
 
     this.initThree();
@@ -1718,14 +1976,17 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     this._unmounted = true;
-    document.removeEventListener('scroll', this._onScroll, { capture: true });
     window.removeEventListener('scroll', this._onScroll);
     window.removeEventListener('resize', this._onResize);
     window.removeEventListener('pointermove', this._onMove);
     window.removeEventListener('wheel', this._onWheel, { passive: false });
     window.removeEventListener('keydown', this._onKey);
+    window.removeEventListener('touchstart', this._onTouchStart);
+    window.removeEventListener('touchmove', this._onTouchMove);
+    window.removeEventListener('touchend', this._onTouchEnd);
+    window.removeEventListener('touchcancel', this._onTouchCancel);
+    document.removeEventListener('visibilitychange', this._onVisibility);
     if (this._rmQuery && this._rmQuery.removeEventListener) this._rmQuery.removeEventListener('change', this._onRM);
-    if (this._unlockTimer) clearTimeout(this._unlockTimer);
     if (this._copiedTimer) clearTimeout(this._copiedTimer);
     this.cancelRun();
     if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
@@ -1753,7 +2014,7 @@ class Component extends DCLogic {
     this.scene = scene;
 
     const renderer = new THREE.WebGLRenderer({ canvas: this.canvasEl, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
     // O modelo é PBR (glTF): saída em sRGB e tone mapping para as cores baterem.
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1857,13 +2118,17 @@ class Component extends DCLogic {
     this.camera.updateProjectionMatrix();
   }
 
+  resumeScene() {
+    if (this.robot && !this.raf && !this._unmounted && !document.hidden && !this.state.screen) this.animate();
+  }
+
   animate = () => {
-    // Pausa enquanto o diálogo opaco cobre a cena (closeScreen retoma).
-    if (this.state.screen) { this.raf = null; return; }
-    this.raf = requestAnimationFrame(this.animate);
-    const T = window.THREE;
+    this.raf = null;
+    if (this._unmounted || document.hidden || this.state.screen) return;
+    // Com movimento reduzido, redesenha apenas ao navegar/redimensionar.
+    if (!this.reduceMotion) this.raf = requestAnimationFrame(this.animate);
     const t = (performance.now() - this.t0) / 1000;
-    const lerp = (a, b, k) => a + (b - a) * k;
+    const lerp = (a, b, k) => this.reduceMotion ? b : a + (b - a) * k;
     const rm = this.reduceMotion;
 
     // smooth mouse — under reduced motion the pointer parallax is disabled by
@@ -1892,7 +2157,7 @@ class Component extends DCLogic {
 
     // robot slides to the opposite side of the text (text-right on section 2)
     const baseX = this.baseX != null ? this.baseX : 1.9;
-    const sideX = this.state.active === 2 ? -baseX : baseX;
+    const sideX = this._lastSetActive === 2 ? -baseX : baseX;
     this.targetX = lerp(this.targetX != null ? this.targetX : sideX, sideX, 0.07);
 
     // position: section side + pointer parallax + float (float/parallax off under reduced motion)
@@ -1929,21 +2194,23 @@ class Component extends DCLogic {
     this.renderer.render(this.scene, this.camera);
   };
 
-  renderVals() {
-    const active = this.state.active;
+  homeVals() {
+    const active = this._lastSetActive || 0;
     const rm = this.reduceMotion;
+    const cacheKey = active + ':' + !!rm;
+    if (this._homeCache && this._homeCache.key === cacheKey) return this._homeCache.vals;
     const ease = 'cubic-bezier(.16,1,.3,1)';
     // Under reduced motion, entrances/exits are opacity-only (no slide, scale or blur).
-    const panelBase = 'position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(24px,7vw,110px);transition:opacity .75s ' + ease + ', transform .8s ' + ease + ', filter .55s ease;will-change:opacity,transform,filter;';
+    const panelBase = 'position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(24px,7vw,110px);transition:opacity .4s ' + ease + ', transform .48s ' + ease + ';will-change:opacity,transform;';
     const panel = (i) => panelBase
       + (i === 2 ? 'align-items:flex-end;' : 'align-items:flex-start;')
       + (i === active
-        ? 'opacity:1;transform:translateY(0) scale(1);filter:blur(0);pointer-events:auto;'
+        ? 'opacity:1;transform:translateY(0) scale(1);pointer-events:auto;'
         : rm
-          ? 'opacity:0;transform:none;filter:none;pointer-events:none;'
-          : 'opacity:0;transform:translateY(' + (i < active ? '-70px' : '70px') + ') scale(.9);filter:blur(8px);pointer-events:none;');
+          ? 'opacity:0;transform:none;pointer-events:none;'
+          : 'opacity:0;transform:translateY(' + (i < active ? '-32px' : '32px') + ') scale(.98);pointer-events:none;');
 
-    const cardBase = 'position:absolute;inset:0;background:#fff;border:1px solid rgba(10,31,68,.07);border-radius:16px;padding:20px;box-shadow:0 24px 60px -20px rgba(10,31,68,.22);transition:opacity .7s ' + ease + ', transform .8s ' + ease + ';will-change:opacity,transform;';
+    const cardBase = 'position:absolute;inset:0;background:#fff;border:1px solid rgba(10,31,68,.07);border-radius:16px;padding:20px;box-shadow:0 24px 60px -20px rgba(10,31,68,.22);transition:opacity .4s ' + ease + ', transform .48s ' + ease + ';will-change:opacity,transform;';
     const card = (i) => cardBase + (i === active
       ? 'opacity:1;transform:translateY(0) scale(1) rotate(0deg);pointer-events:auto;'
       : rm
@@ -1954,7 +2221,7 @@ class Component extends DCLogic {
     // GPU transform (animating left/right can't interpolate the `auto` side, so the
     // cards used to teleport). Anchored right; translateX crosses to the left slot.
     const cardsToLeft = 'translateX(calc(2 * clamp(20px,5vw,80px) + clamp(260px,24vw,340px) - 100vw))';
-    const cardsWrap = 'position:absolute;bottom:15vh;right:clamp(20px,5vw,80px);left:auto;width:clamp(260px,24vw,340px);height:200px;z-index:4;transition:transform .8s ' + ease + ';'
+    const cardsWrap = 'position:absolute;bottom:15vh;right:clamp(20px,5vw,80px);left:auto;width:clamp(260px,24vw,340px);height:200px;z-index:4;transition:transform .48s ' + ease + ';'
       + 'transform:' + (active === 2 ? cardsToLeft : 'translateX(0)') + ';';
 
     const dot = (i) => {
@@ -1966,6 +2233,35 @@ class Component extends DCLogic {
     const hint = 'position:absolute;left:clamp(24px,7vw,110px);bottom:7vh;display:flex;align-items:center;gap:14px;z-index:5;transition:opacity .5s ease;'
       + (active === 0 ? 'opacity:1;' : 'opacity:0;pointer-events:none;');
 
+    const vals = {
+      panel0: panel(0), panel1: panel(1), panel2: panel(2), panel3: panel(3),
+      card1: card(1), card2: card(2), card3: card(3),
+      dot0: dot(0), dot1: dot(1), dot2: dot(2), dot3: dot(3), cardsWrap, hint
+    };
+    this._homeCache = { key: cacheKey, vals };
+    return vals;
+  }
+
+  // Atualiza apenas a home; o template inteiro do gerador não participa do scroll.
+  updateHome(active) {
+    this._lastSetActive = active;
+    const vals = this.homeVals();
+    [this.stageEl, this.navEl].forEach((root) => {
+      if (!root) return;
+      root.querySelectorAll('[data-home-style]').forEach((el) => {
+        el.style.cssText = vals[el.getAttribute('data-home-style')];
+      });
+    });
+    if (this.stageEl) this.stageEl.querySelectorAll('[data-home-style^="panel"]').forEach((el, i) => {
+      el.setAttribute('aria-hidden', String(i !== active));
+      el.inert = i !== active;
+      el.querySelectorAll('button').forEach((button) => { button.tabIndex = i === active ? 0 : -1; });
+    });
+  }
+
+  renderVals() {
+    const active = this._lastSetActive || 0;
+    const ease = 'cubic-bezier(.16,1,.3,1)';
     // ---- generator overlay ----
     const screen = this.state.screen;
     const open = !!screen;
@@ -2012,10 +2308,7 @@ class Component extends DCLogic {
     return {
       setCanvas: this.setCanvas, setProgress: this.setProgress,
       go0: this.go0, go1: this.go1, go2: this.go2, go3: this.go3,
-      panel0: panel(0), panel1: panel(1), panel2: panel(2), panel3: panel(3),
-      card1: card(1), card2: card(2), card3: card(3),
-      dot0: dot(0), dot1: dot(1), dot2: dot(2), dot3: dot(3),
-      cardsWrap, hint,
+      ...this.homeVals(),
       openBpmn: this.openBpmn, openPop: this.openPop, openManual: this.openManual,
       closeScreen: this.closeScreen, generate: this.generate,
       setText: this.setText, setFile: this.setFile, onFile: this.onFile, setDrop: this.setDrop,
@@ -2031,10 +2324,11 @@ class Component extends DCLogic {
       genEyebrow: g.e, genTitle: g.t, genSubtitle: g.s, genInputLabel: g.l, genPlaceholder: g.p,
       loading, busy,
       showText: !!this.state.result && !this.state.bpmnXml,
-      showEmpty: !loading && !this.state.result && !this.state.bpmnXml,
+      showEmpty: !loading && !this.state.result && !this.state.bpmnXml && !this.state.popConfirm && !this.state.popReady,
       result: this.state.result, fileLabel: this.state.fileName || 'Clique ou arraste a imagem aqui (.png, .jpg)',
       genError: this.state.err, genBtnLabel: loading ? 'Gerando...' : 'Gerar com a ARI', genBtnStyle,
       hasBpmn: !!this.state.bpmnXml, downloadBpmn: this.downloadBpmn, setPreview: this.setPreview,
+      setTypesPanel: this.setTypesPanel, setStartPref: this.setStartPref, setEndPref: this.setEndPref, onPrefChange: this.onPrefChange,
       c0: this.c0, c1: this.c1, c2: this.c2, c3: this.c3, c4: this.c4, c5: this.c5,
       sw0: sw(0), sw1: sw(1), sw2: sw(2), sw3: sw(3), sw4: sw(4), sw5: sw(5),
       swl0: swl(0), swl1: swl(1), swl2: swl(2), swl3: swl(3), swl4: swl(4), swl5: swl(5),
@@ -2042,8 +2336,10 @@ class Component extends DCLogic {
       setEditText: this.setEditText, applyEdit: this.applyEdit, editing,
       editBtnLabel: editing ? 'Aplicando...' : 'Aplicar alteração', editBtnStyle,
       hasPop: !!this.state.popReady, downloadPop: this.downloadPop, setPopPreview: this.setPopPreview,
-      popConfirm: !!this.state.popConfirm, setPopSteps: this.setPopSteps, confirmPop: this.confirmPop,
-      genGrid: 'display:' + (popSetup ? 'none' : 'grid') + ';grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:26px;align-items:start;',
+      popConfirm: !!this.state.popConfirm && screen === 'pop' && !loading, confirmPop: this.confirmPop,
+      popSteps: (this.popData && this.popData.steps || []).map((step, index) => ({ title: step.title, hasPrint: step.hasPrint === true, index, number: index + 1 })),
+      togglePopStep: this.togglePopStep, selectAllPopSteps: this.selectAllPopSteps, clearPopSteps: this.clearPopSteps,
+      genGrid: 'display:' + (popSetup ? 'none' : 'grid') + ';grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:26px;align-items:start;',
       popSetupModel: popSetup === 'model', popSetupLogo: popSetup === 'logo',
       setupStepModel: this.popSetupDone ? 'MODELO DO POP' : 'PASSO 1 DE 2',
       setupStepLogo: this.popSetupDone ? 'LOGO DA EMPRESA' : 'PASSO 2 DE 2',

@@ -136,7 +136,7 @@ app.post("/api/bpmn/generate", async (req, res) => {
   const tier = req.body.tier, model = modelForTier(tier);
   try {
     const t0 = Date.now();
-    const { graph, report } = await generateGraph(client, { model, tier, text, answers: req.body.answers });
+    const { graph, report } = await generateGraph(client, { model, tier, text, answers: req.body.answers, prefs: req.body.prefs });
     console.log(`[ARI] mapeamento gerado com ${model} em ${((Date.now() - t0) / 1000).toFixed(0)}s: ${graph.nodes.length} nós, ${report.errors.length} erro(s)`);
     res.json({ graph, model, errors: report.errors, warnings: report.warnings });
   } catch (err) { bpmnError(res, err, "gerar o mapeamento"); }
@@ -149,7 +149,7 @@ app.post("/api/bpmn/review", async (req, res) => {
   const tier = req.body.tier, model = modelForTier(tier);
   try {
     const t0 = Date.now();
-    const out = await reviewGraph(client, { model, tier, text, answers: req.body.answers, graph });
+    const out = await reviewGraph(client, { model, tier, text, answers: req.body.answers, prefs: req.body.prefs, graph });
     console.log(`[ARI] revisão com ${model} em ${((Date.now() - t0) / 1000).toFixed(0)}s: ${out.problems.length} correção(ões)`);
     out.problems.forEach((p) => console.log("      - " + p));
     res.json({ graph: out.graph, model, problems: out.problems, errors: out.report.errors, warnings: out.report.warnings });

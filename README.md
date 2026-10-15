@@ -41,7 +41,10 @@ npm start              # http://localhost:3000
 
 Os ajustes do mapeamento usam o mesmo modelo da geração e passam pela mesma validação.
 
+No formulário dá para escolher o tipo do início (simples, mensagem, temporizador, sinal, condicional) e do fim (simples, mensagem, terminar, erro, sinal, escalonamento); em branco, a ARI decide.
+
 Abaixo do diagrama:
+- **Tipos dos elementos:** um seletor por início, fim e atividade (usuário, manual, serviço, envio, recebimento, script, regra de negócio, genérica). A troca é feita na hora, sem IA e sem mexer nas posições; no diagrama editado à mão só muda a tag/definição do elemento no XML. Eventos intermediários criados no editor (mensagem, sinal…) aparecem desabilitados: o tipo deles se troca pelo editor manual.
 - **Baixar imagem .png:** o bpmn-js exporta o diagrama em SVG e o navegador o converte em PNG (2x; diagramas muito grandes são reduzidos para caber no limite de ~16 mil px).
 - **Editar manualmente:** abre o diagrama em tela cheia no editor do bpmn-js (`bpmn-modeler.js`, baixado só nessa hora). Dá para mover caixas, religar setas arrastando a ponta, criar dobras, renomear, incluir e excluir elementos. Ao salvar, o XML editado vira a prévia e o download, fica guardado no navegador e é convertido de volta em grafo (`xmlToGraph` em `bpmn-layout.js`), que passa pelo validador. Trocar a cor das atividades mantém as posições; um ajuste por texto mantém ligações e nomes, mas refaz o layout.
 
@@ -50,7 +53,7 @@ Abaixo do diagrama:
 1. **Modelo.** Ao abrir a tela do POP, o usuário escolhe um dos três modelos de `modelo-pop/` (Clássico, Faixas ou Lateral). O conteúdo é o mesmo; muda o visual.
 2. **Logo e cores.** Em seguida anexa a logo da empresa. O navegador lê as cores dela (`paletteFromPixels` em `pop-theme.js`): a cor mais escura vira a principal (títulos, tabelas, faixas) e a mais viva vira a de destaque (números, marcadores). Logo de uma cor só gera um tom escuro dela para a principal; logo preta, branca ou cinza mantém a paleta original do modelo. As cores podem ser ajustadas à mão e são escurecidas quando claras demais para o texto.
 3. **Resumo.** No formulário ficam o modelo e a logo escolhidos; clicar em cada um reabre a escolha. Se o POP já foi gerado, trocar o modelo ou a logo refaz o arquivo sem chamar a IA de novo.
-4. **Conteúdo.** A IA estrutura o processo (etapas, decisões com SE SIM / SE NÃO, conclusão) e o usuário marca quais etapas terão print.
+4. **Conteúdo.** A IA estrutura o processo (etapas, decisões com SE SIM / SE NÃO, conclusão) e mostra a lista de etapas com **todas desmarcadas**: o usuário marca só as que terão print de comprovação ("Marcar todas"/"Desmarcar todas" ajudam) e clica em "Gerar POP". A lista e as escolhas ficam no navegador; depois de um refresh, "Gerar POP" refaz o arquivo sem chamar a IA (a imagem do fluxograma não é guardada e precisa ser anexada de novo).
 5. **Arquivo.** O servidor monta o `.pptx` com o `pop-layout.js`. A logo da consultoria (`modelo-pop/logo empresa.png`) entra sozinha na capa; a do cliente, no espaço "Logo do cliente". A prévia na tela é desenhada pelo mesmo `pop-layout.js`, em SVG, então mostra as mesmas páginas do arquivo.
 
 O navegador lembra o último modelo, a logo e as cores (`localStorage`).
@@ -75,4 +78,4 @@ O navegador lembra o último modelo, a logo e as cores (`localStorage`).
 | `bpmn-modeler.js` / `bpmn-font.css` | bpmn-js 17.11.1 (editor) e os ícones da paleta, carregados só ao clicar em "Editar manualmente" |
 | `referencia-*.bpmn` | Diagramas de referência de layout |
 
-O navegador guarda rascunhos e o último mapeamento/manual no `localStorage`, então um refresh não perde o trabalho.
+O navegador guarda rascunhos, o último mapeamento/manual e a lista de etapas do POP no `localStorage`, então um refresh não perde o trabalho.

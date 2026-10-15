@@ -3,7 +3,7 @@
 // o código valida o grafo e, se houver erros, a IA corrige antes de o
 // navegador receber o resultado.
 
-import { GRAPH_SCHEMA, normalizeGraph, validateGraph } from "./bpmn-graph.js";
+import { GRAPH_SCHEMA, normalizeGraph, validateGraph, cleanEventPrefs, applyEventPrefs } from "./bpmn-graph.js";
 
 // ─── Capacidades por modelo ───────────────────────────────────────────────────
 // Saídas estruturadas (JSON garantido pelo schema) e raciocínio adaptativo.
@@ -82,13 +82,14 @@ const MODELING_RULES = `Você é a ARI, analista sênior de processos e especial
 FORMATO DE SAÍDA — um grafo:
 - "processName": nome curto do processo.
 - "lanes": as raias, uma por ÁREA responsável (setor, sistema ou parte externa como "Cliente" e "Fornecedor"), na ordem em que aparecem. Cargos da mesma área ficam na raia da área: gerente comercial, vendedor e diretoria comercial ficam em "Comercial"; analista e coordenador de compras em "Suprimentos". Quando o cargo importa (alçadas de aprovação), coloque-o no nome da atividade: "Aprovar desconto (gerente comercial)". Use um nome único e consistente por área — nunca duas raias para a mesma área com nomes diferentes. Crie raia própria para um cargo apenas quando o texto o trata como instância separada (ex.: "Diretoria", "Diretor de Operações"). O objetivo é um diagrama legível: em geral, de 5 a 12 raias.
-- "nodes": cada nó com "id" único e curto (ex.: "t_cadastrar", "gw_desconto"), "type", "name", "lane", "taskType", "attachedTo", "interrupting" e "terminate".
+- "nodes": cada nó com "id" único e curto (ex.: "t_cadastrar", "gw_desconto"), "type", "name", "lane", "taskType", "eventType", "attachedTo" e "interrupting".
 - "flows": cada fluxo com "from", "to" (ids) e "label" (condição da saída de uma decisão; "" nos demais).
-Campos que não se aplicam ao tipo: "taskType": "none", "attachedTo": "", "interrupting": false, "terminate": false.
+Campos que não se aplicam ao tipo: "taskType": "none", "eventType": "none", "attachedTo": "", "interrupting": false.
 
 TIPOS DE NÓ:
-- startEvent: o gatilho do processo. endEvent: um desfecho, com nome que diz o resultado ("Pedido cancelado", "Pedido encerrado"). Use quantos fins forem necessários; "terminate": true apenas quando o desfecho precisa encerrar também caminhos paralelos ainda ativos.
-- task: atividade, com nome no infinitivo + objeto ("Cadastrar pedido no ERP"). "taskType": "service" quando um sistema faz sozinho (ERP registra, cobrança automática), "user" quando uma pessoa trabalha em sistema, "manual" para trabalho físico (separar, conferir mercadoria), "send"/"receive" para enviar ou receber comunicação, "none" se não estiver claro.
+- startEvent: o gatilho do processo, com nome que diz o gatilho ("Pedido recebido", "Todo dia 1º"). "eventType" conforme o que dispara o processo: "message" quando chega uma comunicação de fora ("ao receber o e-mail", "quando o cliente envia o pedido", formulário recebido); "timer" quando é uma data, horário ou periodicidade ("todo dia 1º", "mensalmente", "toda segunda às 9h"); "conditional" quando uma condição passa a valer ("quando o estoque fica abaixo do mínimo", "ao atingir o limite"); "signal" quando é um aviso geral que vários processos escutam ("publicação do edital", "comunicado da diretoria a todas as áreas"); "none" quando alguém simplesmente decide começar ou o texto não indica o gatilho.
+- endEvent: um desfecho, com nome que diz o resultado ("Pedido cancelado", "Pedido encerrado"). Use quantos fins forem necessários. "eventType": "terminate" quando o desfecho encerra o processo inteiro, inclusive ramos paralelos ainda ativos ("cancela tudo", "encerra imediatamente o processo"); "message" quando o processo termina enviando uma comunicação a alguém de fora ("encerra com o envio da resposta ao cliente") e não há atividade de envio para isso; "error" quando termina em falha que precisa de tratamento ("processo abortado por erro no pagamento"); "escalation" quando termina passando o caso para uma instância superior ("encerra e escala para a diretoria"); "signal" quando o fim avisa várias áreas ao mesmo tempo; "none" nos demais casos (o mais comum).
+- task: atividade, com nome no infinitivo + objeto ("Cadastrar pedido no ERP"). "taskType": "service" quando um sistema faz sozinho (ERP registra, cobrança automática), "user" quando uma pessoa trabalha em sistema, "manual" para trabalho físico (separar, conferir mercadoria), "send"/"receive" para enviar ou receber comunicação, "script" para rotina automatizada escrita pela equipe (macro de planilha, robô/RPA, script que gera relatório), "businessRule" quando o sistema aplica uma regra ou tabela de decisão (cálculo de desconto pela política, score de crédito, enquadramento em faixas), "none" se não estiver claro. Não invente tipos que o texto não sustenta.
 - subProcess: bloco que o texto trata como subprocesso (ex.: "inicia-se um subprocesso de homologação"), representado recolhido.
 - exclusiveGateway: decisão com UM caminho escolhido. Nome em forma de pergunta; cada saída com "label" de condição. Cubra TODOS os desfechos que o texto descreve — faixas de valor viram várias saídas no mesmo gateway (ex.: "até 5%", "entre 5% e 12%", "acima de 12%"), não uma cadeia de sim/não. Também use exclusiveGateway sem nome para JUNTAR caminhos alternativos antes de uma etapa comum.
 - parallelGateway: atividades simultâneas ("simultaneamente", "paralelamente", "em paralelo", "ao mesmo tempo"). Um parallelGateway divide; outro parallelGateway junta (sincroniza) antes da etapa que depende de todos os ramos. Saídas sem label.
@@ -109,6 +110,16 @@ REGRAS DE LÓGICA (os erros mais comuns que você deve evitar):
 10. Fidelidade: use os termos do texto; não crie etapas, sistemas ou regras ausentes; não omita regras de negócio (valores, percentuais, prazos) — coloque-as nos nomes e nas condições.
 
 Antes de responder, confira mentalmente cada regra acima contra o grafo.`;
+
+// Tipos de início/fim escolhidos no formulário (prevalecem sobre o texto).
+const EVENT_LABEL = { none: "simples (sem gatilho específico)", message: "mensagem", timer: "temporizador", signal: "sinal", conditional: "condicional", terminate: "terminar", error: "erro", escalation: "escalonamento" };
+function preferencesBlock(prefs) {
+  const p = cleanEventPrefs(prefs);
+  const lines = [];
+  if (p.start) lines.push(`- Todos os eventos de início devem ter "eventType": "${p.start}" (${EVENT_LABEL[p.start]}).`);
+  if (p.end) lines.push(`- Todos os eventos de fim devem ter "eventType": "${p.end}" (${EVENT_LABEL[p.end]}).`);
+  return lines.length ? "\n\nPREFERÊNCIAS DO USUÁRIO (prevalecem sobre a sua escolha de tipos):\n" + lines.join("\n") : "";
+}
 
 function clarificationBlock(answers) {
   const list = (Array.isArray(answers) ? answers : []).filter((a) => a && a.question);
@@ -152,8 +163,8 @@ export async function askClarifyingQuestions(client, { model, tier, text }) {
 }
 
 // ─── Reparo: a IA corrige os erros que o validador encontrou ─────────────────
-async function repairLoop(client, { model, tier, text, answers, graph, maxRounds = 2 }) {
-  let g = normalizeGraph(graph);
+async function repairLoop(client, { model, tier, text, answers, prefs, graph, maxRounds = 2 }) {
+  let g = applyEventPrefs(normalizeGraph(graph), prefs);
   let report = validateGraph(g);
   for (let round = 0; round < maxRounds && report.errors.length; round++) {
     console.log(`[ARI] mapeamento: ${report.errors.length} erro(s) estrutural(is), pedindo correção (rodada ${round + 1})`);
@@ -162,23 +173,23 @@ async function repairLoop(client, { model, tier, text, answers, graph, maxRounds
       user: "O mapeamento abaixo tem erros estruturais apontados pelo validador. Corrija TODOS, mantendo o restante igual (mesmos ids, nomes e responsáveis), e devolva o grafo completo corrigido. Consulte a descrição para decidir a correção certa.\n\n" +
         "ERROS:\n" + report.errors.map((e) => "- " + e).join("\n") +
         (report.warnings.length ? "\n\nAVISOS (corrija se forem de fato problemas):\n" + report.warnings.map((w) => "- " + w).join("\n") : "") +
-        `\n\nDESCRIÇÃO DO PROCESSO:\n"""\n${text}\n"""` + clarificationBlock(answers) +
+        `\n\nDESCRIÇÃO DO PROCESSO:\n"""\n${text}\n"""` + clarificationBlock(answers) + preferencesBlock(prefs) +
         "\n\nMAPEAMENTO ATUAL:\n" + JSON.stringify(g),
     });
-    g = normalizeGraph(fixed);
+    g = applyEventPrefs(normalizeGraph(fixed), prefs);
     report = validateGraph(g);
   }
   return { graph: g, report };
 }
 
 // ─── Geração ─────────────────────────────────────────────────────────────────
-export async function generateGraph(client, { model, tier, text, answers }) {
+export async function generateGraph(client, { model, tier, text, answers, prefs }) {
   const draft = await callJson(client, {
     model, tier, schema: GRAPH_SCHEMA, system: MODELING_RULES,
     user: "Mapeie o processo abaixo em BPMN 2.0 seguindo todas as regras. Leia o texto inteiro antes de começar: identifique responsáveis, gatilhos, decisões e todos os seus desfechos, atividades simultâneas, prazos, ciclos de retrabalho e pontos de encerramento." +
-      `\n\nDESCRIÇÃO DO PROCESSO:\n"""\n${text}\n"""` + clarificationBlock(answers),
+      `\n\nDESCRIÇÃO DO PROCESSO:\n"""\n${text}\n"""` + clarificationBlock(answers) + preferencesBlock(prefs),
   });
-  return repairLoop(client, { model, tier, text, answers, graph: draft });
+  return repairLoop(client, { model, tier, text, answers, prefs, graph: draft });
 }
 
 // ─── Revisão (processos complexos) ───────────────────────────────────────────
@@ -189,19 +200,19 @@ const REVIEW_SCHEMA = {
   properties: { problems: { type: "array", items: { type: "string" } }, graph: GRAPH_SCHEMA },
 };
 
-export async function reviewGraph(client, { model, tier, text, answers, graph }) {
+export async function reviewGraph(client, { model, tier, text, answers, prefs, graph }) {
   const g = normalizeGraph(graph);
   const { warnings } = validateGraph(g);
   const data = await callJson(client, {
     model, tier, schema: REVIEW_SCHEMA, system: MODELING_RULES,
-    user: "Revise criticamente o mapeamento abaixo contra a descrição, trecho por trecho, como um auditor de processos. Para cada parágrafo da descrição, confira se as atividades, responsáveis, decisões (com todos os desfechos), paralelismos e sincronizações, ciclos de retrabalho, eventos de tempo e fins estão corretos e conforme as REGRAS DE LÓGICA. Procure especialmente: caminhos de cancelamento/recusa que continuam o fluxo; atividades condicionais executadas em todos os casos; retrabalho sem volta para a etapa certa; limites de tentativas não controlados; prazos modelados como perguntas; reinícios que não voltam ao ponto indicado; liberações que não exigem todas as pré-condições.\n\n" +
+    user: "Revise criticamente o mapeamento abaixo contra a descrição, trecho por trecho, como um auditor de processos. Para cada parágrafo da descrição, confira se as atividades, responsáveis, decisões (com todos os desfechos), paralelismos e sincronizações, ciclos de retrabalho, eventos de tempo, fins e os tipos (\"eventType\" de inícios e fins, \"taskType\" das atividades) estão corretos e conforme as REGRAS DE LÓGICA. Procure especialmente: caminhos de cancelamento/recusa que continuam o fluxo; atividades condicionais executadas em todos os casos; retrabalho sem volta para a etapa certa; limites de tentativas não controlados; prazos modelados como perguntas; reinícios que não voltam ao ponto indicado; liberações que não exigem todas as pré-condições.\n\n" +
       "Em \"problems\" liste, em português, cada problema que você encontrou e corrigiu (lista vazia se o mapeamento já estava correto). Em \"graph\" devolva o mapeamento COMPLETO já corrigido, preservando ids e nomes do que estava certo." +
       (warnings.length ? "\n\nAVISOS DO VALIDADOR:\n" + warnings.map((w) => "- " + w).join("\n") : "") +
-      `\n\nDESCRIÇÃO DO PROCESSO:\n"""\n${text}\n"""` + clarificationBlock(answers) +
+      `\n\nDESCRIÇÃO DO PROCESSO:\n"""\n${text}\n"""` + clarificationBlock(answers) + preferencesBlock(prefs) +
       "\n\nMAPEAMENTO A REVISAR:\n" + JSON.stringify(g),
   });
   const problems = (Array.isArray(data.problems) ? data.problems : []).map((p) => String(p).trim()).filter(Boolean);
-  const result = await repairLoop(client, { model, tier, text, answers, graph: data.graph });
+  const result = await repairLoop(client, { model, tier, text, answers, prefs, graph: data.graph });
   // Revisão que piorou a estrutura não substitui a versão revisada anterior.
   if (result.report.errors.length && !validateGraph(g).errors.length) return { graph: g, report: validateGraph(g), problems: [] };
   return { ...result, problems };
