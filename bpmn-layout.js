@@ -230,12 +230,18 @@
     };
   }
 
+  // id de cada nó do grafo -> id no XML (NCName, sem repetição).
+  function xmlIds(graph) {
+    var ids = {}, used = {};
+    graph.nodes.forEach(function (n) { var b = xmlId(n.id), id = b, k = 1; while (used[id]) id = b + '_' + (++k); used[id] = 1; ids[n.id] = id; });
+    return ids;
+  }
+
   // Devolve { xml, summary } prontos para o bpmn-js e para download.
   function buildXml(graph, actColor) {
     if (!graph || !graph.nodes || !graph.nodes.length) throw new Error('vazio');
     var L = layoutGraph(graph), colorOf = colorAttrsFor(actColor);
-    var ids = {}, used = {};
-    graph.nodes.forEach(function (n) { var b = xmlId(n.id), id = b, k = 1; while (used[id]) id = b + '_' + (++k); used[id] = 1; ids[n.id] = id; });
+    var ids = xmlIds(graph);
     var byId = {}; graph.nodes.forEach(function (n) { byId[n.id] = n; });
     var flows = graph.flows.filter(function (f, i) { return ids[f.from] && ids[f.to] && L.waypoints[i]; });
     var flowId = function (f) { return 'Flow_' + (graph.flows.indexOf(f) + 1); };
@@ -493,5 +499,5 @@
     return out;
   }
 
-  root.AriBpmn = { layoutGraph: layoutGraph, buildXml: buildXml, legacyToGraph: legacyToGraph, xmlToGraph: xmlToGraph, retypeXml: retypeXml, intermediateIds: intermediateIds, eventTypeOf: eventTypeOf, TYPE_OPTIONS: TYPE_OPTIONS };
+  root.AriBpmn = { layoutGraph: layoutGraph, buildXml: buildXml, xmlIds: xmlIds, legacyToGraph: legacyToGraph, xmlToGraph: xmlToGraph, retypeXml: retypeXml, intermediateIds: intermediateIds, eventTypeOf: eventTypeOf, TYPE_OPTIONS: TYPE_OPTIONS };
 })(typeof window !== 'undefined' ? window : globalThis);

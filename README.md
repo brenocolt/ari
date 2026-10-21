@@ -30,6 +30,14 @@ npm start              # http://localhost:3000
 | `TYPESAFE_API_KEY` | (opcional) | Ativa a escolha do modelo do mapeamento pelo Jev |
 | `ARI_MODEL_SIMPLES` / `ARI_MODEL_MEDIO` / `ARI_MODEL_COMPLEXO` | Haiku 5.5 / Sonnet 5.5 / Opus 5.5 | Modelo de cada faixa de complexidade |
 
+### Conversa com a ARI
+
+As três telas (mapeamento, POP e manual) usam um chat: a mensagem vai pelo campo de baixo (Enter envia, Shift+Enter quebra a linha) e a ARI responde na conversa; o resultado aparece no painel ao lado. A estrutura segue os componentes `message-scroller`, `message`, `bubble` e `input-group` do shadcn/ui, refeitos em HTML/CSS dentro do `ARI.dc.html` (o site não usa React com build nem Tailwind, então não dá para instalá-los com `npx shadcn add`).
+
+- **Mapeamento:** com um diagrama na tela, a próxima mensagem ajusta o atual ("Ajustar este") ou gera um novo ("Novo mapeamento"). Os ajustes só são feitos pela conversa; depois de um mapeamento novo, o modo volta para "Ajustar este".
+- **POP:** quando a ARI pede informações, a resposta é juntada à descrição anterior. A imagem do fluxograma é anexada pelo botão "Fluxograma" ou arrastada sobre o campo.
+- Cada tela tem a sua conversa, guardada no navegador (últimas 40 mensagens). "Limpar conversa" apaga só o histórico.
+
 ### Como o mapeamento é gerado
 
 1. **Complexidade.** O Jev (TypeSafe, `jev-latest`) dá uma nota à descrição em quatro dimensões: decisões, participantes, quantidade de atividades e ambiguidade. O `model-router.js` combina as notas com pesos e escolhe o modelo da faixa: baixa → simples, alta → o mais capaz. Sem `TYPESAFE_API_KEY`, ou se o Jev falhar, vale o `ARI_MODEL`. Pesos e limites ficam no topo do `model-router.js`.
@@ -43,8 +51,8 @@ Os ajustes do mapeamento usam o mesmo modelo da geração e passam pela mesma va
 
 No formulário dá para escolher o tipo do início (simples, mensagem, temporizador, sinal, condicional) e do fim (simples, mensagem, terminar, erro, sinal, escalonamento); em branco, a ARI decide.
 
-Abaixo do diagrama:
-- **Tipos dos elementos:** um seletor por início, fim e atividade (usuário, manual, serviço, envio, recebimento, script, regra de negócio, genérica). A troca é feita na hora, sem IA e sem mexer nas posições; no diagrama editado à mão só muda a tag/definição do elemento no XML. Eventos intermediários criados no editor (mensagem, sinal…) aparecem desabilitados: o tipo deles se troca pelo editor manual.
+No diagrama:
+- **Tipos dos elementos:** cada início, fim e atividade da prévia tem um botão azul (✎) no canto; ele (ou um clique no próprio elemento ou no nome do evento) abre, ao lado do elemento, os tipos possíveis com o ícone de cada um. Os botões entram no Tab; Esc fecha. Uma dica acima do diagrama explica o botão. A mesma troca existe em lista abaixo do diagrama (útil pelo teclado), com um seletor por início, fim e atividade (usuário, manual, serviço, envio, recebimento, script, regra de negócio, genérica). A troca é feita na hora, sem IA e sem mexer nas posições; no diagrama editado à mão só muda a tag/definição do elemento no XML. Eventos intermediários criados no editor (mensagem, sinal…) aparecem desabilitados: o tipo deles se troca pelo editor manual.
 - **Baixar imagem .png:** o bpmn-js exporta o diagrama em SVG e o navegador o converte em PNG (2x; diagramas muito grandes são reduzidos para caber no limite de ~16 mil px).
 - **Editar manualmente:** abre o diagrama em tela cheia no editor do bpmn-js (`bpmn-modeler.js`, baixado só nessa hora). Dá para mover caixas, religar setas arrastando a ponta, criar dobras, renomear, incluir e excluir elementos. Ao salvar, o XML editado vira a prévia e o download, fica guardado no navegador e é convertido de volta em grafo (`xmlToGraph` em `bpmn-layout.js`), que passa pelo validador. Trocar a cor das atividades mantém as posições; um ajuste por texto mantém ligações e nomes, mas refaz o layout.
 

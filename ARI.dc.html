@@ -52,6 +52,108 @@
   .ari-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   /* A área de upload é um <label>; o input fica visualmente oculto mas focável. */
   .ari-drop:focus-within{outline:2px solid #1c5cff;outline-offset:3px;}
+  /* ── Chat de criação (estrutura dos componentes shadcn message-scroller,
+     message, bubble e input-group, refeita em CSS puro). ── */
+  .ari-ms{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;transition:filter .3s var(--ease-out),opacity .3s var(--ease-out);}
+  /* Com as opções do diagrama abertas por cima, a conversa desfoca e recua para não
+     se misturar com a janela. */
+  .ari-ms[data-cfg-open="true"]{filter:blur(6px);opacity:.55;pointer-events:none;user-select:none;transition-duration:.4s;}
+  .ari-ms-vp{flex:1;min-height:0;min-width:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable;padding:4px 4px 28px 0;
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 28px),transparent);}
+  .ari-ms-vp:focus-visible{outline:2px solid #1c5cff;outline-offset:2px;border-radius:8px;}
+  .ari-ms-content{display:flex;flex-direction:column;gap:18px;min-height:100%;}
+  .ari-ms-btn{position:absolute;left:50%;bottom:10px;width:32px;height:32px;border-radius:999px;border:1px solid rgba(10,31,68,.14);background:#fff;color:#0a1f44;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px -8px rgba(10,31,68,.35);
+    transform:translateX(-50%);transition:transform .2s cubic-bezier(.23,1,.32,1),opacity .2s cubic-bezier(.23,1,.32,1);}
+  .ari-ms-btn[data-active="false"]{opacity:0;pointer-events:none;transform:translate(-50%,100%) scale(.95);transition-duration:.4s;transition-timing-function:cubic-bezier(.7,0,.84,0);}
+  .ari-ms-btn:hover{background:#f1f5f9;}
+  .ari-msg{position:relative;display:flex;width:100%;min-width:0;gap:8px;font-size:14px;animation:ariRise .35s cubic-bezier(.16,1,.3,1) both;}
+  .ari-msg[data-align="end"]{flex-direction:row-reverse;}
+  .ari-msg-avatar{flex:none;align-self:flex-end;width:28px;height:28px;border-radius:999px;background:#eef2ff;color:#1c5cff;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:2px;}
+  .ari-msg-content{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;}
+  .ari-msg[data-align="end"] .ari-msg-content{align-items:flex-end;}
+  .ari-msg-header,.ari-msg-footer{padding:0 12px;font-size:12px;font-weight:500;color:#64748b;}
+  .ari-bubble{display:flex;flex-direction:column;width:fit-content;max-width:85%;min-width:0;}
+  .ari-bubble-content{width:fit-content;max-width:100%;min-width:0;overflow:hidden;border:1px solid transparent;border-radius:14px;padding:9px 13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;}
+  .ari-bubble[data-variant="default"] .ari-bubble-content{background:#1c5cff;color:#fff;border-bottom-right-radius:5px;max-height:18em;overflow-y:auto;}
+  .ari-bubble[data-variant="muted"] .ari-bubble-content{background:#f1f4f9;color:#1f2d45;border-bottom-left-radius:5px;}
+  .ari-bubble[data-variant="destructive"] .ari-bubble-content{background:#fef2f2;color:#b91c1c;border-color:#fecaca;border-bottom-left-radius:5px;}
+  .ari-typing{display:inline-flex;gap:4px;margin-right:8px;vertical-align:middle;}
+  .ari-typing i{width:6px;height:6px;border-radius:50%;background:#94a3b8;animation:ariDot 1.2s infinite ease-in-out;}
+  .ari-typing i:nth-child(2){animation-delay:.15s;} .ari-typing i:nth-child(3){animation-delay:.3s;}
+  @keyframes ariDot{0%,80%,100%{opacity:.35;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+  .ari-ig{position:relative;display:flex;flex-direction:column;width:100%;min-width:0;border:1px solid rgba(10,31,68,.16);border-radius:14px;background:#fbfcfe;box-shadow:0 1px 2px rgba(10,31,68,.05);transition:border-color .15s,box-shadow .15s;}
+  .ari-ig:has(.ari-ig-ta:focus-visible){border-color:#1c5cff;box-shadow:0 0 0 3px rgba(28,92,255,.2);}
+  .ari-ig[data-drag="true"]{border-color:#1c5cff;background:rgba(28,92,255,.06);}
+  /* Campo e botão de enviar lado a lado; o botão acompanha a última linha. */
+  .ari-ig-row{display:flex;align-items:flex-end;gap:6px;padding-right:9px;}
+  .ari-ig-row .ari-ig-send{width:38px;height:38px;margin-bottom:8px;}
+  .ari-ig .ari-ig-ta{flex:1;width:100%;min-width:0;min-height:52px;max-height:220px;resize:none;border:0!important;box-shadow:none!important;background:transparent;outline:none;padding:13px 4px 6px 15px;font-family:'IBM Plex Sans';font-size:15px;line-height:1.5;color:#0a1f44;}
+  .ari-ig-addon{display:flex;align-items:center;flex-wrap:wrap;gap:6px;width:100%;padding:6px 8px 8px 10px;}
+  .ari-ig-btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:8px;border:none;background:transparent;font-family:'IBM Plex Sans';font-size:13px;font-weight:500;color:#475569;cursor:pointer;}
+  .ari-ig-btn:hover{background:#eef2f7;color:#0a1f44;}
+  .ari-ig-btn:focus-within,.ari-ig-btn:focus-visible{outline:2px solid #1c5cff;outline-offset:1px;}
+  .ari-ig-btn[aria-pressed="true"]{background:#e8efff;color:#1c5cff;}
+  .ari-ig-chip{display:inline-flex;align-items:center;gap:4px;max-width:200px;height:26px;padding:0 4px 0 9px;border-radius:999px;background:#eef2f7;font-size:12.5px;color:#0a1f44;}
+  .ari-ig-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ari-ig-chip button{width:20px;height:20px;border:none;border-radius:999px;background:transparent;color:#64748b;cursor:pointer;font-size:15px;line-height:1;}
+  .ari-ig-chip button:hover{background:#dde3ec;color:#0a1f44;}
+  .ari-ig-hint{font-size:11.5px;color:#94a3b8;margin-right:4px;}
+  .ari-ig-send{flex:none;width:34px;height:34px;border-radius:999px;border:none;background:#1c5cff;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 18px -10px rgba(28,92,255,.7);}
+  .ari-ig-send:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+  /* Prévia do mapeamento: início, fim e atividade são clicáveis e abrem o seletor
+     de tipo (.ari-tp) ao lado do elemento. A dica fica sempre visível no diagrama. */
+  .ari-pv{position:relative;}
+  .ari-pv .djs-element.ari-typeable{cursor:pointer;}
+  .ari-pv .djs-element.ari-typeable:hover .djs-outline,.ari-pv .djs-element.ari-typeable-on .djs-outline{visibility:visible;stroke:#1c5cff;stroke-width:2px;}
+  .ari-pv .djs-element.ari-typeable:hover .djs-outline{stroke-dasharray:4 3;}
+  .ari-pv-hint{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:13px;font-weight:500;line-height:1.4;color:#1c3f99;}
+  .ari-pv-hint .ari-tb{pointer-events:none;box-shadow:none;}
+  .ari-tb{width:22px;height:22px;flex:none;border-radius:999px;border:1.5px solid #fff;background:#1c5cff;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;
+    box-shadow:0 3px 8px -2px rgba(28,92,255,.65);transition:transform var(--dur-press) var(--ease-out),background var(--dur-fast) linear;}
+  .ari-tb:hover{background:#1850e0;transform:scale(1.12);}
+  .ari-tb[aria-expanded="true"]{background:#0a1f44;}
+  .ari-tp{position:absolute;z-index:5;width:min(292px,calc(100% - 16px));padding:12px;background:#fff;border:1px solid rgba(10,31,68,.12);border-radius:14px;
+    box-shadow:0 20px 44px -18px rgba(10,31,68,.4);animation:ariTpIn .18s var(--ease-out) both;}
+  .ari-tp[hidden]{display:none;}
+  @keyframes ariTpIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  .ari-tp-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;}
+  .ari-tp-kicker{font-family:'Space Grotesk';font-weight:600;font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:#64748b;}
+  .ari-tp-name{font-weight:600;font-size:14px;color:#0a1f44;line-height:1.35;overflow-wrap:anywhere;}
+  .ari-tp-x{flex:none;width:26px;height:26px;border:none;border-radius:8px;background:transparent;color:#64748b;font-size:18px;line-height:1;cursor:pointer;}
+  .ari-tp-x:hover{background:#eef2f7;color:#0a1f44;}
+  .ari-tp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .ari-tp-opt{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:8px 4px 7px;border:1px solid rgba(10,31,68,.1);border-radius:10px;background:#fbfcfe;
+    font-family:'IBM Plex Sans';font-size:11.5px;line-height:1.25;color:#0a1f44;text-align:center;cursor:pointer;}
+  .ari-tp-opt i{font-size:26px;line-height:1;color:#334155;}
+  .ari-tp-opt:hover{border-color:rgba(28,92,255,.45);background:#f3f7ff;}
+  .ari-tp-opt[aria-pressed="true"]{border-color:#1c5cff;background:#e8efff;color:#1c3f99;box-shadow:inset 0 0 0 1px #1c5cff;}
+  .ari-tp-opt[aria-pressed="true"] i{color:#1c5cff;}
+  /* Opções do diagrama: bola com engrenagem que vira janela, com o efeito gooey do
+     Skiper64 (skiper-ui.com). O filtro #ariGoo (blur + limiar de alfa) funde a bola
+     e o blob enquanto o blob sai dela: primeiro desloca, depois cresce (mola
+     stiffness 300 / damping 30 do original, em linear()). O conteúdo fica numa
+     camada sem filtro por cima e só aparece com o blob aberto. --cfg-w/--cfg-h vêm
+     do JS (measureCfg), medidos da própria janela. */
+  .ari-cfg{--cfg-w:320px;--cfg-h:220px;--cfg-off:34px;--cfg-bg:#eef2f8;--cfg-spring:cubic-bezier(.22,1,.36,1);position:relative;height:44px;z-index:6;flex:none;}
+  @supports (transition-timing-function:linear(0,1)){.ari-cfg{--cfg-spring:linear(0,.107,.315,.523,.693,.817,.899,.95,.979,.995,1.002,1.004,1.004,1.004,1.003,1.002,1.001);}}
+  .ari-cfg-goo{position:absolute;left:0;bottom:0;width:calc(var(--cfg-w) + var(--cfg-off) + 24px);height:calc(var(--cfg-h) + var(--cfg-off) + 24px);pointer-events:none;filter:url(#ariGoo) drop-shadow(0 14px 28px rgba(10,31,68,.16));}
+  .ari-cfg-dot,.ari-cfg-blob{position:absolute;left:0;bottom:0;width:44px;height:44px;border-radius:22px;background:var(--cfg-bg);transition:background-color .2s linear;}
+  .ari-cfg-blob{transition:transform .5s var(--cfg-spring) .2s,width .5s var(--cfg-spring) .06s,height .5s var(--cfg-spring) .06s,border-radius .5s var(--cfg-spring) .06s,background-color .2s linear;}
+  .ari-cfg[data-open="true"] .ari-cfg-blob{width:var(--cfg-w);height:var(--cfg-h);border-radius:18px;transform:translate(var(--cfg-off),calc(-1 * var(--cfg-off)));
+    transition:transform .5s var(--cfg-spring),width .5s var(--cfg-spring) .15s,height .5s var(--cfg-spring) .15s,border-radius .5s var(--cfg-spring) .15s,background-color .2s linear;}
+  .ari-cfg:has(.ari-cfg-btn:hover) :is(.ari-cfg-dot,.ari-cfg-blob){--cfg-bg:#e3e9f3;}
+  .ari-cfg-btn{position:absolute;left:0;bottom:0;height:44px;display:flex;align-items:center;gap:12px;padding:0 12px 0 0;border:none;border-radius:22px;background:transparent;cursor:pointer;z-index:2;
+    font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;white-space:nowrap;}
+  .ari-cfg-ico{width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .ari-cfg-ico svg{transition:transform .5s var(--cfg-spring);}
+  .ari-cfg[data-open="true"] .ari-cfg-ico svg{transform:rotate(90deg);}
+  .ari-cfg-label{transition:opacity .2s var(--ease-out) .35s;}
+  .ari-cfg[data-open="true"] .ari-cfg-label{opacity:0;transition-delay:0s;}
+  .ari-cfg-panel{position:absolute;left:var(--cfg-off);bottom:var(--cfg-off);width:var(--cfg-w);padding:18px 18px 22px;z-index:1;
+    opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity .12s var(--ease-out),transform .12s var(--ease-out),visibility 0s linear .12s;}
+  .ari-cfg[data-open="true"] .ari-cfg-panel{opacity:1;visibility:visible;transform:none;transition:opacity .25s var(--ease-out) .36s,transform .35s var(--ease-out) .36s,visibility 0s;}
+  @media (max-width:520px){.ari-ig-hint{display:none;}}
   textarea{transition:box-shadow .18s var(--ease-out),border-color .18s var(--ease-out);}
   textarea:focus-visible{border-color:#1c5cff!important;box-shadow:0 0 0 3px rgba(28,92,255,.22);}
   /* Accessibility: honor reduced-motion. Kill the looping/idle CSS motion and
@@ -277,9 +379,9 @@
 
       <div style="{{ genGrid }}">
 
-        <div style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(22px,3vw,30px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);">
+        <div style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(16px,2.4vw,24px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);display:flex;flex-direction:column;gap:14px;height:clamp(560px,calc(100vh - 150px),820px);min-height:0;">
           <sc-if value="{{ showPop }}" hint-placeholder-val="{{ false }}">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;">
               <button type="button" onClick="{{ editModel }}" aria-label="{{ modelChipAria }}" style="{{ chipStyle }}">
                 <div ref="{{ setChipThumb }}" aria-hidden="true" style="width:42px;flex:none;aspect-ratio:595/842;border-radius:3px;overflow:hidden;background:#f1f4f8;box-shadow:0 2px 6px rgba(10,31,68,.2);"></div>
                 <span style="display:flex;flex-direction:column;gap:2px;min-width:0;">
@@ -297,60 +399,100 @@
                 </span>
               </button>
             </div>
-            <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:10px;">Imagem do fluxograma do processo</div>
-            <label ref="{{ setDrop }}" class="ari-drop" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:1.5px dashed rgba(28,92,255,.4);border-radius:13px;background:rgba(28,92,255,.04);padding:22px;cursor:pointer;text-align:center;margin-bottom:26px;transition:border-color .15s,background .15s;">
-              <input type="file" ref="{{ setFile }}" onChange="{{ onFile }}" accept=".png,.jpg,.jpeg,.webp" class="ari-sr">
-              <div style="width:38px;height:38px;border-radius:10px;background:rgba(28,92,255,.12);display:flex;align-items:center;justify-content:center;color:#1c5cff;font-size:22px;line-height:1;">+</div>
-              <span style="font-size:14px;font-weight:500;color:#1c5cff;word-break:break-all;">{{ fileLabel }}</span>
-            </label>
           </sc-if>
-          <label for="ari-gen-text" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:10px;">{{ genInputLabel }}</label>
-          <textarea id="ari-gen-text" ref="{{ setText }}" onInput="{{ onTextInput }}" placeholder="{{ genPlaceholder }}" style="width:100%;min-height:200px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:13px;padding:16px;font-family:'IBM Plex Sans';font-size:15.5px;line-height:1.55;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:9px;height:9px;border-radius:50%;background:#1c5cff;"></div>
+              <span style="font-family:'Space Grotesk';font-weight:600;font-size:13px;letter-spacing:1px;color:#0a1f44;">CONVERSA COM A ARI</span>
+            </div>
+            <button type="button" onClick="{{ clearChat }}" disabled="{{ busy }}" class="ari-ig-btn" style="height:28px;font-size:12.5px;">Limpar conversa</button>
+          </div>
+          <!-- MessageScroller: conversa (Message + Bubble), rolagem automática e botão "ir para o fim" -->
+          <div class="ari-ms" data-slot="message-scroller" data-cfg-open="{{ cfgOpen }}">
+            <div ref="{{ setChatViewport }}" class="ari-ms-vp" data-slot="message-scroller-viewport" role="region" aria-label="Conversa com a ARI" tabIndex="0"></div>
+            <button type="button" ref="{{ setChatEndBtn }}" onClick="{{ chatToEnd }}" class="ari-ms-btn" data-active="false" tabIndex="-1" aria-label="Ir para a mensagem mais recente"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></button>
+          </div>
           <sc-if value="{{ showBpmn }}" hint-placeholder-val="{{ false }}">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:18px;">
-              <div>
-                <label for="ari-start-pref" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipo de início</label>
-                <select id="ari-start-pref" ref="{{ setStartPref }}" onChange="{{ onPrefChange }}" style="width:100%;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:10px 12px;font-family:'IBM Plex Sans';font-size:14.5px;color:#0a1f44;background:#fbfcfe;outline:none;cursor:pointer;">
-                  <option value="">Deixar a ARI decidir</option>
-                  <option value="none">Simples (nenhum)</option>
-                  <option value="message">Mensagem</option>
-                  <option value="timer">Temporizador</option>
-                  <option value="signal">Sinal</option>
-                  <option value="conditional">Condicional</option>
-                </select>
+            <div ref="{{ setCfg }}" class="ari-cfg" data-open="{{ cfgOpen }}">
+              <div class="ari-cfg-goo" aria-hidden="true"><span class="ari-cfg-blob"></span><span class="ari-cfg-dot"></span></div>
+              <button type="button" class="ari-cfg-btn" onClick="{{ toggleCfg }}" aria-expanded="{{ cfgOpen }}" aria-controls="ari-cfg-panel">
+                <span class="ari-cfg-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                <span class="ari-cfg-label">Opções do diagrama</span>
+              </button>
+              <div id="ari-cfg-panel" class="ari-cfg-panel" role="region" aria-labelledby="ari-cfg-title" aria-hidden="{{ cfgHidden }}">
+                <div id="ari-cfg-title" style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:#0a1f44;margin:0 0 14px;">Opções do diagrama</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;">
+                  <div>
+                    <label for="ari-start-pref" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipo de início</label>
+                    <select id="ari-start-pref" ref="{{ setStartPref }}" onChange="{{ onPrefChange }}" style="width:100%;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:10px 12px;font-family:'IBM Plex Sans';font-size:14.5px;color:#0a1f44;background:#fbfcfe;outline:none;cursor:pointer;">
+                      <option value="">Deixar a ARI decidir</option>
+                      <option value="none">Simples (nenhum)</option>
+                      <option value="message">Mensagem</option>
+                      <option value="timer">Temporizador</option>
+                      <option value="signal">Sinal</option>
+                      <option value="conditional">Condicional</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="ari-end-pref" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipo de fim</label>
+                    <select id="ari-end-pref" ref="{{ setEndPref }}" onChange="{{ onPrefChange }}" style="width:100%;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:10px 12px;font-family:'IBM Plex Sans';font-size:14.5px;color:#0a1f44;background:#fbfcfe;outline:none;cursor:pointer;">
+                      <option value="">Deixar a ARI decidir</option>
+                      <option value="none">Simples (nenhum)</option>
+                      <option value="message">Mensagem</option>
+                      <option value="terminate">Terminar</option>
+                      <option value="error">Erro</option>
+                      <option value="signal">Sinal</option>
+                      <option value="escalation">Escalonamento</option>
+                    </select>
+                  </div>
+                </div>
+                <div id="ari-color-label" style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin:18px 0 10px;">Cor das atividades</div>
+                <div role="group" aria-labelledby="ari-color-label" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                  <button type="button" onClick="{{ c0 }}" aria-label="{{ swl0 }}" aria-pressed="{{ swp0 }}" style="{{ sw0 }}"></button>
+                  <button type="button" onClick="{{ c1 }}" aria-label="{{ swl1 }}" aria-pressed="{{ swp1 }}" style="{{ sw1 }}"></button>
+                  <button type="button" onClick="{{ c2 }}" aria-label="{{ swl2 }}" aria-pressed="{{ swp2 }}" style="{{ sw2 }}"></button>
+                  <button type="button" onClick="{{ c3 }}" aria-label="{{ swl3 }}" aria-pressed="{{ swp3 }}" style="{{ sw3 }}"></button>
+                  <button type="button" onClick="{{ c4 }}" aria-label="{{ swl4 }}" aria-pressed="{{ swp4 }}" style="{{ sw4 }}"></button>
+                  <button type="button" onClick="{{ c5 }}" aria-label="{{ swl5 }}" aria-pressed="{{ swp5 }}" style="{{ sw5 }}"></button>
+                </div>
+                <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:#4b5567;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#dcfce7;border:1.5px solid #16a34a;"></span>Início</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#fef9c3;border:1.5px solid #ca8a04;"></span>Decisão</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#fee2e2;border:1.5px solid #dc2626;"></span>Fim</span>
+                </div>
               </div>
-              <div>
-                <label for="ari-end-pref" style="display:block;font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipo de fim</label>
-                <select id="ari-end-pref" ref="{{ setEndPref }}" onChange="{{ onPrefChange }}" style="width:100%;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:10px 12px;font-family:'IBM Plex Sans';font-size:14.5px;color:#0a1f44;background:#fbfcfe;outline:none;cursor:pointer;">
-                  <option value="">Deixar a ARI decidir</option>
-                  <option value="none">Simples (nenhum)</option>
-                  <option value="message">Mensagem</option>
-                  <option value="terminate">Terminar</option>
-                  <option value="error">Erro</option>
-                  <option value="signal">Sinal</option>
-                  <option value="escalation">Escalonamento</option>
-                </select>
-              </div>
-            </div>
-            <div id="ari-color-label" style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin:18px 0 10px;">Cor das atividades</div>
-            <div role="group" aria-labelledby="ari-color-label" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-              <button type="button" onClick="{{ c0 }}" aria-label="{{ swl0 }}" aria-pressed="{{ swp0 }}" style="{{ sw0 }}"></button>
-              <button type="button" onClick="{{ c1 }}" aria-label="{{ swl1 }}" aria-pressed="{{ swp1 }}" style="{{ sw1 }}"></button>
-              <button type="button" onClick="{{ c2 }}" aria-label="{{ swl2 }}" aria-pressed="{{ swp2 }}" style="{{ sw2 }}"></button>
-              <button type="button" onClick="{{ c3 }}" aria-label="{{ swl3 }}" aria-pressed="{{ swp3 }}" style="{{ sw3 }}"></button>
-              <button type="button" onClick="{{ c4 }}" aria-label="{{ swl4 }}" aria-pressed="{{ swp4 }}" style="{{ sw4 }}"></button>
-              <button type="button" onClick="{{ c5 }}" aria-label="{{ swl5 }}" aria-pressed="{{ swp5 }}" style="{{ sw5 }}"></button>
-            </div>
-            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:#64748b;">
-              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#dcfce7;border:1.5px solid #16a34a;"></span>Início</span>
-              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#fef9c3;border:1.5px solid #ca8a04;"></span>Decisão</span>
-              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#fee2e2;border:1.5px solid #dc2626;"></span>Fim</span>
             </div>
           </sc-if>
-          <sc-if value="{{ genError }}" hint-placeholder-val="">
-            <div role="alert" style="color:#dc2626;font-size:13.5px;margin-top:12px;">{{ genError }}</div>
+          <sc-if value="{{ showManualWarn }}" hint-placeholder-val="{{ false }}">
+            <p style="font-size:12.5px;line-height:1.5;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:8px 10px;margin:0;">Você editou o diagrama à mão. Um ajuste pela conversa mantém as ligações e os nomes, mas redesenha o layout e perde as posições movidas.</p>
           </sc-if>
-          <button onClick="{{ generate }}" disabled="{{ busy }}" style="{{ genBtnStyle }}">{{ genBtnLabel }}</button>
+          <!-- InputGroup: campo de mensagem + enviar à direita; barra inferior com anexo e modo -->
+          <div ref="{{ setDrop }}" class="ari-ig" data-slot="input-group" role="group" aria-label="Mensagem para a ARI">
+            <label for="ari-gen-text" class="ari-sr">{{ genInputLabel }}</label>
+            <div class="ari-ig-row">
+              <textarea id="ari-gen-text" class="ari-ig-ta" data-slot="input-group-control" ref="{{ setText }}" onInput="{{ onTextInput }}" placeholder="{{ chatPlaceholder }}" rows="2"></textarea>
+              <button type="button" class="ari-ig-send" onClick="{{ generate }}" disabled="{{ busy }}" aria-label="{{ sendAria }}" title="{{ sendAria }}"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg></button>
+            </div>
+            <div class="ari-ig-addon" data-slot="input-group-addon" data-align="block-end">
+              <sc-if value="{{ showPop }}" hint-placeholder-val="{{ false }}">
+                <label class="ari-ig-btn" title="Anexar a imagem do fluxograma (.png, .jpg, .webp)">
+                  <input type="file" ref="{{ setFile }}" onChange="{{ onFile }}" accept=".png,.jpg,.jpeg,.webp" class="ari-sr">
+                  <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Fluxograma
+                </label>
+                <sc-if value="{{ hasFile }}" hint-placeholder-val="{{ false }}">
+                  <span class="ari-ig-chip"><span>{{ fileName }}</span><button type="button" onClick="{{ removeImage }}" aria-label="Remover a imagem do fluxograma">×</button></span>
+                </sc-if>
+              </sc-if>
+              <sc-if value="{{ showModeToggle }}" hint-placeholder-val="{{ false }}">
+                <span role="group" aria-label="O que a mensagem faz" style="display:inline-flex;gap:2px;background:#f1f4f9;border-radius:9px;padding:2px;">
+                  <button type="button" class="ari-ig-btn" onClick="{{ setModeEdit }}" aria-pressed="{{ modeEdit }}" style="height:26px;">Ajustar este</button>
+                  <button type="button" class="ari-ig-btn" onClick="{{ setModeNew }}" aria-pressed="{{ modeNew }}" style="height:26px;">Novo mapeamento</button>
+                </span>
+              </sc-if>
+              <span style="flex:1;"></span>
+              <span class="ari-ig-hint" aria-hidden="true">Enter envia · Shift+Enter quebra a linha</span>
+            </div>
+          </div>
         </div>
 
         <div style="background:#fff;border:1px solid rgba(10,31,68,.08);border-radius:18px;padding:clamp(22px,3vw,30px);box-shadow:0 20px 50px -28px rgba(10,31,68,.25);min-height:360px;display:flex;flex-direction:column;">
@@ -385,8 +527,12 @@
             <sc-if value="{{ previewHint }}" hint-placeholder-val="">
               <div style="font-size:12.5px;color:#64748b;margin-bottom:8px;">{{ previewHint }}</div>
             </sc-if>
-            <div ref="{{ setPreview }}" style="width:100%;height:440px;border:1px solid rgba(10,31,68,.1);border-radius:12px;background:#fff;overflow:hidden;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;"></div>
-            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:18px;">
+            <div class="ari-pv-hint"><span class="ari-tb" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.38 3.62a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4z"/></svg></span>Use o botão azul de cada início, fim ou atividade para trocar o tipo</div>
+            <div ref="{{ setPreviewWrap }}" class="ari-pv" tabIndex="-1" style="outline:none;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;">
+              <div ref="{{ setPreview }}" style="width:100%;height:440px;border:1px solid rgba(10,31,68,.1);border-radius:12px;background:#fff;overflow:hidden;"></div>
+              <div ref="{{ setTypePick }}" class="ari-tp" role="dialog" aria-label="Trocar o tipo do elemento" hidden></div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px;">
               <button onClick="{{ downloadBpmn }}" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#16a34a;border:none;padding:13px 20px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(22,163,74,.6);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);"><span aria-hidden="true" style="font-size:17px;">↓</span> Baixar arquivo .bpmn</button>
               <button onClick="{{ downloadPng }}" disabled="{{ pngBusy }}" style="{{ pngBtnStyle }}"><span aria-hidden="true" style="font-size:17px;">↓</span> {{ pngBtnLabel }}</button>
               <button onClick="{{ openEditor }}" disabled="{{ busy }}" style="{{ manualBtnStyle }}"><span aria-hidden="true" style="font-size:16px;">✎</span> {{ manualBtnLabel }}</button>
@@ -398,21 +544,9 @@
               <div style="margin-top:10px;font-size:12.5px;line-height:1.55;color:#475569;white-space:pre-wrap;background:#f8fafc;border:1px solid rgba(10,31,68,.08);border-radius:10px;padding:10px 12px;max-height:200px;overflow:auto;">{{ reviewNotes }}</div>
             </sc-if>
             <div style="margin-top:20px;border-top:1px solid rgba(10,31,68,.08);padding-top:16px;">
-              <div id="ari-types-title" style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipos dos elementos</div>
-              <p style="font-size:13px;color:#64748b;margin:0 0 10px;">Escolha o tipo de cada início, fim e atividade. O diagrama muda na hora, sem chamar a IA e sem mexer nas posições.</p>
+              <div id="ari-types-title" style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Tipos dos elementos (lista)</div>
+              <p style="font-size:13px;color:#64748b;margin:0 0 10px;">Os mesmos tipos que aparecem ao clicar no diagrama, um por linha. A troca é na hora, sem chamar a IA e sem mexer nas posições.</p>
               <div ref="{{ setTypesPanel }}" role="group" aria-labelledby="ari-types-title" style="border:1px solid rgba(10,31,68,.1);border-radius:11px;padding:2px 12px;background:#fbfcfe;max-height:340px;overflow:auto;"></div>
-            </div>
-            <div style="margin-top:20px;border-top:1px solid rgba(10,31,68,.08);padding-top:16px;">
-              <div style="font-family:'Space Grotesk';font-weight:600;font-size:13px;color:#0a1f44;margin-bottom:8px;">Ajustar o mapeamento</div>
-              <p style="font-size:13px;color:#64748b;margin:0 0 10px;">Peça uma alteração em linguagem natural — a ARI muda só o que você pedir.</p>
-              <sc-if value="{{ bpmnManual }}" hint-placeholder-val="{{ false }}">
-                <p style="font-size:12.5px;line-height:1.5;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:8px 10px;margin:0 0 10px;">Você editou o diagrama à mão. Um ajuste por texto mantém as ligações e os nomes, mas redesenha o layout e perde as posições movidas.</p>
-              </sc-if>
-              <textarea ref="{{ setEditText }}" aria-label="Alteração desejada no mapeamento" placeholder="Ex.: adicione uma raia 'Diretoria' e mova a aprovação para ela; ou: renomeie a etapa 2 para 'Conferir documentos'." style="width:100%;min-height:72px;resize:vertical;border:1px solid rgba(10,31,68,.14);border-radius:11px;padding:12px;font-family:'IBM Plex Sans';font-size:14.5px;line-height:1.5;color:#0a1f44;outline:none;background:#fbfcfe;"></textarea>
-              <button onClick="{{ applyEdit }}" disabled="{{ busy }}" style="{{ editBtnStyle }}">{{ editBtnLabel }}</button>
-              <sc-if value="{{ editErr }}" hint-placeholder-val="">
-                <div role="alert" style="color:#dc2626;font-size:13.5px;margin-top:10px;">{{ editErr }}</div>
-              </sc-if>
             </div>
           </sc-if>
           <sc-if value="{{ popConfirm }}" hint-placeholder-val="{{ false }}">
@@ -429,7 +563,7 @@
                 </label>
               </sc-for>
             </div>
-            <button onClick="{{ confirmPop }}" style="margin-top:14px;width:100%;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);">Gerar POP</button>
+            <button onClick="{{ confirmPopClick }}" style="margin-top:14px;width:100%;font-family:'IBM Plex Sans';font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:13px;border-radius:11px;cursor:pointer;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);">Gerar POP</button>
           </sc-if>
           <sc-if value="{{ hasPop }}" hint-placeholder-val="{{ false }}">
             <div ref="{{ setPopPreview }}" style="width:100%;max-height:560px;overflow:auto;border:1px solid rgba(10,31,68,.1);border-radius:12px;background:#e8edf2;padding:14px;margin-top:16px;animation:ariRise .5s cubic-bezier(.16,1,.3,1) both;"></div>
@@ -438,7 +572,7 @@
           <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ true }}">
             <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#64748b;text-align:center;padding:30px;min-height:240px;">
               <div style="width:46px;height:46px;border-radius:13px;background:rgba(28,92,255,.08);display:flex;align-items:center;justify-content:center;color:#1c5cff;font-size:22px;">✦</div>
-              <span style="font-size:14.5px;max-width:260px;line-height:1.5;">Preencha ao lado e clique em gerar — o resultado aparece aqui.</span>
+              <span style="font-size:14.5px;max-width:260px;line-height:1.5;">Converse com a ARI ao lado — o resultado aparece aqui.</span>
             </div>
           </sc-if>
         </div>
@@ -469,7 +603,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { screen: null, loading: false, result: '', fileName: '', err: '', editErr: '', notice: '', bpmnXml: '', actColorIdx: 0, popReady: false, popConfirm: false, editing: false, copied: false, routeInfo: '', reviewNotes: '', loadingMsg: '', bpmnAsk: false, popModel: 1, popPalette: null, popSetup: null, logoErr: '', logoName: '', bpmnEditing: false, editorLoading: false, editorDirty: false, editorErr: '', bpmnManual: false, pngBusy: false };
+  state = { screen: null, loading: false, result: '', fileName: '', err: '', editErr: '', notice: '', bpmnXml: '', actColorIdx: 0, popReady: false, popConfirm: false, editing: false, copied: false, routeInfo: '', reviewNotes: '', loadingMsg: '', bpmnAsk: false, popModel: 1, popPalette: null, popSetup: null, logoErr: '', logoName: '', bpmnEditing: false, editorLoading: false, editorDirty: false, editorErr: '', bpmnManual: false, pngBusy: false, chatMode: 'edit', cfgOpen: false };
 
   // Paleta para a cor das atividades (início/fim/gateway têm cor fixa).
   PALETTE = [
@@ -493,7 +627,15 @@ class Component extends DCLogic {
   setCanvas = (el) => { this.canvasEl = el; };
   setProgress = (el) => { this.progressEl = el; };
   setRoot = (el) => { this.rootEl = el; };
-  setText = (el) => { this.textEl = el; };
+  setText = (el) => {
+    this.textEl = el;
+    if (!el || el.dataset.chatWired) return;
+    el.dataset.chatWired = '1';
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); this.generate(); }
+    });
+    el.addEventListener('input', () => this.autosizeInput());
+  };
   setFile = (el) => { this.fileEl = el; };
   setNav = (el) => { this.navEl = el; };
   setStage = (el) => { this.stageEl = el; };
@@ -528,14 +670,13 @@ class Component extends DCLogic {
   setDrop = (el) => {
     if (!el || el.dataset.dropWired) return;
     el.dataset.dropWired = '1';
-    const hl = (on) => {
-      el.style.borderColor = on ? '#1c5cff' : 'rgba(28,92,255,.4)';
-      el.style.background = on ? 'rgba(28,92,255,.12)' : 'rgba(28,92,255,.04)';
-    };
-    el.addEventListener('dragover', (e) => { e.preventDefault(); hl(true); });
-    el.addEventListener('dragleave', () => hl(false));
+    const pop = () => this.state.screen === 'pop';
+    el.addEventListener('dragover', (e) => { if (!pop()) return; e.preventDefault(); el.setAttribute('data-drag', 'true'); });
+    el.addEventListener('dragleave', () => el.removeAttribute('data-drag'));
     el.addEventListener('drop', (e) => {
-      e.preventDefault(); hl(false);
+      el.removeAttribute('data-drag');
+      if (!pop()) return;
+      e.preventDefault();
       const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
       if (f) this.acceptImage(f);
     });
@@ -646,12 +787,13 @@ class Component extends DCLogic {
     const snap = (this._snaps && this._snaps[s]) || this.storedSnapshot(s) || { state: {}, inst: {} };
     this.SNAP_INST.forEach((k) => { this[k] = snap.inst[k] || null; });
     this.destroyModeler();
-    const next = { screen: s, loading: false, editing: false, copied: false, bpmnEditing: false, editorDirty: false, editorErr: '' };
+    const next = { screen: s, loading: false, editing: false, copied: false, bpmnEditing: false, editorDirty: false, editorErr: '', cfgOpen: false };
     // POP: na primeira abertura da sessão, começa pela escolha do modelo e da logo.
     if (s === 'pop') Object.assign(next, this.initPopStyle(), { popSetup: this.popSetupDone ? null : 'model' });
     this.SNAP_STATE.forEach((k) => { next[k] = snap.state[k] || (k === 'popReady' || k === 'popConfirm' || k === 'bpmnAsk' || k === 'bpmnManual' ? false : ''); });
     if (snap.state.actColorIdx != null) next.actColorIdx = snap.state.actColorIdx;
-    if (this.textEl) this.textEl.value = this.load('draft:' + s) || '';
+    if (this.textEl) { this.textEl.value = this.load('draft:' + s) || ''; this.autosizeInput(); }
+    this._chatHtml = null; this._chatToEnd = true; this._chatPrev = null;
     if (this.fileEl) this.fileEl.value = '';
     if (this.editEl) this.editEl.value = '';
     this.setState(next, () => {
@@ -687,7 +829,7 @@ class Component extends DCLogic {
     this._wheelGesture = null;
     this.destroyViewer();
     this.destroyModeler();
-    this.setState({ screen: null, loading: false, editing: false, bpmnEditing: false, editorDirty: false }, () => {
+    this.setState({ screen: null, loading: false, editing: false, bpmnEditing: false, editorDirty: false, cfgOpen: false }, () => {
       this.resumeScene();
       this.syncInert(); // o fundo precisa deixar de ser inerte antes de receber o foco
       const op = this._opener;
@@ -696,6 +838,7 @@ class Component extends DCLogic {
   };
 
   destroyViewer() {
+    this.closeTypePick();
     if (this.viewer) { try { this.viewer.destroy(); } catch (_) {} this.viewer = null; this.viewerEl = null; }
   }
 
@@ -723,15 +866,19 @@ class Component extends DCLogic {
   // O arquivo também define window.BpmnJS, então o visualizador é guardado antes.
   loadBpmnModeler() {
     if (this.ModelerCls) return Promise.resolve();
-    if (!document.querySelector('link[data-ari-bpmn-font]')) {
-      const l = document.createElement('link');
-      l.rel = 'stylesheet'; l.href = './bpmn-font.css'; l.setAttribute('data-ari-bpmn-font', '');
-      document.head.appendChild(l);
-    }
+    this.loadBpmnFont();
     return this.loadBpmnViewer().then(() => this.loadScript('./bpmn-modeler.js')).then(() => {
       this.ModelerCls = window.BpmnJS;
       window.BpmnJS = this.ViewerCls;
     });
+  }
+
+  // Ícones do bpmn-js (paleta do editor e seletor de tipo da prévia).
+  loadBpmnFont() {
+    if (document.querySelector('link[data-ari-bpmn-font]')) return;
+    const l = document.createElement('link');
+    l.rel = 'stylesheet'; l.href = './bpmn-font.css'; l.setAttribute('data-ari-bpmn-font', '');
+    document.head.appendChild(l);
   }
 
   // Renderiza o BPMN gerado visualmente (com cores) usando o bpmn-js.
@@ -739,6 +886,10 @@ class Component extends DCLogic {
     const xml = this.state.bpmnXml;
     if (!xml) return;
     this.renderTypesPanel();
+    this.loadBpmnFont();
+    // Troca de tipo pelo diagrama: o seletor reabre no mesmo elemento depois de redesenhar.
+    const reopenPick = this._keepView ? this._pickId : null;
+    this.closeTypePick();
     // Troca de tipo pelo painel: mantém o zoom e a posição em que o usuário estava.
     let keepView = null;
     if (this._keepView && this.viewer && this.viewerEl === this.previewEl) {
@@ -760,7 +911,13 @@ class Component extends DCLogic {
         // Diagramas grandes ficariam ilegíveis "ajustados à tela": abre no
         // início do processo em escala de leitura (arraste e role para navegar).
         const canvas = this.viewer.get('canvas');
-        if (keepView) { canvas.viewbox(keepView); return; }
+        if (keepView) {
+          canvas.viewbox(keepView);
+          this.bindTypePicker();
+          if (reopenPick) this.openTypePick(reopenPick);
+          return;
+        }
+        this.bindTypePicker();
         canvas.zoom('fit-viewport', 'auto');
         if (canvas.zoom() < 0.45 && this.previewEl) {
           const k = 0.7;
@@ -968,6 +1125,46 @@ class Component extends DCLogic {
     const p = el && this.load('bpmnPrefs');
     if (p && p[key] && Array.prototype.some.call(el.options, (o) => o.value === p[key])) el.value = p[key];
   }
+  // Opções do diagrama (bola → janela, efeito gooey do Skiper64). A janela mede a si
+  // mesma: largura pela coluna, altura pelo conteúdo; o blob usa --cfg-w/--cfg-h.
+  setCfg = (el) => {
+    if (this._cfgRO) { this._cfgRO.disconnect(); this._cfgRO = null; }
+    this.cfgEl = el;
+    if (!el) return;
+    this.ensureGooFilter();
+    this.measureCfg();
+    if (typeof ResizeObserver === 'undefined') return;
+    this._cfgRO = new ResizeObserver(() => this.measureCfg());
+    this._cfgRO.observe(el);
+    const panel = el.querySelector('.ari-cfg-panel');
+    if (panel) this._cfgRO.observe(panel);
+  };
+  measureCfg() {
+    const el = this.cfgEl;
+    if (!el) return;
+    const w = Math.max(220, Math.min(520, el.clientWidth - 34));
+    if (el.style.getPropertyValue('--cfg-w') !== w + 'px') el.style.setProperty('--cfg-w', w + 'px');
+    const panel = el.querySelector('.ari-cfg-panel');
+    if (panel && el.style.getPropertyValue('--cfg-h') !== panel.offsetHeight + 'px') el.style.setProperty('--cfg-h', panel.offsetHeight + 'px');
+  }
+  // Filtro do Skiper64 (SkiperGooeyFilterProvider), criado uma vez fora do template.
+  ensureGooFilter() {
+    if (document.getElementById('ariGoo')) return;
+    const holder = document.createElement('div');
+    holder.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">'
+      + '<defs><filter id="ariGoo"><feGaussianBlur in="SourceGraphic" stdDeviation="4.4" result="blur"/>'
+      + '<feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -7" result="goo"/>'
+      + '<feBlend in="SourceGraphic" in2="goo"/></filter></defs></svg>';
+    document.body.appendChild(holder.firstChild);
+  }
+  toggleCfg = () => { this.measureCfg(); this.setState({ cfgOpen: !this.state.cfgOpen }); };
+  closeCfg(refocus) {
+    if (!this.state.cfgOpen) return;
+    this.setState({ cfgOpen: false });
+    const btn = refocus && this.cfgEl && this.cfgEl.querySelector('.ari-cfg-btn');
+    if (btn) btn.focus();
+  }
+
   eventPrefs() { return { start: this.startPrefEl ? this.startPrefEl.value : '', end: this.endPrefEl ? this.endPrefEl.value : '' }; }
   onPrefChange = () => { const p = this.eventPrefs(); this.store('bpmnPrefs', p.start || p.end ? p : null); };
 
@@ -992,13 +1189,8 @@ class Component extends DCLogic {
       { key: 'task', title: 'ATIVIDADES', type: 'task', unnamed: 'Atividade sem nome' }
     ].map((gr) => Object.assign(gr, { nodes: g.nodes.filter((n) => n.type === gr.type) })).filter((gr) => gr.nodes.length);
     const showLane = (g.lanes || []).length > 1;
-    // Eventos intermediários do editor manual (mensagem, sinal…) aparecem entre as
-    // atividades, mas o tipo deles só muda no editor: ficam desabilitados.
-    if (this._lockedXml !== this.bpmnManualXml) {
-      this._lockedXml = this.bpmnManualXml;
-      this._lockedIds = this.bpmnManualXml && A.intermediateIds ? A.intermediateIds(this.bpmnManualXml) : {};
-    }
-    const locked = (n) => n.type === 'task' && !!(this._lockedIds && this._lockedIds[n.id]);
+    const lockedIds = this.lockedIds();
+    const locked = (n) => n.type === 'task' && !!lockedIds[n.id];
     let k = 0;
     const html = groups.length ? groups.map((gr, gi) =>
       '<div role="group" aria-labelledby="ari-tg-' + gi + '" style="padding:10px 0;' + (gi ? 'border-top:1px solid #eff2f5;' : '') + '">' +
@@ -1027,12 +1219,22 @@ class Component extends DCLogic {
       if (n) sel.value = n.type === 'task' ? (n.taskType || 'none') : A.eventTypeOf(n);
     });
   };
+  // Eventos intermediários do editor manual (mensagem, sinal…) aparecem entre as
+  // atividades, mas o tipo deles só muda no editor: ficam desabilitados.
+  lockedIds() {
+    const A = window.AriBpmn;
+    if (this._lockedXml !== this.bpmnManualXml) {
+      this._lockedXml = this.bpmnManualXml;
+      this._lockedIds = this.bpmnManualXml && A && A.intermediateIds ? A.intermediateIds(this.bpmnManualXml) : {};
+    }
+    return this._lockedIds || {};
+  }
+  onTypeChange(sel) { this.applyType(sel.getAttribute('data-ari-node'), sel.value); }
   // Troca o tipo sem chamar a IA. Diagrama gerado: refaz o XML (o layout não
   // depende do tipo, então as posições ficam iguais). Editado à mão: troca só a
   // tag/definição do elemento no XML editado, preservando o desenho manual.
-  onTypeChange(sel) {
+  applyType(id, value) {
     const A = window.AriBpmn, g = this.bpmnGraph;
-    const id = sel.getAttribute('data-ari-node'), value = sel.value;
     const n = g && g.nodes.find((x) => x.id === id);
     if (!n || !A || this.state.loading || this.state.editing) { this.renderTypesPanel(); return; }
     const patch = n.type === 'task' ? { taskType: value } : { eventType: value };
@@ -1055,6 +1257,133 @@ class Component extends DCLogic {
     this._keepView = true;
     this.setState({ bpmnXml: built.xml }, this.renderPreview);
     this.saveBpmn();
+  }
+
+  // Troca de tipo direto no diagrama: clicar num início, fim ou atividade abre um
+  // seletor com os ícones de cada tipo ao lado do elemento. A lista abaixo do
+  // diagrama continua como alternativa pelo teclado.
+  TYPE_ICONS = {
+    start: { none: 'start-event-none', message: 'start-event-message', timer: 'start-event-timer', signal: 'start-event-signal', conditional: 'start-event-condition' },
+    end: { none: 'end-event-none', message: 'end-event-message', terminate: 'end-event-terminate', error: 'end-event-error', signal: 'end-event-signal', escalation: 'end-event-escalation' },
+    task: { user: 'user-task', manual: 'manual-task', service: 'service-task', send: 'send-task', receive: 'receive-task', script: 'script-task', businessRule: 'business-rule-task', none: 'task' }
+  };
+  TB_ICON = '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.38 3.62a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>';
+  setPreviewWrap = (el) => {
+    this.previewWrapEl = el;
+    if (!el || el._ariBound) return;
+    el._ariBound = true;
+    // Botões ✎ do diagrama (overlays do bpmn-js): abrem/fecham o seletor do elemento.
+    el.addEventListener('click', (e) => {
+      const b = e.target.closest && e.target.closest('[data-tb-node]');
+      if (!b) return;
+      e.stopPropagation();
+      const id = b.getAttribute('data-tb-node');
+      if (id === this._pickId) this.closeTypePick(true);
+      else if (!this.state.loading && !this.state.editing) this.openTypePick(id);
+    });
+  };
+  setTypePick = (el) => {
+    this.typePickEl = el;
+    if (!el || el._ariBound) return;
+    el._ariBound = true;
+    el.addEventListener('click', (e) => {
+      const b = e.target.closest && e.target.closest('button');
+      if (!b) return;
+      if (b.hasAttribute('data-tp-close')) { this.closeTypePick(true); return; }
+      const val = b.getAttribute('data-tp-val');
+      if (val && this._pickId && b.getAttribute('aria-pressed') !== 'true') this.applyType(this._pickId, val);
+    });
+  };
+  typeKeyOf(n) { return n.type === 'startEvent' ? 'start' : n.type === 'endEvent' ? 'end' : n.type === 'task' ? 'task' : ''; }
+  // A cada importXML: marca os elementos que trocam de tipo (id do nó → id no XML)
+  // e liga o clique do bpmn-js ao seletor (uma vez por visualizador).
+  bindTypePicker() {
+    const A = window.AriBpmn, g = this.bpmnGraph, v = this.viewer;
+    this._pickEls = new Map();
+    if (!A || !g || !Array.isArray(g.nodes) || !v) return;
+    const canvas = v.get('canvas'), reg = v.get('elementRegistry'), overlays = v.get('overlays');
+    overlays.remove({ type: 'ari-type' });
+    const ids = this.bpmnManualXml ? null : A.xmlIds(g);
+    const locked = this.lockedIds();
+    g.nodes.forEach((n) => {
+      if (!this.typeKeyOf(n) || (n.type === 'task' && locked[n.id])) return;
+      const el = reg.get(ids ? ids[n.id] : n.id);
+      if (!el) return;
+      canvas.addMarker(el, 'ari-typeable');
+      this._pickEls.set(n.id, el.id);
+      // Botão ✎ no canto de cada elemento trocável: mostra onde clicar e entra no Tab.
+      const label = (n.name || 'sem nome').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      overlays.add(el.id, 'ari-type', {
+        position: { top: -11, right: 12 }, scale: { min: 0.9 },
+        html: '<button type="button" class="ari-tb" data-tb-node="' + n.id.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" aria-label="Trocar o tipo de ' + label + '" title="Trocar o tipo">' + this.TB_ICON + '</button>'
+      });
+    });
+    if (v._ariPickBound) return;
+    v._ariPickBound = true;
+    const bus = v.get('eventBus');
+    bus.on('element.click', (e) => {
+      // O nome de início e fim é um rótulo separado do círculo: vale como clique no evento.
+      const target = e.element.labelTarget || e.element;
+      let nodeId = null;
+      this._pickEls.forEach((elId, id) => { if (elId === target.id) nodeId = id; });
+      if (nodeId && nodeId !== this._pickId && !this.state.loading && !this.state.editing) this.openTypePick(nodeId);
+      else this.closeTypePick();
+    });
+    // Arrastar ou dar zoom tira o elemento do lugar: fecha em vez de flutuar solto.
+    bus.on('canvas.viewbox.changing', () => this.closeTypePick());
+  }
+  openTypePick(nodeId) {
+    const A = window.AriBpmn, g = this.bpmnGraph, v = this.viewer, pick = this.typePickEl, wrap = this.previewWrapEl;
+    const n = g && g.nodes.find((x) => x.id === nodeId);
+    const key = n && this.typeKeyOf(n);
+    const elId = this._pickEls && this._pickEls.get(nodeId);
+    const gfx = elId && v && v.get('elementRegistry').getGraphics(elId);
+    if (!A || !key || !gfx || !pick || !wrap) return;
+    this.closeTypePick();
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const cur = key === 'task' ? (n.taskType || 'none') : A.eventTypeOf(n);
+    const what = key === 'start' ? 'do início' : key === 'end' ? 'do fim' : 'da atividade';
+    pick.innerHTML =
+      '<div class="ari-tp-head"><div style="min-width:0;"><div class="ari-tp-kicker">Tipo ' + what + '</div><div class="ari-tp-name">' + esc(n.name || '(sem nome)') + '</div></div>' +
+        '<button type="button" class="ari-tp-x" data-tp-close aria-label="Fechar">×</button></div>' +
+      '<div class="ari-tp-grid" role="group" aria-label="Tipos">' + A.TYPE_OPTIONS[key].map((o) =>
+        '<button type="button" class="ari-tp-opt" data-tp-val="' + o[0] + '" aria-pressed="' + (o[0] === cur) + '">' +
+          '<i class="bpmn-icon-' + this.TYPE_ICONS[key][o[0]] + '" aria-hidden="true"></i><span>' + esc(o[1]) + '</span></button>').join('') + '</div>';
+    pick.setAttribute('aria-label', 'Tipo ' + what + ': ' + (n.name || 'sem nome'));
+    pick.hidden = false;
+    this._pickId = nodeId;
+    const tb = this.typeButtonFor(nodeId);
+    if (tb) tb.setAttribute('aria-expanded', 'true');
+    v.get('canvas').addMarker(elId, 'ari-typeable-on');
+    // Ao lado do elemento (direita; sem espaço, esquerda; sem nenhum, abaixo/acima), dentro da prévia.
+    const wr = wrap.getBoundingClientRect(), er = gfx.getBoundingClientRect();
+    const pw = pick.offsetWidth, ph = pick.offsetHeight, pad = 8, gap = 10;
+    let left = er.right - wr.left + gap, top = er.top - wr.top + er.height / 2 - ph / 2;
+    if (left + pw > wr.width - pad) left = er.left - wr.left - pw - gap;
+    if (left < pad) {
+      left = Math.min(Math.max(pad, er.left - wr.left + er.width / 2 - pw / 2), wr.width - pw - pad);
+      top = er.bottom - wr.top + gap;
+      if (top + ph > wr.height - pad) top = er.top - wr.top - ph - gap;
+    }
+    top = Math.min(Math.max(pad, top), Math.max(pad, wr.height - ph - pad));
+    pick.style.left = Math.max(pad, left) + 'px';
+    pick.style.top = top + 'px';
+    const first = pick.querySelector('[aria-pressed="true"]') || pick.querySelector('.ari-tp-opt');
+    if (first) first.focus({ preventScroll: true });
+  }
+  closeTypePick(refocus) {
+    const id = this._pickId;
+    this._pickId = null;
+    if (this.typePickEl && !this.typePickEl.hidden) { this.typePickEl.hidden = true; this.typePickEl.innerHTML = ''; }
+    const elId = id && this._pickEls && this._pickEls.get(id);
+    if (elId && this.viewer) { try { this.viewer.get('canvas').removeMarker(elId, 'ari-typeable-on'); } catch (_) {} }
+    const tb = id && this.typeButtonFor(id);
+    if (tb) tb.removeAttribute('aria-expanded');
+    if (refocus && this.previewWrapEl) (tb || this.previewWrapEl).focus({ preventScroll: true });
+  }
+  typeButtonFor(nodeId) {
+    if (!this.previewWrapEl) return null;
+    return Array.from(this.previewWrapEl.querySelectorAll('[data-tb-node]')).find((b) => b.getAttribute('data-tb-node') === nodeId) || null;
   }
 
   // Bateria de perguntas (processos complexos).
@@ -1083,6 +1412,8 @@ class Component extends DCLogic {
     if (this.state.loading || !this.bpmnAnalysis) return;
     const qs = this.bpmnQuestions || [];
     const answers = qs.map((q, i) => ({ question: q.question, suggestion: q.suggestion, answer: String((this.bpmnAnswers || [])[i] || '').trim() }));
+    const given = answers.filter((a) => a.answer).length;
+    this.pushChat('bpmn', { role: 'user', text: given ? 'Respondi ' + given + ' de ' + answers.length + ' pergunta(s); nas outras, use a sua sugestão.' : 'Pode seguir com as suas sugestões para todas as perguntas.' });
     const run = this.startRun();
     this.setState({ err: '', notice: '' });
     try { await this.runBpmnGeneration(run, answers); }
@@ -1093,19 +1424,18 @@ class Component extends DCLogic {
     }
   };
 
-  setEditText = (el) => { this.editEl = el; };
-  applyEdit = async () => {
+  // Ajuste do mapeamento pela conversa (modo "Ajustar este"): a mensagem já entrou no chat.
+  applyEdit = async (instr) => {
     if (this.state.loading || this.state.editing) return;
-    const instr = (this.editEl && this.editEl.value || '').trim();
-    if (!instr) { this.setState({ editErr: 'Descreva a alteração que você quer no mapeamento.' }); return; }
-    if (!this.bpmnGraph) return;
+    instr = String(instr || '').trim();
+    if (!instr || !this.bpmnGraph) return;
+    this._chatEditing = true;
     const run = this.startRun();
     this.setState({ editing: true, editErr: '', notice: '' });
     try {
       const out = await this.postJson('/api/bpmn/edit', { graph: this.bpmnGraph, instruction: instr, tier: this.bpmnTier }, run, this.BPMN_TIMEOUT_MS);
       if (this.isStale(run)) return;
       this.bpmnGraph = out.graph;
-      if (this.editEl) this.editEl.value = '';
       await this.showBpmn({ editErr: '', notice: this.structureNotice(out.errors) });
     } catch (e) {
       if (this.isStale(run)) return;
@@ -1271,16 +1601,24 @@ class Component extends DCLogic {
     } catch (e) { console.error('[ARI] leitura do diagrama editado:', e); }
     this.bpmnManualXml = xml;
     this.saveBpmn();
+    this.pushChat('bpmn', { role: 'ari', text: 'Salvei as suas edições manuais no diagrama.' + (notice ? '\n\n' + notice : '') });
     this.closeEditor({ bpmnXml: xml, bpmnManual: true, notice, result });
   };
 
   generate = async () => {
     if (this.state.loading || this.state.editing) return;
     const screen = this.state.screen;
-    const text = (this.textEl && this.textEl.value || '').trim();
-    if (!text) { this.setState({ err: 'Descreva o que você precisa para a ARI gerar.' }); return; }
+    const typed = (this.textEl && this.textEl.value || '').trim();
+    if (!typed) { this.setState({ err: 'Escreva uma mensagem para a ARI.' }); if (this.textEl) this.textEl.focus(); return; }
+    this.pushChat(screen, { role: 'user', text: typed, files: screen === 'pop' && this.imageFile ? this.imageFile.name : '' });
+    this.clearInput();
+    // Mapeamento já desenhado + modo "Ajustar este": a mensagem é um ajuste.
+    if (screen === 'bpmn' && this.state.chatMode !== 'new' && this.bpmnGraph && this.state.bpmnXml) { this.applyEdit(typed); return; }
+    // POP: a resposta às perguntas da ARI completa a descrição anterior.
+    const text = screen === 'pop' && this.popAskContext ? this.popAskContext + '\n\nInformações adicionais do usuário:\n' + typed : typed;
     const run = this.startRun();
-    this.setState({ loading: true, loadingMsg: '', result: '', err: '', editErr: '', notice: '', bpmnXml: '', popReady: false, popConfirm: false, copied: false, routeInfo: '', reviewNotes: '', bpmnAsk: false });
+    // Um mapeamento novo volta o modo para "Ajustar este": a próxima mensagem ajusta o que vai sair agora.
+    this.setState({ loading: true, loadingMsg: '', result: '', err: '', editErr: '', notice: '', bpmnXml: '', popReady: false, popConfirm: false, copied: false, routeInfo: '', reviewNotes: '', bpmnAsk: false, chatMode: 'edit' });
 
     // Funcionalidade 01: o servidor conduz a IA (complexidade, perguntas, grafo,
     // reparo e revisão) e o navegador desenha o grafo em BPMN 2.0.
@@ -1307,9 +1645,12 @@ class Component extends DCLogic {
       if (!parsed) { this.setState({ loading: false, err: this.friendlyError(failure, 'Não consegui interpretar as informações. Detalhe o processo, o setor e as etapas com suas descrições.') }); return; }
       if (parsed.status === 'questions') {
         const qs = (parsed.questions || []).map((q, i) => (i + 1) + '. ' + q).join('\n');
-        this.setState({ loading: false, result: 'Antes de gerar o POP, a ARI precisa esclarecer:\n\n' + qs + '\n\nComplete essas informações no campo ao lado e clique em gerar novamente.' });
+        this.popAskContext = text;
+        this.pushChat('pop', { role: 'ari', text: 'Antes de gerar o POP, preciso esclarecer:\n\n' + qs + '\n\nResponda aqui na conversa; eu junto a sua resposta com a descrição anterior.' });
+        this.setState({ loading: false, result: '' });
         return;
       }
+      this.popAskContext = null;
       // etapas estruturadas: o usuário escolhe quais terão print antes de gerar
       this.popData = { ...parsed.data, steps: parsed.data.steps.map((step) => ({ ...step, hasPrint: false })) };
       this.savePop(false);
@@ -1634,6 +1975,149 @@ class Component extends DCLogic {
     }
   }
 
+  // ─── Chat de criação ────────────────────────────────────────────────────────
+  // Cada tela (mapeamento, POP, manual) tem a sua conversa. As mensagens do
+  // usuário entram ao enviar; as da ARI são postadas quando uma geração termina
+  // (chatWatch compara o estado antes/depois). Erros aparecem como balão
+  // vermelho enquanto valem, sem ir para o histórico.
+  CHAT_MAX = 40;
+  CHAT_INTRO = {
+    bpmn: 'Oi! Me conte o processo em linguagem natural: quem faz cada etapa, as decisões e como ele termina. Eu desenho o mapeamento BPMN ao lado.\n\nEx.: Quando um pedido chega, o comercial confere o estoque. Se houver, emite a nota e envia para a expedição; se não, avisa o cliente e encerra.',
+    pop: 'Oi! Me passe o nome do processo, o setor responsável e as etapas, cada uma com o que deve ser feito. Se tiver a imagem do fluxograma, anexe pelo botão "Fluxograma".\n\nEx.: Processo: Aprovação de pedidos. Setor: Comercial. Etapas: 1) Receber a solicitação e registrar no sistema. 2) Validar o crédito no ERP. 3) Confirmar o estoque. 4) Aprovar e notificar o cliente.',
+    manual: 'Oi! Me diga o que o manual precisa cobrir e para quem ele é. Eu monto o documento num modelo padronizado.\n\nEx.: Manual de uso do sistema de chamados para novos colaboradores, do login à abertura e acompanhamento de tickets.'
+  };
+  chatFor(screen) {
+    if (!this.chats) {
+      const saved = this.load('chat');
+      this.chats = {};
+      ['bpmn', 'pop', 'manual'].forEach((k) => {
+        const list = saved && Array.isArray(saved[k]) ? saved[k] : [];
+        this.chats[k] = list.filter((m) => m && (m.role === 'user' || m.role === 'ari') && typeof m.text === 'string')
+          .map((m) => ({ role: m.role, text: m.text, files: typeof m.files === 'string' ? m.files : '', at: +m.at || 0 }));
+      });
+    }
+    return this.chats[screen] || (this.chats[screen] = []);
+  }
+  pushChat(screen, msg) {
+    if (!screen) return;
+    const list = this.chatFor(screen);
+    list.push({ role: msg.role, text: String(msg.text || '').trim(), files: msg.files || '', at: Date.now() });
+    if (list.length > this.CHAT_MAX) list.splice(0, list.length - this.CHAT_MAX);
+    this.store('chat', this.chats);
+    if (msg.role === 'user') this._chatToEnd = true;
+    this.renderChat();
+  }
+  clearChat = () => {
+    const s = this.state.screen;
+    if (!s || this.state.loading || this.state.editing) return;
+    this.chats[s] = [];
+    if (s === 'pop') this.popAskContext = null;
+    this.store('chat', this.chats);
+    this.setState({ err: '', editErr: '' }, () => this.renderChat());
+  };
+
+  setChatViewport = (el) => {
+    this.chatVp = el;
+    this._chatHtml = null;
+    if (!el) return;
+    el.addEventListener('scroll', () => this.updateChatBtn(), { passive: true });
+    this._chatToEnd = true;
+    this.renderChat();
+  };
+  setChatEndBtn = (el) => { this.chatEndBtn = el; };
+  chatAtEnd(vp) { return vp.scrollHeight - vp.scrollTop - vp.clientHeight < 40; }
+  updateChatBtn() {
+    if (this.chatEndBtn && this.chatVp) this.chatEndBtn.setAttribute('data-active', this.chatAtEnd(this.chatVp) ? 'false' : 'true');
+  }
+  chatToEnd = () => {
+    const vp = this.chatVp;
+    if (vp) vp.scrollTo({ top: vp.scrollHeight, behavior: this.reduceMotion ? 'auto' : 'smooth' });
+  };
+
+  bubbleHtml(m) {
+    const esc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const user = m.role === 'user';
+    const variant = m.kind === 'error' ? 'destructive' : user ? 'default' : 'muted';
+    const time = m.at ? new Date(m.at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    const body = m.typing ? '<span class="ari-typing" aria-hidden="true"><i></i><i></i><i></i></span>' + esc(m.text) : esc(m.text);
+    return '<div class="ari-msg" data-slot="message" data-align="' + (user ? 'end' : 'start') + '">' +
+      (user ? '' : '<div class="ari-msg-avatar" data-slot="message-avatar" aria-hidden="true">✦</div>') +
+      '<div class="ari-msg-content" data-slot="message-content">' +
+        '<div class="ari-msg-header" data-slot="message-header">' + (user ? 'Você' : 'ARI') + (time ? ' · ' + time : '') + '</div>' +
+        '<div class="ari-bubble" data-slot="bubble" data-variant="' + variant + '"' + (m.kind === 'error' ? ' role="alert"' : '') + '><div class="ari-bubble-content" data-slot="bubble-content">' + body + '</div></div>' +
+        (m.files ? '<div class="ari-msg-footer" data-slot="message-footer">Anexo: ' + esc(m.files) + '</div>' : '') +
+      '</div></div>';
+  }
+  renderChat() {
+    const vp = this.chatVp, s = this.state.screen;
+    if (!vp || !s) return;
+    const list = this.chatFor(s);
+    const items = list.length ? list.map((m) => this.bubbleHtml(m)) : [this.bubbleHtml({ role: 'ari', text: this.CHAT_INTRO[s] || '' })];
+    if (this.state.loading || this.state.editing) items.push(this.bubbleHtml({ role: 'ari', typing: true, text: this.state.editing ? 'Aplicando o ajuste…' : (this.state.loadingMsg || 'Pensando…') }));
+    else {
+      if (this.state.err) items.push(this.bubbleHtml({ role: 'ari', kind: 'error', text: this.state.err }));
+      if (this.state.editErr && s === 'bpmn') items.push(this.bubbleHtml({ role: 'ari', kind: 'error', text: this.state.editErr }));
+    }
+    const html = '<div class="ari-ms-content" data-slot="message-scroller-content">' + items.join('') + '</div>';
+    if (html === this._chatHtml) return;
+    const stick = this._chatToEnd || this._chatHtml == null || this.chatAtEnd(vp);
+    vp.innerHTML = html;
+    this._chatHtml = html;
+    this._chatToEnd = false;
+    if (stick) vp.scrollTop = vp.scrollHeight;
+    this.updateChatBtn();
+  }
+  // Fim de uma geração ou ajuste: a ARI responde na conversa.
+  chatWatch() {
+    const st = this.state, s = st.screen;
+    const cur = { s, busy: !!st.loading || !!st.editing, bpmnAsk: !!st.bpmnAsk, bpmnXml: st.bpmnXml, popConfirm: !!st.popConfirm, popReady: !!st.popReady };
+    const prev = this._chatPrev;
+    this._chatPrev = cur;
+    if (!prev || prev.s !== s || !s || !prev.busy || cur.busy) return;
+    if (st.err || st.editErr) return;
+    let text = '';
+    if (s === 'bpmn') {
+      // Na conversa vai só o essencial; o resumo completo fica no painel ao lado.
+      const counts = String(st.result || '').split('\n').find((l) => /atividade/.test(l)) || '';
+      if (cur.bpmnAsk) text = (st.result || '') + '\n\nAs perguntas estão ao lado. Responda as que quiser e clique em "Gerar mapeamento".';
+      else if (cur.bpmnXml) text = (this._chatEditing ? 'Ajuste aplicado.' : 'Mapeamento pronto!') + (counts ? ' ' + counts.trim() : '') + (st.routeInfo && !this._chatEditing ? '\n' + st.routeInfo : '') + (st.notice ? '\n\n' + st.notice : '') + (this._chatEditing ? '' : '\n\nPara mudar algo, é só me pedir aqui.');
+    } else if (s === 'pop') {
+      if (cur.popReady) text = 'POP pronto no modelo ' + this.popModelName() + '! A prévia e o botão para baixar estão ao lado.' + (this.popImage ? '' : ' Sem a imagem do fluxograma, o espaço dela ficou em branco; anexe pelo botão "Fluxograma" e gere de novo para incluir.');
+      else if (cur.popConfirm) text = 'Estruturei o POP com ' + ((this.popData && this.popData.steps || []).length) + ' etapa(s). Marque ao lado as que terão print de comprovação e clique em "Gerar POP".';
+    } else if (s === 'manual' && st.result) {
+      text = 'Pronto! O manual está ao lado, com as opções de copiar e baixar.' + (st.notice ? '\n\n' + st.notice : '');
+    }
+    this._chatEditing = false;
+    if (text) this.pushChat(s, { role: 'ari', text });
+  }
+
+  // Campo de mensagem (InputGroup): Enter envia, Shift+Enter quebra a linha,
+  // e a altura acompanha o texto até 220 px.
+  autosizeInput() {
+    const el = this.textEl;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 220) + 'px';
+  }
+  clearInput() {
+    if (this.textEl) this.textEl.value = '';
+    if (this.state.screen) this.store('draft:' + this.state.screen, null);
+    this.autosizeInput();
+  }
+  removeImage = () => {
+    this.imageFile = null;
+    if (this.fileEl) this.fileEl.value = '';
+    this.setState({ fileName: '' });
+  };
+  setModeEdit = () => this.setState({ chatMode: 'edit' });
+  setModeNew = () => this.setState({ chatMode: 'new' });
+  confirmPopClick = () => {
+    if (!this.popData || this.state.loading) return;
+    const n = this.popStepsEl ? this.popStepsEl.querySelectorAll('input[data-pop-step]:checked').length : 0;
+    this.pushChat('pop', { role: 'user', text: 'Gerar o POP' + (n ? ' com print em ' + n + ' etapa(s).' : ' sem prints de comprovação.') });
+    this.confirmPop();
+  };
+
   // ─── Seleção de etapas com print (antes de gerar) ──────────────────────────
   POP_CONFIRM_MSG = 'A ARI estruturou o POP. Nem toda etapa precisa de print de comprovação — marque as etapas que precisam de print e clique em "Gerar POP".';
   // A seleção pertence aos dados, não ao DOM: sobrevive a renders, snapshots e troca de modelo/logo.
@@ -1885,25 +2369,41 @@ class Component extends DCLogic {
       g.consumed = true; // também consome na borda, para não reaproveitar momentum
       this.goTo(this._lastSetActive + dir);
     };
+    // Arrasto ao vivo: a página (e as letras dos títulos) segue o dedo por até uma
+    // seção; ao soltar, encaixa na seguinte ou volta. Com uma troca já animando, ou
+    // sob movimento reduzido, vale só o gesto de deslizar.
     this._onTouchStart = (e) => {
       this._touch = !this.state.screen && e.touches.length === 1
-        ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+        ? { x: e.touches[0].clientX, y: e.touches[0].clientY, top: window.scrollY || 0, active: this._lastSetActive, live: !this._scrollRaf && !this.reduceMotion, dragged: false } : null;
     };
     this._onTouchMove = (e) => {
       if (this.state.screen || e.touches.length !== 1) { this._touch = null; return; }
       const t = this._touch;
       if (!t) return;
       const dx = e.touches[0].clientX - t.x, dy = e.touches[0].clientY - t.y;
-      if (Math.abs(dy) > Math.abs(dx) && e.cancelable) e.preventDefault();
+      if (Math.abs(dy) > Math.abs(dx) && e.cancelable) {
+        e.preventDefault();
+        if (t.live) {
+          const sec = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0) / 3;
+          const lo = Math.max(0, (t.active - 1) * sec), hi = Math.min(3 * sec, (t.active + 1) * sec);
+          window.scrollTo(0, Math.min(hi, Math.max(lo, t.top - dy)));
+          t.dragged = true;
+        }
+      }
     };
     this._onTouchEnd = (e) => {
       const start = this._touch;
       this._touch = null;
       if (!start || this.state.screen || e.touches.length || !e.changedTouches.length) return;
       const dx = e.changedTouches[0].clientX - start.x, dy = e.changedTouches[0].clientY - start.y;
-      if (Math.abs(dy) >= 48 && Math.abs(dy) > Math.abs(dx) * 1.2) this.goTo(this._lastSetActive + (dy < 0 ? 1 : -1));
+      if (Math.abs(dy) >= 48 && Math.abs(dy) > Math.abs(dx) * 1.2) this.goTo(start.active + (dy < 0 ? 1 : -1));
+      else if (start.dragged) this.goTo(start.active);
     };
-    this._onTouchCancel = () => { this._touch = null; };
+    this._onTouchCancel = () => {
+      const t = this._touch;
+      this._touch = null;
+      if (t && t.dragged) this.goTo(t.active);
+    };
     this._onVisibility = () => {
       this._wheelGesture = null;
       this._touch = null;
@@ -1920,6 +2420,8 @@ class Component extends DCLogic {
     };
     this._onKey = (e) => {
       if (this.state.screen) {
+        if (e.key === 'Escape' && this._pickId) { e.preventDefault(); this.closeTypePick(true); return; }
+        if (e.key === 'Escape' && this.state.cfgOpen) { e.preventDefault(); this.closeCfg(true); return; }
         if (e.key === 'Escape' && !this.state.bpmnEditing) { e.preventDefault(); this.closeScreen(); }
         return;
       }
@@ -1939,6 +2441,13 @@ class Component extends DCLogic {
       if (target === this._lastSetActive) return;
       this.goTo(target);
     };
+
+    // Clique fora da janela de opções do diagrama (ou da prévia, com o seletor de tipo aberto) fecha a janela.
+    this._onCfgOutside = (e) => {
+      if (this.state.cfgOpen && this.cfgEl && !this.cfgEl.contains(e.target)) this.closeCfg(false);
+      if (this._pickId && this.previewWrapEl && !this.previewWrapEl.contains(e.target)) this.closeTypePick();
+    };
+    document.addEventListener('pointerdown', this._onCfgOutside);
 
     window.addEventListener('scroll', this._onScroll, { passive: true });
     window.addEventListener('resize', this._onResize);
@@ -1964,7 +2473,7 @@ class Component extends DCLogic {
     }
   }
 
-  componentDidUpdate() { this.syncInert(); }
+  componentDidUpdate() { this.syncInert(); this.chatWatch(); this.renderChat(); }
 
   // Com o diálogo aberto, a página de fundo fica inerte: sai do Tab e do leitor
   // de tela, prendendo o foco dentro do diálogo.
@@ -1986,6 +2495,8 @@ class Component extends DCLogic {
     window.removeEventListener('touchend', this._onTouchEnd);
     window.removeEventListener('touchcancel', this._onTouchCancel);
     document.removeEventListener('visibilitychange', this._onVisibility);
+    document.removeEventListener('pointerdown', this._onCfgOutside);
+    if (this._cfgRO) this._cfgRO.disconnect();
     if (this._rmQuery && this._rmQuery.removeEventListener) this._rmQuery.removeEventListener('change', this._onRM);
     if (this._copiedTimer) clearTimeout(this._copiedTimer);
     this.cancelRun();
@@ -2285,9 +2796,9 @@ class Component extends DCLogic {
     const ci = this.state.actColorIdx || 0;
     const sw = (i) => { const p = this.PALETTE[i]; return 'appearance:none;padding:0;width:30px;height:30px;border-radius:8px;cursor:pointer;background:' + p.fill + ';border:3px solid ' + (i === ci ? p.stroke : 'transparent') + ';box-shadow:0 1px 3px rgba(10,31,68,.12);transition:border .15s;'; };
     const editing = !!this.state.editing;
-    const editBtnStyle = 'margin-top:12px;width:100%;font-family:IBM Plex Sans,sans-serif;font-size:15px;font-weight:600;color:#fff;background:#1c5cff;border:none;padding:12px;border-radius:11px;box-shadow:0 12px 26px -12px rgba(28,92,255,.5);transition:background .2s,transform .16s cubic-bezier(.23,1,.32,1);' + (busy ? 'opacity:.6;cursor:wait;' : 'cursor:pointer;');
 
     const swl = (i) => 'Cor das atividades: ' + this.PALETTE[i].name;
+    const chatEdit = screen === 'bpmn' && this.state.chatMode !== 'new' && !!this.state.bpmnXml && !!this.bpmnGraph;
     // POP: escolha do modelo e da logo (a grade do formulário some enquanto isso).
     const popSetup = screen === 'pop' ? this.state.popSetup : null;
     const pm = this.state.popModel || 1;
@@ -2321,6 +2832,7 @@ class Component extends DCLogic {
       showManualActions: screen === 'manual' && !loading && !!this.state.result,
       copyManual: this.copyManual, downloadManual: this.downloadManual, copyLabel: this.state.copied ? 'Copiado ✓' : 'Copiar texto',
       overlay, showPop: screen === 'pop', showBpmn: screen === 'bpmn',
+      cfgOpen: String(!!this.state.cfgOpen), cfgHidden: String(!this.state.cfgOpen), setCfg: this.setCfg, toggleCfg: this.toggleCfg,
       genEyebrow: g.e, genTitle: g.t, genSubtitle: g.s, genInputLabel: g.l, genPlaceholder: g.p,
       loading, busy,
       showText: !!this.state.result && !this.state.bpmnXml,
@@ -2333,10 +2845,19 @@ class Component extends DCLogic {
       sw0: sw(0), sw1: sw(1), sw2: sw(2), sw3: sw(3), sw4: sw(4), sw5: sw(5),
       swl0: swl(0), swl1: swl(1), swl2: swl(2), swl3: swl(3), swl4: swl(4), swl5: swl(5),
       swp0: swp(0), swp1: swp(1), swp2: swp(2), swp3: swp(3), swp4: swp(4), swp5: swp(5),
-      setEditText: this.setEditText, applyEdit: this.applyEdit, editing,
-      editBtnLabel: editing ? 'Aplicando...' : 'Aplicar alteração', editBtnStyle,
+      showManualWarn: chatEdit && !!this.state.bpmnManual && !busy,
+      setPreviewWrap: this.setPreviewWrap, setTypePick: this.setTypePick,
       hasPop: !!this.state.popReady, downloadPop: this.downloadPop, setPopPreview: this.setPopPreview,
-      popConfirm: !!this.state.popConfirm && screen === 'pop' && !loading, confirmPop: this.confirmPop,
+      popConfirm: !!this.state.popConfirm && screen === 'pop' && !loading, confirmPop: this.confirmPop, confirmPopClick: this.confirmPopClick,
+      setChatViewport: this.setChatViewport, setChatEndBtn: this.setChatEndBtn, chatToEnd: this.chatToEnd, clearChat: this.clearChat,
+      chatPlaceholder: chatEdit ? 'Peça um ajuste: ex. "mova a aprovação para a raia Diretoria"'
+        : screen === 'pop' ? (this.popAskContext ? 'Responda às perguntas da ARI…' : 'Nome do processo, setor e etapas…')
+        : screen === 'manual' ? 'O que o manual deve cobrir…' : 'Descreva o processo…',
+      sendAria: chatEdit ? 'Enviar ajuste para a ARI' : 'Enviar para a ARI',
+      showModeToggle: screen === 'bpmn' && !!this.state.bpmnXml && !!this.bpmnGraph && !loading,
+      modeEdit: chatEdit ? 'true' : 'false', modeNew: this.state.chatMode === 'new' ? 'true' : 'false',
+      setModeEdit: this.setModeEdit, setModeNew: this.setModeNew,
+      hasFile: !!this.state.fileName, fileName: this.state.fileName, removeImage: this.removeImage,
       popSteps: (this.popData && this.popData.steps || []).map((step, index) => ({ title: step.title, hasPrint: step.hasPrint === true, index, number: index + 1 })),
       togglePopStep: this.togglePopStep, selectAllPopSteps: this.selectAllPopSteps, clearPopSteps: this.clearPopSteps,
       genGrid: 'display:' + (popSetup ? 'none' : 'grid') + ';grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:26px;align-items:start;',
