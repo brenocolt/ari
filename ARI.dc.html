@@ -156,11 +156,19 @@
   @media (max-width:520px){.ari-ig-hint{display:none;}}
   textarea{transition:box-shadow .18s var(--ease-out),border-color .18s var(--ease-out);}
   textarea:focus-visible{border-color:#1c5cff!important;box-shadow:0 0 0 3px rgba(28,92,255,.22);}
+  /* Cursor suave (Skiper106): nos campos de texto o cursor nativo fica transparente
+     e o desenhado (.ari-caret, fixo na página) desliza até a posição de digitação.
+     Parado, ele pisca como o nativo. */
+  .ari-caret-field{caret-color:transparent!important;}
+  .ari-caret{position:fixed;top:0;left:0;width:2px;border-radius:1px;background:#1c5cff;pointer-events:none;z-index:400;visibility:hidden;will-change:transform;}
+  .ari-caret-idle{animation:ariCaretBlink 1.06s linear infinite;}
+  @keyframes ariCaretBlink{0%,49.9%{opacity:1}50%,100%{opacity:0}}
   /* Accessibility: honor reduced-motion. Kill the looping/idle CSS motion and
      collapse entrance movement to a gentle fade. The 3D idle motion, pointer
      parallax and panel slide are gated separately in JS via matchMedia. */
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;transition-delay:0s!important;}
+    .ari-caret-idle{animation:none;}
   }
 </style>
 <link rel="stylesheet" href="./bpmn-diagram.css">
@@ -2104,6 +2112,144 @@ class Component extends DCLogic {
     if (this.state.screen) this.store('draft:' + this.state.screen, null);
     this.autosizeInput();
   }
+
+  // ─── Cursor suave (Skiper106) ───────────────────────────────────────────────
+  // Em todo campo de texto do site (conversa das três telas, respostas às perguntas
+  // e os que vierem), o cursor nativo fica transparente e um cursor desenhado desliza
+  // com a mola do Skiper106 (stiffness 500, damping 30, massa 0,5) até a posição de
+  // digitação. A posição vem de um espelho invisível do campo (mesma fonte, largura
+  // e quebra de linha). O primeiro foco e a troca de linha posicionam sem deslizar;
+  // com texto selecionado o cursor some e fica só o realce nativo.
+  CARET_TYPES = /^(text|search|email|url|tel|password)$/;
+  initSmoothCaret() {
+    const el = document.createElement('div');
+    el.className = 'ari-caret';
+    el.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(el);
+    this._caret = { el, field: null, x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0, h: 0, show: false, snap: true, raf: null, at: 0, movedAt: 0, clips: [] };
+    this._onCaretFocus = (e) => { if (this.caretField(e.target)) this.caretAttach(e.target); };
+    this._onCaretBlur = (e) => { if (this._caret.field === e.target) this.caretDetach(); };
+    this._onCaretSel = () => { if (this._caret.field) this.caretMeasure(); };
+    this._onCaretInput = (e) => { if (e.target === this._caret.field) requestAnimationFrame(() => this.caretMeasure()); };
+    document.addEventListener('focusin', this._onCaretFocus);
+    document.addEventListener('focusout', this._onCaretBlur);
+    document.addEventListener('selectionchange', this._onCaretSel);
+    document.addEventListener('input', this._onCaretInput, true);
+    document.addEventListener('scroll', this._onCaretInput, true); // rolagem dentro do próprio campo
+    if (document.activeElement && this.caretField(document.activeElement)) this.caretAttach(document.activeElement);
+  }
+  destroySmoothCaret() {
+    if (!this._caret) return;
+    this.caretDetach();
+    document.removeEventListener('focusin', this._onCaretFocus);
+    document.removeEventListener('focusout', this._onCaretBlur);
+    document.removeEventListener('selectionchange', this._onCaretSel);
+    document.removeEventListener('input', this._onCaretInput, true);
+    document.removeEventListener('scroll', this._onCaretInput, true);
+    this._caret.el.remove();
+    if (this._caretMirror) this._caretMirror.remove();
+    this._caret = null;
+  }
+  caretField(f) {
+    if (!f || f.readOnly || f.disabled) return false;
+    return f.tagName === 'TEXTAREA' || (f.tagName === 'INPUT' && this.CARET_TYPES.test(f.type));
+  }
+  caretAttach(f) {
+    const c = this._caret;
+    if (c.field && c.field !== f) this.caretDetach();
+    c.field = f;
+    c.snap = true;
+    f.classList.add('ari-caret-field');
+    // Ancestrais que recortam o conteúdo (listas com rolagem): o cursor some fora deles.
+    c.clips = [];
+    for (let a = f.parentElement; a && a !== document.body; a = a.parentElement) {
+      const o = getComputedStyle(a);
+      if (/(auto|scroll|hidden|clip)/.test(o.overflowX + ' ' + o.overflowY)) c.clips.push(a);
+    }
+    if (typeof ResizeObserver !== 'undefined') {
+      c.ro = new ResizeObserver(() => this.caretMeasure());
+      c.ro.observe(f);
+    }
+    this.caretMeasure();
+    c.at = 0;
+    if (!c.raf) c.raf = requestAnimationFrame(this.caretTick);
+  }
+  caretDetach() {
+    const c = this._caret;
+    if (!c) return;
+    if (c.field) c.field.classList.remove('ari-caret-field');
+    if (c.ro) { c.ro.disconnect(); c.ro = null; }
+    if (c.raf) cancelAnimationFrame(c.raf);
+    c.raf = null;
+    c.field = null;
+    c.show = false;
+    c.el.style.visibility = 'hidden';
+    c.el.classList.remove('ari-caret-idle');
+  }
+  caretMeasure() {
+    const c = this._caret, f = c && c.field;
+    if (!f || document.activeElement !== f) return;
+    let start, end;
+    try { start = f.selectionStart; end = f.selectionEnd; } catch (_) { start = null; }
+    if (start == null) { c.show = false; return; }
+    const pos = f.selectionDirection === 'backward' ? start : end;
+    const cs = getComputedStyle(f), isTA = f.tagName === 'TEXTAREA';
+    const m = this._caretMirror || (this._caretMirror = document.createElement('div'));
+    if (!m.parentNode) document.body.appendChild(m);
+    m.style.cssText = 'position:absolute;top:0;left:-9999px;visibility:hidden;overflow:hidden;pointer-events:none;'
+      + (isTA ? 'white-space:pre-wrap;overflow-wrap:break-word;word-wrap:break-word;' : 'white-space:pre;');
+    ['boxSizing', 'width', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+      'borderStyle', 'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'lineHeight', 'fontFamily', 'fontFeatureSettings', 'fontVariationSettings',
+      'textAlign', 'textTransform', 'textIndent', 'letterSpacing', 'wordSpacing', 'tabSize'].forEach((p) => { m.style[p] = cs[p]; });
+    if (isTA && f.scrollHeight > f.clientHeight) m.style.overflowY = 'scroll'; // mesma largura útil com barra de rolagem
+    const val = f.type === 'password' ? '•'.repeat(f.value.length) : f.value;
+    m.textContent = val.slice(0, pos);
+    const mark = document.createElement('span');
+    mark.textContent = val.slice(pos) || '.';
+    m.appendChild(mark);
+    const fs = parseFloat(cs.fontSize) || 16;
+    const lh = parseFloat(cs.lineHeight) || fs * 1.2;
+    const h = Math.round(fs * 1.15);
+    const bl = parseFloat(cs.borderLeftWidth) || 0, bt = parseFloat(cs.borderTopWidth) || 0;
+    const tx = mark.offsetLeft + bl - f.scrollLeft;
+    const ty = isTA ? mark.offsetTop + bt - f.scrollTop + (lh - h) / 2 : bt + (f.clientHeight - h) / 2;
+    if (Math.abs(ty - c.ty) > 1) c.snap = true; // outra linha: posiciona sem atravessar o texto
+    if (tx !== c.tx || ty !== c.ty) c.movedAt = performance.now();
+    c.tx = tx; c.ty = ty; c.h = h;
+    c.show = start === end && tx >= -1 && tx <= f.clientWidth + bl + 1 && ty >= -2 && ty + h <= f.clientHeight + bt + 2;
+  }
+  caretTick = (now) => {
+    const c = this._caret;
+    if (!c) return;
+    c.raf = null;
+    const f = c.field;
+    if (!f) return;
+    const dt = c.at ? Math.min(0.05, Math.max(0, (now - c.at) / 1000)) : 0;
+    c.at = now;
+    if (c.snap || this.reduceMotion) {
+      c.x = c.tx; c.y = c.ty; c.vx = 0; c.vy = 0; c.snap = false;
+    } else {
+      // Mola em passos de 4 ms (estável mesmo quando um quadro atrasa).
+      for (let t = dt; t > 0; t -= 0.004) {
+        const s = Math.min(0.004, t);
+        c.vx += ((-500 * (c.x - c.tx) - 30 * c.vx) / 0.5) * s; c.x += c.vx * s;
+        c.vy += ((-500 * (c.y - c.ty) - 30 * c.vy) / 0.5) * s; c.y += c.vy * s;
+      }
+    }
+    const r = f.getBoundingClientRect();
+    const px = r.left + c.x, py = r.top + c.y;
+    let visible = c.show && r.width > 0;
+    for (let i = 0; visible && i < c.clips.length; i++) {
+      const cr = c.clips[i].getBoundingClientRect();
+      if (px < cr.left || px > cr.right || py < cr.top || py + c.h > cr.bottom) visible = false;
+    }
+    const st = c.el.style;
+    st.height = c.h + 'px';
+    st.transform = 'translate(' + px.toFixed(2) + 'px,' + py.toFixed(2) + 'px)';
+    st.visibility = visible ? 'visible' : 'hidden';
+    c.el.classList.toggle('ari-caret-idle', now - c.movedAt > 500);
+    c.raf = requestAnimationFrame(this.caretTick);
+  };
   removeImage = () => {
     this.imageFile = null;
     if (this.fileEl) this.fileEl.value = '';
@@ -2463,6 +2609,7 @@ class Component extends DCLogic {
     this._onScroll();
 
     this.initThree();
+    this.initSmoothCaret();
     this.syncInert();
 
     // Autoria configurada no servidor (opcional; mantém o padrão se falhar).
@@ -2485,6 +2632,7 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     this._unmounted = true;
+    this.destroySmoothCaret();
     window.removeEventListener('scroll', this._onScroll);
     window.removeEventListener('resize', this._onResize);
     window.removeEventListener('pointermove', this._onMove);
