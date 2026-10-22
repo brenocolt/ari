@@ -1,0 +1,223 @@
+{
+ "_origem": "caso mínimo do testador (A4-quase.json)",
+ "processName": "Processo 29694",
+ "lanes": [
+  "Financeiro",
+  "Diretoria",
+  "TI"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Início",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "message",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_3",
+   "type": "exclusiveGateway",
+   "name": "Estoque disponível?",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_4",
+   "type": "exclusiveGateway",
+   "name": "Cliente respondeu?",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pGa_6",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_7",
+   "type": "task",
+   "name": "Conferir cadastro do cliente",
+   "lane": "TI",
+   "taskType": "businessRule",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_8",
+   "type": "task",
+   "name": "Aprovar nota fiscal e encaminhar para conferência final",
+   "lane": "Diretoria",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_9",
+   "type": "task",
+   "name": "Arquivar cadastro do cliente",
+   "lane": "Diretoria",
+   "taskType": "service",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pGa_10",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_11",
+   "type": "task",
+   "name": "Calcular parecer técnico do setor jurídico",
+   "lane": "Diretoria",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_12",
+   "type": "endEvent",
+   "name": "Pedido recusado",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "terminate",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_13",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_14",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_15",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "eGa_3",
+   "to": "eGa_4",
+   "label": "Aprovado"
+  },
+  {
+   "from": "pGa_6",
+   "to": "t_7",
+   "label": ""
+  },
+  {
+   "from": "pGa_6",
+   "to": "t_8",
+   "label": ""
+  },
+  {
+   "from": "pGa_6",
+   "to": "t_9",
+   "label": ""
+  },
+  {
+   "from": "t_7",
+   "to": "pGa_10",
+   "label": ""
+  },
+  {
+   "from": "t_8",
+   "to": "pGa_10",
+   "label": ""
+  },
+  {
+   "from": "t_9",
+   "to": "pGa_10",
+   "label": ""
+  },
+  {
+   "from": "eGa_4",
+   "to": "t_11",
+   "label": "Não"
+  },
+  {
+   "from": "t_11",
+   "to": "eEv_12",
+   "label": ""
+  },
+  {
+   "from": "pGa_10",
+   "to": "eGa_13",
+   "label": ""
+  },
+  {
+   "from": "eGa_4",
+   "to": "eGa_13",
+   "label": "Opção 4"
+  },
+  {
+   "from": "eGa_13",
+   "to": "eGa_14",
+   "label": ""
+  },
+  {
+   "from": "eGa_3",
+   "to": "eGa_14",
+   "label": "Reprovado"
+  },
+  {
+   "from": "eGa_14",
+   "to": "eEv_15",
+   "label": ""
+  },
+  {
+   "from": "eGa_4",
+   "to": "pGa_6",
+   "label": "Sim"
+  },
+  {
+   "from": "sEv_1",
+   "to": "eGa_3",
+   "label": ""
+  }
+ ]
+}

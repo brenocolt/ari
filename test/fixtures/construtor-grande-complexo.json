@@ -1,0 +1,480 @@
+{
+ "_origem": "caso do construtor (grande-complexo)",
+ "processName": "grande-complexo",
+ "lanes": [
+  "Solicitante",
+  "Compras",
+  "Gestão",
+  "Financeiro",
+  "Fornecedor"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d0",
+   "type": "exclusiveGateway",
+   "name": "Aprovar etapa 0",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a0",
+   "type": "task",
+   "name": "Executar atividade principal 0",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b0",
+   "type": "task",
+   "name": "Revisar documentos da etapa 0",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "c0",
+   "type": "task",
+   "name": "Confirmar dados com o responsável 0",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "j0",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d1",
+   "type": "exclusiveGateway",
+   "name": "Aprovar etapa 1",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a1",
+   "type": "task",
+   "name": "Executar atividade principal 1",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b1",
+   "type": "task",
+   "name": "Revisar documentos da etapa 1",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "c1",
+   "type": "task",
+   "name": "Confirmar dados com o responsável 1",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "j1",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d2",
+   "type": "exclusiveGateway",
+   "name": "Aprovar etapa 2",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a2",
+   "type": "task",
+   "name": "Executar atividade principal 2",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b2",
+   "type": "task",
+   "name": "Revisar documentos da etapa 2",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "c2",
+   "type": "task",
+   "name": "Confirmar dados com o responsável 2",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "j2",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d3",
+   "type": "exclusiveGateway",
+   "name": "Aprovar etapa 3",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a3",
+   "type": "task",
+   "name": "Executar atividade principal 3",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b3",
+   "type": "task",
+   "name": "Revisar documentos da etapa 3",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "c3",
+   "type": "task",
+   "name": "Confirmar dados com o responsável 3",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "j3",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d4",
+   "type": "exclusiveGateway",
+   "name": "Aprovar etapa 4",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a4",
+   "type": "task",
+   "name": "Executar atividade principal 4",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b4",
+   "type": "task",
+   "name": "Revisar documentos da etapa 4",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "c4",
+   "type": "task",
+   "name": "Confirmar dados com o responsável 4",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "j4",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "prazo",
+   "type": "boundaryTimer",
+   "name": "48 horas",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "a2",
+   "interrupting": true
+  },
+  {
+   "id": "esc",
+   "type": "task",
+   "name": "Escalonar pendência",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "ze",
+   "type": "endEvent",
+   "name": "Escalonado",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "d0",
+   "label": ""
+  },
+  {
+   "from": "d0",
+   "to": "a0",
+   "label": "Sim"
+  },
+  {
+   "from": "d0",
+   "to": "b0",
+   "label": "Não"
+  },
+  {
+   "from": "b0",
+   "to": "c0",
+   "label": ""
+  },
+  {
+   "from": "a0",
+   "to": "j0",
+   "label": ""
+  },
+  {
+   "from": "c0",
+   "to": "j0",
+   "label": ""
+  },
+  {
+   "from": "j0",
+   "to": "d1",
+   "label": ""
+  },
+  {
+   "from": "d1",
+   "to": "a1",
+   "label": "Sim"
+  },
+  {
+   "from": "d1",
+   "to": "b1",
+   "label": "Não"
+  },
+  {
+   "from": "b1",
+   "to": "c1",
+   "label": ""
+  },
+  {
+   "from": "a1",
+   "to": "j1",
+   "label": ""
+  },
+  {
+   "from": "c1",
+   "to": "j1",
+   "label": ""
+  },
+  {
+   "from": "j1",
+   "to": "d2",
+   "label": ""
+  },
+  {
+   "from": "d2",
+   "to": "a2",
+   "label": "Sim"
+  },
+  {
+   "from": "d2",
+   "to": "b2",
+   "label": "Não"
+  },
+  {
+   "from": "b2",
+   "to": "c2",
+   "label": ""
+  },
+  {
+   "from": "a2",
+   "to": "j2",
+   "label": ""
+  },
+  {
+   "from": "c2",
+   "to": "j2",
+   "label": ""
+  },
+  {
+   "from": "j2",
+   "to": "d3",
+   "label": ""
+  },
+  {
+   "from": "d3",
+   "to": "a3",
+   "label": "Sim"
+  },
+  {
+   "from": "d3",
+   "to": "b3",
+   "label": "Não"
+  },
+  {
+   "from": "b3",
+   "to": "c3",
+   "label": ""
+  },
+  {
+   "from": "a3",
+   "to": "j3",
+   "label": ""
+  },
+  {
+   "from": "c3",
+   "to": "j3",
+   "label": ""
+  },
+  {
+   "from": "j3",
+   "to": "d4",
+   "label": ""
+  },
+  {
+   "from": "d4",
+   "to": "a4",
+   "label": "Sim"
+  },
+  {
+   "from": "d4",
+   "to": "b4",
+   "label": "Não"
+  },
+  {
+   "from": "b4",
+   "to": "c4",
+   "label": ""
+  },
+  {
+   "from": "a4",
+   "to": "j4",
+   "label": ""
+  },
+  {
+   "from": "c4",
+   "to": "j4",
+   "label": ""
+  },
+  {
+   "from": "prazo",
+   "to": "esc",
+   "label": ""
+  },
+  {
+   "from": "esc",
+   "to": "ze",
+   "label": ""
+  },
+  {
+   "from": "j4",
+   "to": "z",
+   "label": ""
+  }
+ ]
+}

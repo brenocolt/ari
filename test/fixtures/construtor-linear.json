@@ -1,0 +1,111 @@
+{
+ "_origem": "caso do construtor (linear)",
+ "processName": "linear",
+ "lanes": [
+  "Equipe"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t0",
+   "type": "task",
+   "name": "Executar etapa 1",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t1",
+   "type": "task",
+   "name": "Executar etapa 2",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t2",
+   "type": "task",
+   "name": "Executar etapa 3",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t3",
+   "type": "task",
+   "name": "Executar etapa 4",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t4",
+   "type": "task",
+   "name": "Executar etapa 5",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "t0",
+   "label": ""
+  },
+  {
+   "from": "t0",
+   "to": "t1",
+   "label": ""
+  },
+  {
+   "from": "t1",
+   "to": "t2",
+   "label": ""
+  },
+  {
+   "from": "t2",
+   "to": "t3",
+   "label": ""
+  },
+  {
+   "from": "t3",
+   "to": "t4",
+   "label": ""
+  },
+  {
+   "from": "t4",
+   "to": "z",
+   "label": ""
+  }
+ ]
+}

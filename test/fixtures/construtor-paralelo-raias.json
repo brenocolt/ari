@@ -1,0 +1,123 @@
+{
+ "_origem": "caso do construtor (paralelo-raias)",
+ "processName": "paralelo-raias",
+ "lanes": [
+  "A",
+  "B",
+  "C"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d",
+   "type": "parallelGateway",
+   "name": "Definir caminho",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "j",
+   "type": "parallelGateway",
+   "name": "j",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a0",
+   "type": "task",
+   "name": "Executar ramo 1",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a1",
+   "type": "task",
+   "name": "Executar ramo 2",
+   "lane": "B",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a2",
+   "type": "task",
+   "name": "Executar ramo 3",
+   "lane": "C",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "d",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "a0",
+   "label": ""
+  },
+  {
+   "from": "a0",
+   "to": "j",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "a1",
+   "label": ""
+  },
+  {
+   "from": "a1",
+   "to": "j",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "a2",
+   "label": ""
+  },
+  {
+   "from": "a2",
+   "to": "j",
+   "label": ""
+  },
+  {
+   "from": "j",
+   "to": "z",
+   "label": ""
+  }
+ ]
+}

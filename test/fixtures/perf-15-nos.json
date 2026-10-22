@@ -1,0 +1,251 @@
+{
+ "_origem": "caso mínimo do testador (perf-15nos-339ms.json)",
+ "processName": "Processo 7576",
+ "lanes": [
+  "Gerência",
+  "Cliente",
+  "Jurídico",
+  "TI",
+  "Diretoria",
+  "Financeiro"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Início",
+   "lane": "Gerência",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_2",
+   "type": "task",
+   "name": "Receber parecer técnico do setor jurídico",
+   "lane": "Gerência",
+   "taskType": "receive",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "sPr_3",
+   "type": "subProcess",
+   "name": "Emitir parecer técnico do setor jurídico",
+   "lane": "Gerência",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_4",
+   "type": "task",
+   "name": "Emitir pedido",
+   "lane": "Jurídico",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_5",
+   "type": "task",
+   "name": "Receber contrato",
+   "lane": "Gerência",
+   "taskType": "receive",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_6",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Gerência",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_7",
+   "type": "task",
+   "name": "Calcular pedido",
+   "lane": "Gerência",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_8",
+   "type": "exclusiveGateway",
+   "name": "Documentação completa?",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_9",
+   "type": "timerEvent",
+   "name": "Data de fechamento do período de faturamento",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_10",
+   "type": "task",
+   "name": "Validar orçamento",
+   "lane": "Financeiro",
+   "taskType": "receive",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_11",
+   "type": "timerEvent",
+   "name": "Data de fechamento do período de faturamento",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_12",
+   "type": "timerEvent",
+   "name": "Aguardar 2 dias úteis",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_13",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_14",
+   "type": "exclusiveGateway",
+   "name": "Documentação completa?",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_15",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Gerência",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "sEv_1",
+   "to": "t_2",
+   "label": ""
+  },
+  {
+   "from": "t_2",
+   "to": "sPr_3",
+   "label": ""
+  },
+  {
+   "from": "sPr_3",
+   "to": "t_4",
+   "label": ""
+  },
+  {
+   "from": "t_4",
+   "to": "t_5",
+   "label": ""
+  },
+  {
+   "from": "t_5",
+   "to": "eGa_6",
+   "label": ""
+  },
+  {
+   "from": "eGa_6",
+   "to": "t_7",
+   "label": ""
+  },
+  {
+   "from": "t_7",
+   "to": "eGa_8",
+   "label": ""
+  },
+  {
+   "from": "eGa_8",
+   "to": "tEv_9",
+   "label": "Tipo A"
+  },
+  {
+   "from": "tEv_9",
+   "to": "t_10",
+   "label": ""
+  },
+  {
+   "from": "t_10",
+   "to": "tEv_11",
+   "label": ""
+  },
+  {
+   "from": "eGa_8",
+   "to": "tEv_12",
+   "label": "Tipo B"
+  },
+  {
+   "from": "tEv_11",
+   "to": "eGa_13",
+   "label": ""
+  },
+  {
+   "from": "tEv_12",
+   "to": "eGa_13",
+   "label": ""
+  },
+  {
+   "from": "eGa_8",
+   "to": "eGa_13",
+   "label": "Tipo C"
+  },
+  {
+   "from": "eGa_13",
+   "to": "eGa_14",
+   "label": ""
+  },
+  {
+   "from": "eGa_14",
+   "to": "eGa_6",
+   "label": "Sim (correto)"
+  },
+  {
+   "from": "eGa_14",
+   "to": "eEv_15",
+   "label": "Não (fora do contrato)"
+  }
+ ]
+}

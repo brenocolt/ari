@@ -1,0 +1,196 @@
+{
+ "_origem": "caso do construtor (cruzamento-k33)",
+ "processName": "cruzamento-k33",
+ "lanes": [
+  "Equipe"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "split",
+   "type": "exclusiveGateway",
+   "name": "split",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a0",
+   "type": "exclusiveGateway",
+   "name": "Selecionar 0",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b0",
+   "type": "exclusiveGateway",
+   "name": "b0",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a1",
+   "type": "exclusiveGateway",
+   "name": "Selecionar 1",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b1",
+   "type": "exclusiveGateway",
+   "name": "b1",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a2",
+   "type": "exclusiveGateway",
+   "name": "Selecionar 2",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b2",
+   "type": "exclusiveGateway",
+   "name": "b2",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "join",
+   "type": "exclusiveGateway",
+   "name": "join",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "split",
+   "label": ""
+  },
+  {
+   "from": "split",
+   "to": "a0",
+   "label": "Opção 0"
+  },
+  {
+   "from": "split",
+   "to": "a1",
+   "label": "Opção 1"
+  },
+  {
+   "from": "split",
+   "to": "a2",
+   "label": "Opção 2"
+  },
+  {
+   "from": "a0",
+   "to": "b0",
+   "label": "Rota 0"
+  },
+  {
+   "from": "a0",
+   "to": "b1",
+   "label": "Rota 1"
+  },
+  {
+   "from": "a0",
+   "to": "b2",
+   "label": "Rota 2"
+  },
+  {
+   "from": "b0",
+   "to": "join",
+   "label": ""
+  },
+  {
+   "from": "a1",
+   "to": "b0",
+   "label": "Rota 0"
+  },
+  {
+   "from": "a1",
+   "to": "b1",
+   "label": "Rota 1"
+  },
+  {
+   "from": "a1",
+   "to": "b2",
+   "label": "Rota 2"
+  },
+  {
+   "from": "b1",
+   "to": "join",
+   "label": ""
+  },
+  {
+   "from": "a2",
+   "to": "b0",
+   "label": "Rota 0"
+  },
+  {
+   "from": "a2",
+   "to": "b1",
+   "label": "Rota 1"
+  },
+  {
+   "from": "a2",
+   "to": "b2",
+   "label": "Rota 2"
+  },
+  {
+   "from": "b2",
+   "to": "join",
+   "label": ""
+  },
+  {
+   "from": "join",
+   "to": "z",
+   "label": ""
+  }
+ ]
+}

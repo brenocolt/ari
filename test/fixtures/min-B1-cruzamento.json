@@ -1,0 +1,206 @@
+{
+ "_origem": "caso mínimo do testador (B1-cruzamento.json)",
+ "processName": "Processo 26664",
+ "lanes": [
+  "Atendimento",
+  "Financeiro",
+  "TI",
+  "Diretoria",
+  "Gerência",
+  "Jurídico"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Todo dia 1º",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "timer",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_2",
+   "type": "timerEvent",
+   "name": "Data de fechamento do período de faturamento",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_3",
+   "type": "task",
+   "name": "Corrigir proposta comercial",
+   "lane": "Diretoria",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_6",
+   "type": "exclusiveGateway",
+   "name": "Cliente respondeu?",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_7",
+   "type": "task",
+   "name": "Conferir contrato",
+   "lane": "Atendimento",
+   "taskType": "script",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_8",
+   "type": "task",
+   "name": "Pagar cadastro do cliente",
+   "lane": "TI",
+   "taskType": "service",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_9",
+   "type": "task",
+   "name": "Solicitar pedido",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_10",
+   "type": "exclusiveGateway",
+   "name": "Estoque disponível?",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_11",
+   "type": "task",
+   "name": "Corrigir planilha de custos",
+   "lane": "Gerência",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_12",
+   "type": "exclusiveGateway",
+   "name": "Valor conforme o contrato?",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_13",
+   "type": "timerEvent",
+   "name": "Aguardar 2 dias úteis",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_14",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "sEv_1",
+   "to": "tEv_2",
+   "label": ""
+  },
+  {
+   "from": "tEv_2",
+   "to": "t_3",
+   "label": ""
+  },
+  {
+   "from": "eGa_6",
+   "to": "t_3",
+   "label": "Tipo B"
+  },
+  {
+   "from": "eGa_6",
+   "to": "t_7",
+   "label": "Tipo A"
+  },
+  {
+   "from": "t_7",
+   "to": "t_8",
+   "label": ""
+  },
+  {
+   "from": "t_8",
+   "to": "t_9",
+   "label": ""
+  },
+  {
+   "from": "t_9",
+   "to": "eGa_10",
+   "label": ""
+  },
+  {
+   "from": "eGa_10",
+   "to": "t_11",
+   "label": "Incompleto"
+  },
+  {
+   "from": "t_11",
+   "to": "t_8",
+   "label": ""
+  },
+  {
+   "from": "eGa_10",
+   "to": "eGa_12",
+   "label": "Completo"
+  },
+  {
+   "from": "eGa_12",
+   "to": "t_7",
+   "label": "Incompleto"
+  },
+  {
+   "from": "eGa_12",
+   "to": "tEv_13",
+   "label": "Completo"
+  },
+  {
+   "from": "tEv_13",
+   "to": "eEv_14",
+   "label": ""
+  },
+  {
+   "from": "t_3",
+   "to": "eGa_6",
+   "label": ""
+  }
+ ]
+}

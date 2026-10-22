@@ -1,0 +1,151 @@
+{
+ "_origem": "caso do construtor (aninhadas)",
+ "processName": "aninhadas",
+ "lanes": [
+  "Equipe"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d",
+   "type": "exclusiveGateway",
+   "name": "Aprovar",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d2",
+   "type": "exclusiveGateway",
+   "name": "Revisar",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a",
+   "type": "task",
+   "name": "a",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b",
+   "type": "task",
+   "name": "b",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "c",
+   "type": "task",
+   "name": "c",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "j2",
+   "type": "exclusiveGateway",
+   "name": "j2",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "j",
+   "type": "exclusiveGateway",
+   "name": "j",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "Equipe",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "d",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "a",
+   "label": "Sim"
+  },
+  {
+   "from": "d",
+   "to": "d2",
+   "label": "Não"
+  },
+  {
+   "from": "d2",
+   "to": "b",
+   "label": "Sim"
+  },
+  {
+   "from": "d2",
+   "to": "c",
+   "label": "Não"
+  },
+  {
+   "from": "b",
+   "to": "j2",
+   "label": ""
+  },
+  {
+   "from": "c",
+   "to": "j2",
+   "label": ""
+  },
+  {
+   "from": "j2",
+   "to": "j",
+   "label": ""
+  },
+  {
+   "from": "a",
+   "to": "j",
+   "label": ""
+  },
+  {
+   "from": "j",
+   "to": "z",
+   "label": ""
+  }
+ ]
+}

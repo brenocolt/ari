@@ -1,0 +1,568 @@
+{
+ "_origem": "geração real da IA (faturamento de exames)",
+ "processName": "Faturamento de exames de laboratório",
+ "lanes": [
+  "Faturamento",
+  "Setor de exames",
+  "Convênio"
+ ],
+ "nodes": [
+  {
+   "id": "s_inicio",
+   "type": "startEvent",
+   "name": "Início do faturamento de exames",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_gerar",
+   "type": "task",
+   "name": "Gerar relatório de atendimentos",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_importar",
+   "type": "task",
+   "name": "Importar relatório na planilha",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_split",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_m1",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_conferir",
+   "type": "task",
+   "name": "Conferir processo físico contra a planilha (valor x contrato)",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_valor",
+   "type": "exclusiveGateway",
+   "name": "Valor conforme o contrato?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_verde",
+   "type": "task",
+   "name": "Marcar verde",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_vermelho",
+   "type": "task",
+   "name": "Marcar vermelho",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_corrigir",
+   "type": "task",
+   "name": "Corrigir preço no sistema",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_m2",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_verificar",
+   "type": "task",
+   "name": "Verificar se o resultado do exame está no processo",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_resultado",
+   "type": "exclusiveGateway",
+   "name": "Resultado do exame está no processo?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_pedir",
+   "type": "task",
+   "name": "Pedir resultado ao setor de exames pelo fluxo",
+   "lane": "Faturamento",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_m3",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Setor de exames",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_providenciar",
+   "type": "task",
+   "name": "Providenciar resultado do exame",
+   "lane": "Setor de exames",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "bt_prazo",
+   "type": "boundaryTimer",
+   "name": "Prazo de resposta",
+   "lane": "Setor de exames",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "t_providenciar",
+   "interrupting": true
+  },
+  {
+   "id": "t_cobrar",
+   "type": "task",
+   "name": "Cobrar resultado do setor de exames",
+   "lane": "Faturamento",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_enviar_res",
+   "type": "task",
+   "name": "Enviar resultado ao faturamento",
+   "lane": "Setor de exames",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_receber_res",
+   "type": "task",
+   "name": "Receber resultado do exame",
+   "lane": "Faturamento",
+   "taskType": "receive",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_join",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tm_fechamento",
+   "type": "timerEvent",
+   "name": "Data de fechamento do período de faturamento",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_fechar",
+   "type": "task",
+   "name": "Fechar fatura",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_enviar_fatura",
+   "type": "task",
+   "name": "Enviar fatura ao convênio",
+   "lane": "Faturamento",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_m4",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Convênio",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_analisar",
+   "type": "task",
+   "name": "Analisar fatura",
+   "lane": "Convênio",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "bt_30dias",
+   "type": "boundaryTimer",
+   "name": "30 dias",
+   "lane": "Convênio",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "t_analisar",
+   "interrupting": true
+  },
+  {
+   "id": "t_ligar",
+   "type": "task",
+   "name": "Ligar para o convênio",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_analise",
+   "type": "exclusiveGateway",
+   "name": "Convênio aceita a fatura?",
+   "lane": "Convênio",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_pagar",
+   "type": "task",
+   "name": "Pagar fatura",
+   "lane": "Convênio",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "e_pago",
+   "type": "endEvent",
+   "name": "Fatura paga",
+   "lane": "Convênio",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_analisar_glosa",
+   "type": "task",
+   "name": "Analisar glosa",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_recorrer",
+   "type": "exclusiveGateway",
+   "name": "Recorrer da glosa?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_recorrer",
+   "type": "task",
+   "name": "Recorrer da glosa ao convênio",
+   "lane": "Faturamento",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_aceitar_glosa",
+   "type": "task",
+   "name": "Aceitar glosa",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "e_perda",
+   "type": "endEvent",
+   "name": "Processo encerrado com perda",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s_inicio",
+   "to": "t_gerar",
+   "label": ""
+  },
+  {
+   "from": "t_gerar",
+   "to": "t_importar",
+   "label": ""
+  },
+  {
+   "from": "t_importar",
+   "to": "gw_split",
+   "label": ""
+  },
+  {
+   "from": "gw_split",
+   "to": "gw_m1",
+   "label": ""
+  },
+  {
+   "from": "gw_split",
+   "to": "gw_m2",
+   "label": ""
+  },
+  {
+   "from": "gw_m1",
+   "to": "t_conferir",
+   "label": ""
+  },
+  {
+   "from": "t_conferir",
+   "to": "gw_valor",
+   "label": ""
+  },
+  {
+   "from": "gw_valor",
+   "to": "t_verde",
+   "label": "Valor conforme"
+  },
+  {
+   "from": "gw_valor",
+   "to": "t_vermelho",
+   "label": "Fora do contrato"
+  },
+  {
+   "from": "t_vermelho",
+   "to": "t_corrigir",
+   "label": ""
+  },
+  {
+   "from": "t_corrigir",
+   "to": "gw_m1",
+   "label": ""
+  },
+  {
+   "from": "t_verde",
+   "to": "gw_join",
+   "label": ""
+  },
+  {
+   "from": "gw_m2",
+   "to": "t_verificar",
+   "label": ""
+  },
+  {
+   "from": "t_verificar",
+   "to": "gw_resultado",
+   "label": ""
+  },
+  {
+   "from": "gw_resultado",
+   "to": "gw_join",
+   "label": "Sim, resultado está no processo"
+  },
+  {
+   "from": "gw_resultado",
+   "to": "t_pedir",
+   "label": "Não, resultado faltando"
+  },
+  {
+   "from": "t_pedir",
+   "to": "gw_m3",
+   "label": ""
+  },
+  {
+   "from": "gw_m3",
+   "to": "t_providenciar",
+   "label": ""
+  },
+  {
+   "from": "t_providenciar",
+   "to": "t_enviar_res",
+   "label": ""
+  },
+  {
+   "from": "bt_prazo",
+   "to": "t_cobrar",
+   "label": ""
+  },
+  {
+   "from": "t_cobrar",
+   "to": "gw_m3",
+   "label": ""
+  },
+  {
+   "from": "t_enviar_res",
+   "to": "t_receber_res",
+   "label": ""
+  },
+  {
+   "from": "t_receber_res",
+   "to": "gw_m2",
+   "label": ""
+  },
+  {
+   "from": "gw_join",
+   "to": "tm_fechamento",
+   "label": ""
+  },
+  {
+   "from": "tm_fechamento",
+   "to": "t_fechar",
+   "label": ""
+  },
+  {
+   "from": "t_fechar",
+   "to": "t_enviar_fatura",
+   "label": ""
+  },
+  {
+   "from": "t_enviar_fatura",
+   "to": "gw_m4",
+   "label": ""
+  },
+  {
+   "from": "gw_m4",
+   "to": "t_analisar",
+   "label": ""
+  },
+  {
+   "from": "t_analisar",
+   "to": "gw_analise",
+   "label": ""
+  },
+  {
+   "from": "bt_30dias",
+   "to": "t_ligar",
+   "label": ""
+  },
+  {
+   "from": "t_ligar",
+   "to": "gw_m4",
+   "label": ""
+  },
+  {
+   "from": "gw_analise",
+   "to": "t_pagar",
+   "label": "Aceitar"
+  },
+  {
+   "from": "gw_analise",
+   "to": "t_analisar_glosa",
+   "label": "Glosar"
+  },
+  {
+   "from": "t_pagar",
+   "to": "e_pago",
+   "label": ""
+  },
+  {
+   "from": "t_analisar_glosa",
+   "to": "gw_recorrer",
+   "label": ""
+  },
+  {
+   "from": "gw_recorrer",
+   "to": "t_recorrer",
+   "label": "Recorrer"
+  },
+  {
+   "from": "gw_recorrer",
+   "to": "t_aceitar_glosa",
+   "label": "Aceitar a glosa"
+  },
+  {
+   "from": "t_recorrer",
+   "to": "gw_m4",
+   "label": ""
+  },
+  {
+   "from": "t_aceitar_glosa",
+   "to": "e_perda",
+   "label": ""
+  }
+ ]
+}

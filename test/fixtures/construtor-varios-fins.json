@@ -1,0 +1,159 @@
+{
+ "_origem": "caso do construtor (varios-fins)",
+ "processName": "varios-fins",
+ "lanes": [
+  "Compras",
+  "Gestão",
+  "Financeiro",
+  "Diretoria"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d",
+   "type": "exclusiveGateway",
+   "name": "Definir caminho",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a0",
+   "type": "task",
+   "name": "Executar ramo 1",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z0",
+   "type": "endEvent",
+   "name": "z0",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a1",
+   "type": "task",
+   "name": "Executar ramo 2",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z1",
+   "type": "endEvent",
+   "name": "z1",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a2",
+   "type": "task",
+   "name": "Executar ramo 3",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z2",
+   "type": "endEvent",
+   "name": "z2",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a3",
+   "type": "task",
+   "name": "Executar ramo 4",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z3",
+   "type": "endEvent",
+   "name": "z3",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "d",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "a0",
+   "label": "Sim"
+  },
+  {
+   "from": "a0",
+   "to": "z0",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "a1",
+   "label": "Não"
+  },
+  {
+   "from": "a1",
+   "to": "z1",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "a2",
+   "label": "Opção 3"
+  },
+  {
+   "from": "a2",
+   "to": "z2",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "a3",
+   "label": "Opção 4"
+  },
+  {
+   "from": "a3",
+   "to": "z3",
+   "label": ""
+  }
+ ]
+}

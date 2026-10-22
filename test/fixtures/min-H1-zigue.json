@@ -1,0 +1,163 @@
+{
+ "_origem": "caso mínimo do testador (H1-zigue.json)",
+ "processName": "Processo 101",
+ "lanes": [
+  "Gerência",
+  "Atendimento",
+  "Cliente"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Pedido recebido",
+   "lane": "Gerência",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_4",
+   "type": "task",
+   "name": "Analisar cadastro do cliente",
+   "lane": "Cliente",
+   "taskType": "receive",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "bTi_5",
+   "type": "boundaryTimer",
+   "name": "Prazo de 48 horas",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "t_4",
+   "interrupting": false
+  },
+  {
+   "id": "t_6",
+   "type": "task",
+   "name": "Escalar orçamento",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_7",
+   "type": "endEvent",
+   "name": "Escalado",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_8",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_10",
+   "type": "task",
+   "name": "Arquivar relatório mensal de atendimentos e encaminhar para conferência final",
+   "lane": "Gerência",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_11",
+   "type": "exclusiveGateway",
+   "name": "Precisa de ajuste?",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_13",
+   "type": "exclusiveGateway",
+   "name": "Estoque disponível?",
+   "lane": "Gerência",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_14",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "bTi_5",
+   "to": "t_6",
+   "label": ""
+  },
+  {
+   "from": "t_6",
+   "to": "eEv_7",
+   "label": ""
+  },
+  {
+   "from": "t_4",
+   "to": "eGa_8",
+   "label": ""
+  },
+  {
+   "from": "t_10",
+   "to": "eGa_11",
+   "label": ""
+  },
+  {
+   "from": "eGa_11",
+   "to": "eGa_13",
+   "label": "Aprovado"
+  },
+  {
+   "from": "eGa_13",
+   "to": "eGa_8",
+   "label": "Reprovado"
+  },
+  {
+   "from": "eGa_13",
+   "to": "eEv_14",
+   "label": "Aprovado"
+  },
+  {
+   "from": "sEv_1",
+   "to": "t_4",
+   "label": ""
+  },
+  {
+   "from": "eGa_8",
+   "to": "t_10",
+   "label": ""
+  },
+  {
+   "from": "eGa_11",
+   "to": "t_10",
+   "label": "Reprovado"
+  }
+ ]
+}

@@ -1,0 +1,202 @@
+{
+ "_origem": "caso mínimo do testador (F3-divisa.json)",
+ "processName": "Processo 12221",
+ "lanes": [
+  "Atendimento",
+  "Jurídico"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Início",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "message",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_4",
+   "type": "exclusiveGateway",
+   "name": "Valor conforme o contrato?",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_5",
+   "type": "task",
+   "name": "Agendar orçamento",
+   "lane": "Jurídico",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "bTi_6",
+   "type": "boundaryTimer",
+   "name": "Prazo de resposta do setor de exames",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "t_5",
+   "interrupting": true
+  },
+  {
+   "id": "t_7",
+   "type": "task",
+   "name": "Escalar contrato",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_8",
+   "type": "endEvent",
+   "name": "Escalado",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_9",
+   "type": "task",
+   "name": "Calcular nota fiscal",
+   "lane": "Jurídico",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "bTi_10",
+   "type": "boundaryTimer",
+   "name": "5 dias",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "t_9",
+   "interrupting": true
+  },
+  {
+   "id": "eEv_12",
+   "type": "endEvent",
+   "name": "Escalado",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_13",
+   "type": "timerEvent",
+   "name": "48 horas",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_14",
+   "type": "timerEvent",
+   "name": "48 horas",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_15",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_16",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Atendimento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "eGa_4",
+   "to": "t_5",
+   "label": "Aprovado"
+  },
+  {
+   "from": "bTi_6",
+   "to": "t_7",
+   "label": ""
+  },
+  {
+   "from": "t_7",
+   "to": "eEv_8",
+   "label": ""
+  },
+  {
+   "from": "eGa_4",
+   "to": "t_9",
+   "label": "Reprovado"
+  },
+  {
+   "from": "eGa_4",
+   "to": "tEv_13",
+   "label": "Opção 3"
+  },
+  {
+   "from": "tEv_13",
+   "to": "tEv_14",
+   "label": ""
+  },
+  {
+   "from": "t_5",
+   "to": "eGa_15",
+   "label": ""
+  },
+  {
+   "from": "t_9",
+   "to": "eGa_15",
+   "label": ""
+  },
+  {
+   "from": "tEv_14",
+   "to": "eGa_15",
+   "label": ""
+  },
+  {
+   "from": "eGa_15",
+   "to": "eEv_16",
+   "label": ""
+  },
+  {
+   "from": "sEv_1",
+   "to": "eGa_4",
+   "label": ""
+  },
+  {
+   "from": "bTi_10",
+   "to": "eEv_12",
+   "label": ""
+  }
+ ]
+}

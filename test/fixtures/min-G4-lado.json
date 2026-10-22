@@ -1,0 +1,111 @@
+{
+ "_origem": "caso mínimo do testador (G4-lado.json)",
+ "processName": "Processo 21614",
+ "lanes": [
+  "Jurídico"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Pedido recebido",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_2",
+   "type": "task",
+   "name": "Conferir nota fiscal",
+   "lane": "Jurídico",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "bTi_3",
+   "type": "boundaryTimer",
+   "name": "Prazo de resposta do setor de exames",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "t_2",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_4",
+   "type": "endEvent",
+   "name": "Prazo expirado",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_5",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_8",
+   "type": "exclusiveGateway",
+   "name": "Qual o tipo de solicitação?",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_9",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "sEv_1",
+   "to": "t_2",
+   "label": ""
+  },
+  {
+   "from": "bTi_3",
+   "to": "eEv_4",
+   "label": ""
+  },
+  {
+   "from": "t_2",
+   "to": "eGa_5",
+   "label": ""
+  },
+  {
+   "from": "eGa_8",
+   "to": "eGa_5",
+   "label": "Não"
+  },
+  {
+   "from": "eGa_8",
+   "to": "eEv_9",
+   "label": "Sim"
+  },
+  {
+   "from": "eGa_5",
+   "to": "eGa_8",
+   "label": ""
+  }
+ ]
+}

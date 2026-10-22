@@ -1,0 +1,460 @@
+{
+ "_origem": "caso do construtor (grande-30)",
+ "processName": "grande-30",
+ "lanes": [
+  "Solicitante",
+  "Compras",
+  "Gestão",
+  "Financeiro",
+  "Fornecedor"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t0",
+   "type": "task",
+   "name": "Executar etapa 1",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t1",
+   "type": "task",
+   "name": "Executar etapa 2",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t2",
+   "type": "task",
+   "name": "Executar etapa 3",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t3",
+   "type": "task",
+   "name": "Executar etapa 4",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t4",
+   "type": "task",
+   "name": "Executar etapa 5",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t5",
+   "type": "task",
+   "name": "Executar etapa 6",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t6",
+   "type": "task",
+   "name": "Executar etapa 7",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t7",
+   "type": "task",
+   "name": "Executar etapa 8",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t8",
+   "type": "task",
+   "name": "Executar etapa 9",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t9",
+   "type": "task",
+   "name": "Executar etapa 10",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t10",
+   "type": "task",
+   "name": "Executar etapa 11",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t11",
+   "type": "task",
+   "name": "Executar etapa 12",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t12",
+   "type": "task",
+   "name": "Executar etapa 13",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t13",
+   "type": "task",
+   "name": "Executar etapa 14",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t14",
+   "type": "task",
+   "name": "Executar etapa 15",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t15",
+   "type": "task",
+   "name": "Executar etapa 16",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t16",
+   "type": "task",
+   "name": "Executar etapa 17",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t17",
+   "type": "task",
+   "name": "Executar etapa 18",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t18",
+   "type": "task",
+   "name": "Executar etapa 19",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t19",
+   "type": "task",
+   "name": "Executar etapa 20",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t20",
+   "type": "task",
+   "name": "Executar etapa 21",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t21",
+   "type": "task",
+   "name": "Executar etapa 22",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t22",
+   "type": "task",
+   "name": "Executar etapa 23",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t23",
+   "type": "task",
+   "name": "Executar etapa 24",
+   "lane": "Fornecedor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t24",
+   "type": "task",
+   "name": "Executar etapa 25",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t25",
+   "type": "task",
+   "name": "Executar etapa 26",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t26",
+   "type": "task",
+   "name": "Executar etapa 27",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t27",
+   "type": "task",
+   "name": "Executar etapa 28",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "t0",
+   "label": ""
+  },
+  {
+   "from": "t0",
+   "to": "t1",
+   "label": ""
+  },
+  {
+   "from": "t1",
+   "to": "t2",
+   "label": ""
+  },
+  {
+   "from": "t2",
+   "to": "t3",
+   "label": ""
+  },
+  {
+   "from": "t3",
+   "to": "t4",
+   "label": ""
+  },
+  {
+   "from": "t4",
+   "to": "t5",
+   "label": ""
+  },
+  {
+   "from": "t5",
+   "to": "t6",
+   "label": ""
+  },
+  {
+   "from": "t6",
+   "to": "t7",
+   "label": ""
+  },
+  {
+   "from": "t7",
+   "to": "t8",
+   "label": ""
+  },
+  {
+   "from": "t8",
+   "to": "t9",
+   "label": ""
+  },
+  {
+   "from": "t9",
+   "to": "t10",
+   "label": ""
+  },
+  {
+   "from": "t10",
+   "to": "t11",
+   "label": ""
+  },
+  {
+   "from": "t11",
+   "to": "t12",
+   "label": ""
+  },
+  {
+   "from": "t12",
+   "to": "t13",
+   "label": ""
+  },
+  {
+   "from": "t13",
+   "to": "t14",
+   "label": ""
+  },
+  {
+   "from": "t14",
+   "to": "t15",
+   "label": ""
+  },
+  {
+   "from": "t15",
+   "to": "t16",
+   "label": ""
+  },
+  {
+   "from": "t16",
+   "to": "t17",
+   "label": ""
+  },
+  {
+   "from": "t17",
+   "to": "t18",
+   "label": ""
+  },
+  {
+   "from": "t18",
+   "to": "t19",
+   "label": ""
+  },
+  {
+   "from": "t19",
+   "to": "t20",
+   "label": ""
+  },
+  {
+   "from": "t20",
+   "to": "t21",
+   "label": ""
+  },
+  {
+   "from": "t21",
+   "to": "t22",
+   "label": ""
+  },
+  {
+   "from": "t22",
+   "to": "t23",
+   "label": ""
+  },
+  {
+   "from": "t23",
+   "to": "t24",
+   "label": ""
+  },
+  {
+   "from": "t24",
+   "to": "t25",
+   "label": ""
+  },
+  {
+   "from": "t25",
+   "to": "t26",
+   "label": ""
+  },
+  {
+   "from": "t26",
+   "to": "t27",
+   "label": ""
+  },
+  {
+   "from": "t27",
+   "to": "z",
+   "label": ""
+  }
+ ]
+}

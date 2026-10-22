@@ -1,0 +1,357 @@
+{
+ "_origem": "caso do construtor (caso-print)",
+ "processName": "caso-print",
+ "lanes": [
+  "Faturamento",
+  "Setor de exames"
+ ],
+ "nodes": [
+  {
+   "id": "inicio",
+   "type": "startEvent",
+   "name": "Início",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "relatorio",
+   "type": "task",
+   "name": "Gerar relatório de atendimentos e importar na planilha",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "split",
+   "type": "parallelGateway",
+   "name": "split",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "mergeA",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "conferir",
+   "type": "task",
+   "name": "Conferir processo físico × planilha (valor × contrato)",
+   "lane": "Faturamento",
+   "taskType": "manual",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "valor",
+   "type": "exclusiveGateway",
+   "name": "Valor conforme o contrato?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "verde",
+   "type": "task",
+   "name": "Marcar verde (correto)",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "vermelho",
+   "type": "task",
+   "name": "Marcar vermelho (fora do contrato)",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "corrigir",
+   "type": "task",
+   "name": "Corrigir preço no sistema",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "mergeB",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "verificar",
+   "type": "task",
+   "name": "Verificar se o resultado do exame está no processo",
+   "lane": "Faturamento",
+   "taskType": "manual",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "resultado",
+   "type": "exclusiveGateway",
+   "name": "Resultado do exame está no processo?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "mergePedido",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pedir",
+   "type": "task",
+   "name": "Pedir resultado ao setor de exames pelo fluxo",
+   "lane": "Faturamento",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "enviar",
+   "type": "task",
+   "name": "Providenciar e enviar resultado do exame",
+   "lane": "Setor de exames",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "prazo",
+   "type": "boundaryTimer",
+   "name": "Prazo de resposta do setor de exames",
+   "lane": "Setor de exames",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "enviar",
+   "interrupting": true
+  },
+  {
+   "id": "receber",
+   "type": "task",
+   "name": "Receber resultado do exame",
+   "lane": "Faturamento",
+   "taskType": "receive",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "join",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "data",
+   "type": "timerEvent",
+   "name": "Data de fechamento do período de faturamento",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "fechar",
+   "type": "task",
+   "name": "Fechar a fatura no período de faturamento",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "final",
+   "type": "exclusiveGateway",
+   "name": "Fatura concluída?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "fim",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "inicio",
+   "to": "relatorio",
+   "label": ""
+  },
+  {
+   "from": "relatorio",
+   "to": "split",
+   "label": ""
+  },
+  {
+   "from": "split",
+   "to": "mergeA",
+   "label": ""
+  },
+  {
+   "from": "split",
+   "to": "mergeB",
+   "label": ""
+  },
+  {
+   "from": "mergeA",
+   "to": "conferir",
+   "label": ""
+  },
+  {
+   "from": "conferir",
+   "to": "valor",
+   "label": ""
+  },
+  {
+   "from": "valor",
+   "to": "verde",
+   "label": "Sim (correto)"
+  },
+  {
+   "from": "verde",
+   "to": "join",
+   "label": ""
+  },
+  {
+   "from": "valor",
+   "to": "vermelho",
+   "label": "Não (fora do contrato)"
+  },
+  {
+   "from": "vermelho",
+   "to": "corrigir",
+   "label": ""
+  },
+  {
+   "from": "corrigir",
+   "to": "mergeA",
+   "label": ""
+  },
+  {
+   "from": "mergeB",
+   "to": "verificar",
+   "label": ""
+  },
+  {
+   "from": "verificar",
+   "to": "resultado",
+   "label": ""
+  },
+  {
+   "from": "resultado",
+   "to": "join",
+   "label": "Sim"
+  },
+  {
+   "from": "resultado",
+   "to": "mergePedido",
+   "label": "Não (falta resultado)"
+  },
+  {
+   "from": "mergePedido",
+   "to": "pedir",
+   "label": ""
+  },
+  {
+   "from": "pedir",
+   "to": "enviar",
+   "label": ""
+  },
+  {
+   "from": "prazo",
+   "to": "mergePedido",
+   "label": ""
+  },
+  {
+   "from": "enviar",
+   "to": "receber",
+   "label": ""
+  },
+  {
+   "from": "receber",
+   "to": "mergeB",
+   "label": ""
+  },
+  {
+   "from": "join",
+   "to": "data",
+   "label": ""
+  },
+  {
+   "from": "data",
+   "to": "fechar",
+   "label": ""
+  },
+  {
+   "from": "fechar",
+   "to": "final",
+   "label": ""
+  },
+  {
+   "from": "final",
+   "to": "fechar",
+   "label": "Não"
+  },
+  {
+   "from": "final",
+   "to": "fim",
+   "label": "Sim"
+  }
+ ]
+}

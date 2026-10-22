@@ -1,0 +1,156 @@
+{
+ "_origem": "caso mínimo do testador (H3-desvio.json)",
+ "processName": "Processo 24644",
+ "lanes": [
+  "TI",
+  "Compras",
+  "Gerência",
+  "Diretoria",
+  "Jurídico",
+  "Financeiro"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Pedido recebido",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pGa_2",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_3",
+   "type": "task",
+   "name": "Corrigir proposta comercial",
+   "lane": "Gerência",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_4",
+   "type": "task",
+   "name": "Emitir planilha de custos",
+   "lane": "TI",
+   "taskType": "script",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_5",
+   "type": "task",
+   "name": "Validar nota fiscal",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_6",
+   "type": "task",
+   "name": "Arquivar orçamento",
+   "lane": "TI",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pGa_7",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_8",
+   "type": "task",
+   "name": "Pagar pedido",
+   "lane": "TI",
+   "taskType": "service",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_9",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "TI",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "sEv_1",
+   "to": "pGa_2",
+   "label": ""
+  },
+  {
+   "from": "pGa_2",
+   "to": "t_3",
+   "label": ""
+  },
+  {
+   "from": "pGa_2",
+   "to": "t_4",
+   "label": ""
+  },
+  {
+   "from": "t_4",
+   "to": "t_5",
+   "label": ""
+  },
+  {
+   "from": "pGa_2",
+   "to": "t_6",
+   "label": ""
+  },
+  {
+   "from": "t_3",
+   "to": "pGa_7",
+   "label": ""
+  },
+  {
+   "from": "t_5",
+   "to": "pGa_7",
+   "label": ""
+  },
+  {
+   "from": "t_6",
+   "to": "pGa_7",
+   "label": ""
+  },
+  {
+   "from": "pGa_7",
+   "to": "t_8",
+   "label": ""
+  },
+  {
+   "from": "t_8",
+   "to": "eEv_9",
+   "label": ""
+  }
+ ]
+}

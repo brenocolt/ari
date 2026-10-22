@@ -1,0 +1,597 @@
+{
+ "_origem": "caso mínimo do testador (perf-e-cruzamentos-35nos-8s.json)",
+ "processName": "Processo 29492",
+ "lanes": [
+  "Financeiro",
+  "Cliente"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Pedido recebido",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "message",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_2",
+   "type": "task",
+   "name": "Revisar nota fiscal",
+   "lane": "Financeiro",
+   "taskType": "script",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_3",
+   "type": "timerEvent",
+   "name": "Data de fechamento do período de faturamento",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pGa_4",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_5",
+   "type": "task",
+   "name": "Calcular cadastro do cliente",
+   "lane": "Financeiro",
+   "taskType": "manual",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_6",
+   "type": "task",
+   "name": "Pagar nota fiscal e encaminhar para conferência final",
+   "lane": "Financeiro",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pGa_7",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_8",
+   "type": "exclusiveGateway",
+   "name": "Aprovado?",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_9",
+   "type": "timerEvent",
+   "name": "Aguardar 2 dias úteis",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_10",
+   "type": "exclusiveGateway",
+   "name": "Valor conforme o contrato?",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_11",
+   "type": "exclusiveGateway",
+   "name": "Precisa de ajuste?",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "tEv_12",
+   "type": "timerEvent",
+   "name": "48 horas",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_13",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_14",
+   "type": "task",
+   "name": "Registrar contrato",
+   "lane": "Cliente",
+   "taskType": "script",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_15",
+   "type": "exclusiveGateway",
+   "name": "Aprovado?",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_16",
+   "type": "endEvent",
+   "name": "Cancelado",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_17",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_18",
+   "type": "task",
+   "name": "Validar proposta comercial e encaminhar para conferência final",
+   "lane": "Cliente",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_19",
+   "type": "task",
+   "name": "Calcular ordem de serviço",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_20",
+   "type": "exclusiveGateway",
+   "name": "Valor conforme o contrato?",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_21",
+   "type": "endEvent",
+   "name": "Pedido recusado",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "message",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_22",
+   "type": "task",
+   "name": "Emitir pedido",
+   "lane": "Financeiro",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_23",
+   "type": "task",
+   "name": "Registrar parecer técnico do setor jurídico",
+   "lane": "Financeiro",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_24",
+   "type": "task",
+   "name": "Emitir pedido",
+   "lane": "Cliente",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_25",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_26",
+   "type": "task",
+   "name": "Enviar resultado do exame",
+   "lane": "Financeiro",
+   "taskType": "manual",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_27",
+   "type": "exclusiveGateway",
+   "name": "Documentação completa?",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "sPr_28",
+   "type": "subProcess",
+   "name": "Calcular pedido",
+   "lane": "Cliente",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_29",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_30",
+   "type": "task",
+   "name": "Validar cadastro do cliente",
+   "lane": "Financeiro",
+   "taskType": "businessRule",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_31",
+   "type": "exclusiveGateway",
+   "name": "Aprovado?",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_32",
+   "type": "task",
+   "name": "Corrigir nota fiscal",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_33",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_34",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_35",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "sEv_1",
+   "to": "t_2",
+   "label": ""
+  },
+  {
+   "from": "t_2",
+   "to": "tEv_3",
+   "label": ""
+  },
+  {
+   "from": "tEv_3",
+   "to": "pGa_4",
+   "label": ""
+  },
+  {
+   "from": "pGa_4",
+   "to": "t_5",
+   "label": ""
+  },
+  {
+   "from": "pGa_4",
+   "to": "t_6",
+   "label": ""
+  },
+  {
+   "from": "t_5",
+   "to": "pGa_7",
+   "label": ""
+  },
+  {
+   "from": "t_6",
+   "to": "pGa_7",
+   "label": ""
+  },
+  {
+   "from": "pGa_7",
+   "to": "eGa_8",
+   "label": ""
+  },
+  {
+   "from": "eGa_8",
+   "to": "tEv_9",
+   "label": "Aprovado"
+  },
+  {
+   "from": "eGa_8",
+   "to": "eGa_10",
+   "label": "Reprovado"
+  },
+  {
+   "from": "eGa_10",
+   "to": "eGa_11",
+   "label": "Tipo A"
+  },
+  {
+   "from": "eGa_11",
+   "to": "tEv_12",
+   "label": "Não"
+  },
+  {
+   "from": "tEv_12",
+   "to": "eGa_13",
+   "label": ""
+  },
+  {
+   "from": "eGa_13",
+   "to": "t_14",
+   "label": ""
+  },
+  {
+   "from": "t_14",
+   "to": "eGa_15",
+   "label": ""
+  },
+  {
+   "from": "eGa_15",
+   "to": "eGa_13",
+   "label": "Reprovado"
+  },
+  {
+   "from": "eGa_11",
+   "to": "eEv_16",
+   "label": "Opção 3"
+  },
+  {
+   "from": "eGa_11",
+   "to": "eGa_17",
+   "label": "Sim"
+  },
+  {
+   "from": "eGa_15",
+   "to": "eGa_17",
+   "label": "Aprovado"
+  },
+  {
+   "from": "eGa_10",
+   "to": "t_18",
+   "label": "Tipo B"
+  },
+  {
+   "from": "t_18",
+   "to": "t_19",
+   "label": ""
+  },
+  {
+   "from": "t_19",
+   "to": "eGa_20",
+   "label": ""
+  },
+  {
+   "from": "eGa_20",
+   "to": "t_18",
+   "label": "Incompleto"
+  },
+  {
+   "from": "eGa_10",
+   "to": "eEv_21",
+   "label": "Tipo C"
+  },
+  {
+   "from": "eGa_10",
+   "to": "t_22",
+   "label": "Outro"
+  },
+  {
+   "from": "t_22",
+   "to": "t_23",
+   "label": ""
+  },
+  {
+   "from": "t_23",
+   "to": "t_24",
+   "label": ""
+  },
+  {
+   "from": "eGa_17",
+   "to": "eGa_25",
+   "label": ""
+  },
+  {
+   "from": "eGa_20",
+   "to": "eGa_25",
+   "label": "Completo"
+  },
+  {
+   "from": "t_24",
+   "to": "eGa_25",
+   "label": ""
+  },
+  {
+   "from": "eGa_8",
+   "to": "t_26",
+   "label": "Opção 3"
+  },
+  {
+   "from": "t_26",
+   "to": "eGa_27",
+   "label": ""
+  },
+  {
+   "from": "eGa_27",
+   "to": "sPr_28",
+   "label": "Sim"
+  },
+  {
+   "from": "eGa_27",
+   "to": "eGa_29",
+   "label": "Opção 3"
+  },
+  {
+   "from": "eGa_29",
+   "to": "t_30",
+   "label": ""
+  },
+  {
+   "from": "t_30",
+   "to": "eGa_31",
+   "label": ""
+  },
+  {
+   "from": "eGa_31",
+   "to": "t_32",
+   "label": "Reprovado"
+  },
+  {
+   "from": "t_32",
+   "to": "eGa_29",
+   "label": ""
+  },
+  {
+   "from": "sPr_28",
+   "to": "eGa_33",
+   "label": ""
+  },
+  {
+   "from": "eGa_27",
+   "to": "eGa_33",
+   "label": "Não"
+  },
+  {
+   "from": "eGa_31",
+   "to": "eGa_33",
+   "label": "Aprovado"
+  },
+  {
+   "from": "eGa_27",
+   "to": "eGa_33",
+   "label": "Opção 4"
+  },
+  {
+   "from": "tEv_9",
+   "to": "eGa_34",
+   "label": ""
+  },
+  {
+   "from": "eGa_25",
+   "to": "eGa_34",
+   "label": ""
+  },
+  {
+   "from": "eGa_33",
+   "to": "eGa_34",
+   "label": ""
+  },
+  {
+   "from": "eGa_8",
+   "to": "eGa_34",
+   "label": "Opção 4"
+  },
+  {
+   "from": "eGa_34",
+   "to": "eEv_35",
+   "label": ""
+  }
+ ]
+}

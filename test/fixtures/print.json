@@ -1,0 +1,402 @@
+{
+ "_origem": "caso do print SETAS.png (reconstruído)",
+ "processName": "Faturamento de exames (reconstruído do SETAS.png)",
+ "lanes": [
+  "Faturamento",
+  "Setor de exames"
+ ],
+ "nodes": [
+  {
+   "id": "inicio",
+   "type": "startEvent",
+   "name": "Início",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gerar",
+   "type": "task",
+   "name": "Gerar relatório de atendimentos e importar na planilha",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "par1",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "m1",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "conferir",
+   "type": "task",
+   "name": "Conferir processo físico × planilha (valor × contrato)",
+   "lane": "Faturamento",
+   "taskType": "manual",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "dValor",
+   "type": "exclusiveGateway",
+   "name": "Valor conforme o contrato?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "verde",
+   "type": "task",
+   "name": "Marcar verde (correto)",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "vermelho",
+   "type": "task",
+   "name": "Marcar vermelho (fora do contrato)",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "corrigir",
+   "type": "task",
+   "name": "Corrigir preço no sistema",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "m2",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "verificar",
+   "type": "task",
+   "name": "Verificar se o resultado do exame está no processo",
+   "lane": "Faturamento",
+   "taskType": "manual",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "dRes",
+   "type": "exclusiveGateway",
+   "name": "Resultado do exame está no processo?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "m3",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pedir",
+   "type": "task",
+   "name": "Pedir resultado ao setor de exames pelo fluxo",
+   "lane": "Faturamento",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "providenciar",
+   "type": "task",
+   "name": "Providenciar e enviar resultado do exame",
+   "lane": "Setor de exames",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "prazo",
+   "type": "boundaryTimer",
+   "name": "Prazo de resposta do setor de exames",
+   "lane": "Setor de exames",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "providenciar",
+   "interrupting": true
+  },
+  {
+   "id": "receber",
+   "type": "task",
+   "name": "Receber resultado do exame",
+   "lane": "Faturamento",
+   "taskType": "receive",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "par2",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "timer",
+   "type": "timerEvent",
+   "name": "Data de fechamento do período de faturamento",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "fechar",
+   "type": "task",
+   "name": "Fechar a fatura no período de faturamento",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "m4",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "enviarConv",
+   "type": "task",
+   "name": "Enviar fatura ao convênio",
+   "lane": "Faturamento",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "dGlosa",
+   "type": "exclusiveGateway",
+   "name": "Fatura aceita pelo convênio?",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "recorrer",
+   "type": "task",
+   "name": "Recorrer da glosa",
+   "lane": "Faturamento",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "fim",
+   "type": "endEvent",
+   "name": "Fatura paga",
+   "lane": "Faturamento",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "inicio",
+   "to": "gerar",
+   "label": ""
+  },
+  {
+   "from": "gerar",
+   "to": "par1",
+   "label": ""
+  },
+  {
+   "from": "par1",
+   "to": "m1",
+   "label": ""
+  },
+  {
+   "from": "par1",
+   "to": "m2",
+   "label": ""
+  },
+  {
+   "from": "m1",
+   "to": "conferir",
+   "label": ""
+  },
+  {
+   "from": "conferir",
+   "to": "dValor",
+   "label": ""
+  },
+  {
+   "from": "dValor",
+   "to": "verde",
+   "label": "Sim (correto)"
+  },
+  {
+   "from": "dValor",
+   "to": "vermelho",
+   "label": "Não (fora do contrato)"
+  },
+  {
+   "from": "vermelho",
+   "to": "corrigir",
+   "label": ""
+  },
+  {
+   "from": "corrigir",
+   "to": "m1",
+   "label": ""
+  },
+  {
+   "from": "m2",
+   "to": "verificar",
+   "label": ""
+  },
+  {
+   "from": "verificar",
+   "to": "dRes",
+   "label": ""
+  },
+  {
+   "from": "dRes",
+   "to": "par2",
+   "label": "Sim"
+  },
+  {
+   "from": "dRes",
+   "to": "m3",
+   "label": "Não (falta resultado)"
+  },
+  {
+   "from": "m3",
+   "to": "pedir",
+   "label": ""
+  },
+  {
+   "from": "pedir",
+   "to": "providenciar",
+   "label": ""
+  },
+  {
+   "from": "providenciar",
+   "to": "receber",
+   "label": ""
+  },
+  {
+   "from": "prazo",
+   "to": "m3",
+   "label": ""
+  },
+  {
+   "from": "receber",
+   "to": "m2",
+   "label": ""
+  },
+  {
+   "from": "verde",
+   "to": "par2",
+   "label": ""
+  },
+  {
+   "from": "par2",
+   "to": "timer",
+   "label": ""
+  },
+  {
+   "from": "timer",
+   "to": "fechar",
+   "label": ""
+  },
+  {
+   "from": "fechar",
+   "to": "m4",
+   "label": ""
+  },
+  {
+   "from": "m4",
+   "to": "enviarConv",
+   "label": ""
+  },
+  {
+   "from": "enviarConv",
+   "to": "dGlosa",
+   "label": ""
+  },
+  {
+   "from": "dGlosa",
+   "to": "fim",
+   "label": "Sim"
+  },
+  {
+   "from": "dGlosa",
+   "to": "recorrer",
+   "label": "Não (glosa)"
+  },
+  {
+   "from": "recorrer",
+   "to": "m4",
+   "label": ""
+  }
+ ]
+}

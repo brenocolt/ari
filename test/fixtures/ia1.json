@@ -1,0 +1,454 @@
+{
+ "_origem": "geração real da IA (reembolso de despesas)",
+ "processName": "Reembolso de despesas de viagem",
+ "lanes": [
+  "Colaborador",
+  "Gestor",
+  "Financeiro",
+  "Auditoria"
+ ],
+ "nodes": [
+  {
+   "id": "start",
+   "type": "startEvent",
+   "name": "Despesa de viagem a reembolsar",
+   "lane": "Colaborador",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_registrar",
+   "type": "task",
+   "name": "Registrar solicitação de reembolso no sistema",
+   "lane": "Colaborador",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_anexar",
+   "type": "task",
+   "name": "Anexar comprovantes",
+   "lane": "Colaborador",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_analisar",
+   "type": "task",
+   "name": "Analisar solicitação (gestor)",
+   "lane": "Gestor",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "bt_prazo",
+   "type": "boundaryTimer",
+   "name": "3 dias úteis",
+   "lane": "Gestor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "t_analisar",
+   "interrupting": true
+  },
+  {
+   "id": "t_escalar",
+   "type": "task",
+   "name": "Escalar solicitação para o diretor",
+   "lane": "Gestor",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_analisar_diretor",
+   "type": "task",
+   "name": "Decidir solicitação (diretor)",
+   "lane": "Gestor",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_diretor",
+   "type": "exclusiveGateway",
+   "name": "Qual a decisão do diretor?",
+   "lane": "Gestor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_decisao",
+   "type": "exclusiveGateway",
+   "name": "Qual a decisão do gestor?",
+   "lane": "Gestor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_corrigir",
+   "type": "task",
+   "name": "Corrigir e reenviar solicitação",
+   "lane": "Colaborador",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_merge_reprov",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Gestor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_notif_reprov",
+   "type": "task",
+   "name": "Notificar colaborador da reprovação",
+   "lane": "Gestor",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "end_reprov",
+   "type": "endEvent",
+   "name": "Solicitação reprovada",
+   "lane": "Gestor",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_merge_aprov",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_merge_fin",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pg_split",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_conferir",
+   "type": "task",
+   "name": "Conferir comprovantes (analista financeiro)",
+   "lane": "Financeiro",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_impostos",
+   "type": "task",
+   "name": "Calcular impostos no sistema",
+   "lane": "Financeiro",
+   "taskType": "service",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pg_join",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_valor",
+   "type": "exclusiveGateway",
+   "name": "Valor acima de 5 mil reais?",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_auditoria",
+   "type": "task",
+   "name": "Fazer revisão de auditoria",
+   "lane": "Auditoria",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_auditoria",
+   "type": "exclusiveGateway",
+   "name": "Auditoria encontrou problema?",
+   "lane": "Auditoria",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "gw_merge_valor",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_agendar",
+   "type": "task",
+   "name": "Agendar pagamento",
+   "lane": "Financeiro",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "te_sexta",
+   "type": "timerEvent",
+   "name": "Toda sexta-feira (data do lote de pagamento)",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_pagar",
+   "type": "task",
+   "name": "Efetuar pagamento",
+   "lane": "Financeiro",
+   "taskType": "user",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_notif_pag",
+   "type": "task",
+   "name": "Notificar colaborador do pagamento",
+   "lane": "Financeiro",
+   "taskType": "send",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "end_pago",
+   "type": "endEvent",
+   "name": "Reembolso pago",
+   "lane": "Financeiro",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "start",
+   "to": "t_registrar",
+   "label": ""
+  },
+  {
+   "from": "t_registrar",
+   "to": "t_anexar",
+   "label": ""
+  },
+  {
+   "from": "t_anexar",
+   "to": "t_analisar",
+   "label": ""
+  },
+  {
+   "from": "t_analisar",
+   "to": "gw_decisao",
+   "label": ""
+  },
+  {
+   "from": "bt_prazo",
+   "to": "t_escalar",
+   "label": ""
+  },
+  {
+   "from": "t_escalar",
+   "to": "t_analisar_diretor",
+   "label": ""
+  },
+  {
+   "from": "t_analisar_diretor",
+   "to": "gw_diretor",
+   "label": ""
+  },
+  {
+   "from": "gw_diretor",
+   "to": "gw_merge_aprov",
+   "label": "Aprovar"
+  },
+  {
+   "from": "gw_diretor",
+   "to": "gw_merge_reprov",
+   "label": "Reprovar"
+  },
+  {
+   "from": "gw_decisao",
+   "to": "gw_merge_aprov",
+   "label": "Aprovar"
+  },
+  {
+   "from": "gw_decisao",
+   "to": "t_corrigir",
+   "label": "Pedir ajuste"
+  },
+  {
+   "from": "gw_decisao",
+   "to": "gw_merge_reprov",
+   "label": "Reprovar"
+  },
+  {
+   "from": "t_corrigir",
+   "to": "t_analisar",
+   "label": ""
+  },
+  {
+   "from": "gw_merge_reprov",
+   "to": "t_notif_reprov",
+   "label": ""
+  },
+  {
+   "from": "t_notif_reprov",
+   "to": "end_reprov",
+   "label": ""
+  },
+  {
+   "from": "gw_merge_aprov",
+   "to": "gw_merge_fin",
+   "label": ""
+  },
+  {
+   "from": "gw_merge_fin",
+   "to": "pg_split",
+   "label": ""
+  },
+  {
+   "from": "pg_split",
+   "to": "t_conferir",
+   "label": ""
+  },
+  {
+   "from": "pg_split",
+   "to": "t_impostos",
+   "label": ""
+  },
+  {
+   "from": "t_conferir",
+   "to": "pg_join",
+   "label": ""
+  },
+  {
+   "from": "t_impostos",
+   "to": "pg_join",
+   "label": ""
+  },
+  {
+   "from": "pg_join",
+   "to": "gw_valor",
+   "label": ""
+  },
+  {
+   "from": "gw_valor",
+   "to": "t_auditoria",
+   "label": "Acima de 5 mil reais"
+  },
+  {
+   "from": "gw_valor",
+   "to": "gw_merge_valor",
+   "label": "Abaixo de 5 mil reais"
+  },
+  {
+   "from": "t_auditoria",
+   "to": "gw_auditoria",
+   "label": ""
+  },
+  {
+   "from": "gw_auditoria",
+   "to": "gw_merge_fin",
+   "label": "Sim, encontrou problema"
+  },
+  {
+   "from": "gw_auditoria",
+   "to": "gw_merge_valor",
+   "label": "Não, está ok"
+  },
+  {
+   "from": "gw_merge_valor",
+   "to": "t_agendar",
+   "label": ""
+  },
+  {
+   "from": "t_agendar",
+   "to": "te_sexta",
+   "label": ""
+  },
+  {
+   "from": "te_sexta",
+   "to": "t_pagar",
+   "label": ""
+  },
+  {
+   "from": "t_pagar",
+   "to": "t_notif_pag",
+   "label": ""
+  },
+  {
+   "from": "t_notif_pag",
+   "to": "end_pago",
+   "label": ""
+  }
+ ]
+}

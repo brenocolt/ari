@@ -1,0 +1,281 @@
+{
+ "_origem": "caso do construtor (pingue-pongue)",
+ "processName": "pingue-pongue",
+ "lanes": [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t0",
+   "type": "task",
+   "name": "Executar etapa 1",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t1",
+   "type": "task",
+   "name": "Executar etapa 2",
+   "lane": "F",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t2",
+   "type": "task",
+   "name": "Executar etapa 3",
+   "lane": "B",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t3",
+   "type": "task",
+   "name": "Executar etapa 4",
+   "lane": "E",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t4",
+   "type": "task",
+   "name": "Executar etapa 5",
+   "lane": "C",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t5",
+   "type": "task",
+   "name": "Executar etapa 6",
+   "lane": "D",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t6",
+   "type": "task",
+   "name": "Executar etapa 7",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t7",
+   "type": "task",
+   "name": "Executar etapa 8",
+   "lane": "E",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t8",
+   "type": "task",
+   "name": "Executar etapa 9",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t9",
+   "type": "task",
+   "name": "Executar etapa 10",
+   "lane": "F",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t10",
+   "type": "task",
+   "name": "Executar etapa 11",
+   "lane": "B",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t11",
+   "type": "task",
+   "name": "Executar etapa 12",
+   "lane": "E",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t12",
+   "type": "task",
+   "name": "Executar etapa 13",
+   "lane": "C",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t13",
+   "type": "task",
+   "name": "Executar etapa 14",
+   "lane": "D",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t14",
+   "type": "task",
+   "name": "Executar etapa 15",
+   "lane": "A",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t15",
+   "type": "task",
+   "name": "Executar etapa 16",
+   "lane": "E",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "E",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "t0",
+   "label": ""
+  },
+  {
+   "from": "t0",
+   "to": "t1",
+   "label": ""
+  },
+  {
+   "from": "t1",
+   "to": "t2",
+   "label": ""
+  },
+  {
+   "from": "t2",
+   "to": "t3",
+   "label": ""
+  },
+  {
+   "from": "t3",
+   "to": "t4",
+   "label": ""
+  },
+  {
+   "from": "t4",
+   "to": "t5",
+   "label": ""
+  },
+  {
+   "from": "t5",
+   "to": "t6",
+   "label": ""
+  },
+  {
+   "from": "t6",
+   "to": "t7",
+   "label": ""
+  },
+  {
+   "from": "t7",
+   "to": "t8",
+   "label": ""
+  },
+  {
+   "from": "t8",
+   "to": "t9",
+   "label": ""
+  },
+  {
+   "from": "t9",
+   "to": "t10",
+   "label": ""
+  },
+  {
+   "from": "t10",
+   "to": "t11",
+   "label": ""
+  },
+  {
+   "from": "t11",
+   "to": "t12",
+   "label": ""
+  },
+  {
+   "from": "t12",
+   "to": "t13",
+   "label": ""
+  },
+  {
+   "from": "t13",
+   "to": "t14",
+   "label": ""
+  },
+  {
+   "from": "t14",
+   "to": "t15",
+   "label": ""
+  },
+  {
+   "from": "t15",
+   "to": "z",
+   "label": ""
+  }
+ ]
+}

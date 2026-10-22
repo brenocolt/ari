@@ -1,0 +1,137 @@
+{
+ "_origem": "caso do construtor (retrabalho-entre-raias)",
+ "processName": "retrabalho-entre-raias",
+ "lanes": [
+  "Solicitante",
+  "Compras"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a",
+   "type": "task",
+   "name": "Preparar solicitação",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b",
+   "type": "task",
+   "name": "Analisar solicitação",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "d",
+   "type": "exclusiveGateway",
+   "name": "Aprovar",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "c",
+   "type": "task",
+   "name": "Ajustar e reenviar",
+   "lane": "Solicitante",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "f",
+   "type": "exclusiveGateway",
+   "name": "Conferir",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "r",
+   "type": "task",
+   "name": "Corrigir documentos",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "a",
+   "label": ""
+  },
+  {
+   "from": "a",
+   "to": "b",
+   "label": ""
+  },
+  {
+   "from": "b",
+   "to": "d",
+   "label": ""
+  },
+  {
+   "from": "d",
+   "to": "f",
+   "label": "Sim"
+  },
+  {
+   "from": "d",
+   "to": "c",
+   "label": "Não"
+  },
+  {
+   "from": "c",
+   "to": "a",
+   "label": ""
+  },
+  {
+   "from": "f",
+   "to": "z",
+   "label": "Sim"
+  },
+  {
+   "from": "f",
+   "to": "r",
+   "label": "Não"
+  },
+  {
+   "from": "r",
+   "to": "b",
+   "label": ""
+  }
+ ]
+}

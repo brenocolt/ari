@@ -1,0 +1,124 @@
+{
+ "_origem": "caso mínimo do testador (H2-dobra.json)",
+ "processName": "Processo 16968",
+ "lanes": [
+  "Diretoria",
+  "Atendimento",
+  "Cliente",
+  "Jurídico"
+ ],
+ "nodes": [
+  {
+   "id": "sEv_1",
+   "type": "startEvent",
+   "name": "Pedido recebido",
+   "lane": "Diretoria",
+   "taskType": "none",
+   "eventType": "message",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_3",
+   "type": "exclusiveGateway",
+   "name": "Aprovado?",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pGa_6",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t_7",
+   "type": "task",
+   "name": "Revisar orçamento",
+   "lane": "Atendimento",
+   "taskType": "script",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "pGa_9",
+   "type": "parallelGateway",
+   "name": "",
+   "lane": "Jurídico",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eGa_10",
+   "type": "exclusiveGateway",
+   "name": "",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "eEv_11",
+   "type": "endEvent",
+   "name": "Fim",
+   "lane": "Cliente",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "pGa_6",
+   "to": "t_7",
+   "label": ""
+  },
+  {
+   "from": "t_7",
+   "to": "pGa_9",
+   "label": ""
+  },
+  {
+   "from": "pGa_9",
+   "to": "eGa_10",
+   "label": ""
+  },
+  {
+   "from": "eGa_10",
+   "to": "eEv_11",
+   "label": ""
+  },
+  {
+   "from": "sEv_1",
+   "to": "eGa_3",
+   "label": ""
+  },
+  {
+   "from": "eGa_3",
+   "to": "eGa_10",
+   "label": "Não (fora do contrato)"
+  },
+  {
+   "from": "eGa_3",
+   "to": "pGa_6",
+   "label": "Sim (correto)"
+  },
+  {
+   "from": "pGa_6",
+   "to": "pGa_9",
+   "label": ""
+  }
+ ]
+}

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node pop-pptx.js"
+    "test": "node pop-pptx.js && node test/bpmn-layout.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",

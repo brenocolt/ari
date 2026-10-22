@@ -1,0 +1,107 @@
+{
+ "_origem": "caso do construtor (timer-borda)",
+ "processName": "timer-borda",
+ "lanes": [
+  "Compras",
+  "Gestão"
+ ],
+ "nodes": [
+  {
+   "id": "s",
+   "type": "startEvent",
+   "name": "s",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "a",
+   "type": "task",
+   "name": "Aguardar aprovação",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "b",
+   "type": "boundaryTimer",
+   "name": "48 horas",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "a",
+   "interrupting": true
+  },
+  {
+   "id": "c",
+   "type": "task",
+   "name": "Escalonar aprovação",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "t",
+   "type": "timerEvent",
+   "name": "2 dias úteis",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z",
+   "type": "endEvent",
+   "name": "z",
+   "lane": "Compras",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  },
+  {
+   "id": "z2",
+   "type": "endEvent",
+   "name": "z2",
+   "lane": "Gestão",
+   "taskType": "none",
+   "eventType": "none",
+   "attachedTo": "",
+   "interrupting": false
+  }
+ ],
+ "flows": [
+  {
+   "from": "s",
+   "to": "a",
+   "label": ""
+  },
+  {
+   "from": "a",
+   "to": "t",
+   "label": ""
+  },
+  {
+   "from": "t",
+   "to": "z",
+   "label": ""
+  },
+  {
+   "from": "b",
+   "to": "c",
+   "label": ""
+  },
+  {
+   "from": "c",
+   "to": "z2",
+   "label": ""
+  }
+ ]
+}
